@@ -1,0 +1,66 @@
+.memberDetailSearch{
+    display: flex;
+    align-items: center;
+    border: 1px solid #E6EBF1;
+    border-radius: 12px;
+    /* padding: 10px 10px; */
+    padding-left: 10px;
+    max-width: 200px;
+}
+
+.memberDetailFilter{
+    display: flex;
+    align-items: center;
+    border: 1px solid #E6EBF1;
+    border-radius: 12px;
+    /* padding: 10px 10px; */
+    padding: 0px 10px;
+    /* max-width: 200px; */
+    width: fit-content;
+    margin-left: 15px;
+}
+
+.memberDetailSerachInput{
+    border: none;
+    padding: 5px 10px;
+    font-size: 16px;
+    color: #1A3353;
+    max-width: 80%;
+}
+
+.memberDetailSerachInput:focus{
+    outline: none;
+}
+
+.memberDetailTableSearchFilter{
+    margin-bottom: 20px;
+    display: flex;
+
+}
+
+.memberDetailFilterText{
+    margin-left: 12px;
+    font-weight: 500;
+    color: #1A3353;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.membershipPaymentPaid{
+    background-color: #EDFFF9;
+    width: fit-content;
+    padding: 0px 10px;
+    border-radius: 6px;
+}
+.membershipPaymentPending{
+    background: #FFE3E8;
+    width: fit-content;
+    padding: 0px 10px;
+    border-radius: 6px;
+}
+
+.custaddmoreque{
+    color: rgb(59, 112, 227);
+    cursor: pointer;
+    margin: 0;
+}
