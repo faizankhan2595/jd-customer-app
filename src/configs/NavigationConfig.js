@@ -27,54 +27,78 @@ const dashBoardNavTree =[
   submenu: []
 },
 {
-  key: "staff-management",
-  path: `${APP_PREFIX_PATH}/staff-management`,
-  title: "Staff Management",
+  key: "user-management",
+  path: `${APP_PREFIX_PATH}/user-management`,
+  title: "User Management",
   icon: UserSwitchOutlined,
   breadcrumb: false,
   submenu: [
     {
-      key: 'admin-accounts',
-      path: `${APP_PREFIX_PATH}/staff-management/admin-accounts`,
-      title: 'Admin Accounts',
+      key: 'user-accounts',
+      path: `${APP_PREFIX_PATH}/user-management/user-accounts`,
+      title: 'User Accounts',
+      // icon: Masters,
+      breadcrumb: false,
+      submenu: []
+    },
+    {
+      key: 'free-accounts',
+      path: `${APP_PREFIX_PATH}/user-management/free-accounts`,
+      title: 'Free Users',
       // icon: Masters,
       breadcrumb: false,
       submenu: []
     }
   ],
 },
+// {
+//   key: 'customer-management',
+//   path: `${APP_PREFIX_PATH}/customer-management`,
+//   title: 'Customer Management',
+//   icon: TeamOutlined,
+//   breadcrumb: false,
+//   submenu: [
+//     {
+//       key: 'customer-accounts',
+//       path: `${APP_PREFIX_PATH}/customer-management/customer-accounts`,
+//       title: 'Customers Accounts',
+//       // icon: Masters,
+//       breadcrumb: false,
+//       submenu: []
+//     },
+//     {
+//       key: 'free-user-accounts',
+//       path: `${APP_PREFIX_PATH}/customer-management/free-user-accounts`,
+//       title: 'Free User Accounts',
+//       // icon: Masters,
+//       breadcrumb: false,
+//       submenu: []
+//     },
+//     {
+//       key: 'workshop-users',
+//       path: `${APP_PREFIX_PATH}/customer-management/workshop-users`,
+//       title: 'Workshop Users',
+//       // icon: Masters,
+//       breadcrumb: false,
+//       submenu: []
+//     },
+//   ],
+// },
 {
-  key: 'customer-management',
-  path: `${APP_PREFIX_PATH}/customer-management`,
-  title: 'Customer Management',
-  icon: TeamOutlined,
+  key: 'order-management',
+  path: `${APP_PREFIX_PATH}/order-management`,
+  title: 'Order Management',
+  icon: SettingOutlined,
   breadcrumb: false,
-  submenu: [
-    {
-      key: 'customer-accounts',
-      path: `${APP_PREFIX_PATH}/customer-management/customer-accounts`,
-      title: 'Customers Accounts',
-      // icon: Masters,
-      breadcrumb: false,
-      submenu: []
-    },
-    {
-      key: 'free-user-accounts',
-      path: `${APP_PREFIX_PATH}/customer-management/free-user-accounts`,
-      title: 'Free User Accounts',
-      // icon: Masters,
-      breadcrumb: false,
-      submenu: []
-    },
-    {
-      key: 'workshop-users',
-      path: `${APP_PREFIX_PATH}/customer-management/workshop-users`,
-      title: 'Workshop Users',
-      // icon: Masters,
-      breadcrumb: false,
-      submenu: []
-    },
-  ],
+  submenu: []
+},
+{
+  key: 'inquiry-management',
+  path: `${APP_PREFIX_PATH}/inquiry-management`,
+  title: 'Inquiry Management',
+  icon: SettingOutlined,
+  breadcrumb: false,
+  submenu: []
 },
 {
   key: 'machine-and-sensors',
@@ -85,21 +109,37 @@ const dashBoardNavTree =[
   submenu: []
 },
 {
-  key: 'order-management',
-  path: `${APP_PREFIX_PATH}/order-management`,
-  title: 'Order Management',
+  key: 'technician-management',
+  path: `${APP_PREFIX_PATH}/technician-management`,
+  title: 'Technician Management',
   icon: SettingOutlined,
   breadcrumb: false,
   submenu: []
 },
 {
-  key: 'notifications',
-  path: `${APP_PREFIX_PATH}/notifications`,
-  title: 'Notifications',
-  icon: BellOutlined,
+  key: 'operator-master',
+  path: `${APP_PREFIX_PATH}/operator-master`,
+  title: 'Operator Master',
+  icon: SettingOutlined,
   breadcrumb: false,
   submenu: []
-}
+},
+{
+  key: 'reports',
+  path: `${APP_PREFIX_PATH}/reports`,
+  title: 'Reports',
+  icon: SettingOutlined,
+  breadcrumb: false,
+  submenu: []
+},
+// {
+//   key: 'notifications',
+//   path: `${APP_PREFIX_PATH}/notifications`,
+//   title: 'Notifications',
+//   icon: BellOutlined,
+//   breadcrumb: false,
+//   submenu: []
+// }
 ],}]
 
 const navigationConfig = [

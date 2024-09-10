@@ -9,11 +9,13 @@ import Alert from '../../../assets/images/Alert.png'
 import { Link } from 'react-router-dom/cjs/react-router-dom.min'
 import { axiosInstance } from 'App'
 import moment from 'moment'
+import { useHistory } from 'react-router-dom/cjs/react-router-dom'
 
 const { Option } = Select;
 
 const StaffManagement = () => {
   const [selectedDashboards, setSelectedDashboards] = useState([]);
+  const history = useHistory();
   const [modalVisible, setModalVisible] = useState(false);
   const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false)
   const [alertModal, setAlertModal] = useState(false)
@@ -66,7 +68,41 @@ const StaffManagement = () => {
   }, [])
 
 
-  const data = fetch.map((value, i) => {
+  const data = true ? [
+    {
+      id: '1',
+      image: 'https://via.placeholder.com/150',
+      username: 'JohnDoe',
+      type: 'Admin',
+      contactNumber: '9876543210',
+      email: 'john.doe@example.com',
+      userSince: '2022-01-15',
+      status: true, // Active
+      organization: 'Company A',
+    },
+    {
+      id: '2',
+      image: 'https://via.placeholder.com/150',
+      username: 'JaneSmith',
+      type: 'User',
+      contactNumber: '9123456789',
+      email: 'jane.smith@example.com',
+      userSince: '2023-05-10',
+      status: false, // Inactive
+      organization: 'Company B',
+    },
+    {
+      id: '3',
+      image: 'https://via.placeholder.com/150',
+      username: 'MikeRoss',
+      type: 'Moderator',
+      contactNumber: '8765432109',
+      email: 'mike.ross@example.com',
+      userSince: '2021-11-23',
+      status: true, // Active
+      organization: 'Company C',
+    },
+  ] : fetch.map((value, i) => {
     return {
       id: value.id,
       image: value.profile_pic,
@@ -97,6 +133,11 @@ const StaffManagement = () => {
       title: 'Name',
       dataIndex: 'username',
       key: 'username',
+    },
+    {
+      title: 'Accopunt Type',
+      dataIndex: 'type',
+      key: 'type',
     },
     {
       title: 'Mobile Number',
@@ -143,6 +184,9 @@ const StaffManagement = () => {
 
   const getMenu = (record) => (
     <Menu>
+      <Menu.Item key="view" onClick={() =>  history.push(`/app/user-management/user-accounts/account-details/${record.id}`)}>
+        <EyeOutlined /> View
+      </Menu.Item>
       <Menu.Item key="edit" onClick={() => console.log(record.key)}>
         <EditOutlined /> Edit
       </Menu.Item>
@@ -189,7 +233,7 @@ const StaffManagement = () => {
       <h4> <UserSwitchOutlined /><span style={{
         color: '#6a6a6a',
         fontWeight: '300'
-      }}> Staff Management </span>/ Admin Accounts </h4>
+      }}> User Management </span>/ User Accounts </h4>
       <div className="d-flex justify-content-between mb-3">
         <div className="" style={{ display: "flex" }}>
           <Space direction="vertical">
