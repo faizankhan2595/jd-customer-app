@@ -257,7 +257,7 @@ const StaffManagement = () => {
           </Filter>
           <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" >Export</Button>
         </div>
-        <div className="mb-2 d-flex align-items-center">
+        {/* <div className="mb-2 d-flex align-items-center">
           <Button
             // onClick={showModal}
             className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
@@ -265,7 +265,7 @@ const StaffManagement = () => {
             <Link to={'admin-accounts/add-new'}>
               + Add New</Link>
           </Button>
-        </div>
+        </div> */}
       </div>
       <div>
         <Table

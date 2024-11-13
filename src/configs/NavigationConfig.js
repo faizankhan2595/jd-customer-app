@@ -42,8 +42,8 @@ const dashBoardNavTree =[
       submenu: []
     },
     {
-      key: 'free-accounts',
-      path: `${APP_PREFIX_PATH}/user-management/free-accounts`,
+      key: 'free-user',
+      path: `${APP_PREFIX_PATH}/user-management/free-user`,
       title: 'Free Users',
       // icon: Masters,
       breadcrumb: false,
