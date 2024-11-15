@@ -1,9 +1,13 @@
 import { SettingOutlined } from '@ant-design/icons'
-import { Button, Space, Table } from 'antd';
+import { Button, Checkbox, Modal, Space, Table } from 'antd';
 import { LogoWhiteTransparent } from 'assets/svg/icon'
+import Sign from "assets/OrderDetail/signature.png"
 import React from 'react'
+import SignatureCanvas from 'react-signature-canvas'
 
 const ViewQuotation = () => {
+  const [visible, setVisible] = React.useState(false)
+  const sigCanvas = React.useRef({});
   const dataSource = [
     {
       id: 1,
@@ -88,10 +92,20 @@ const ViewQuotation = () => {
             <p style={{ lineHeight: '18px' }} className='mb-2 text-right'>Phone: 52654533</p>
           </div>
         </div>
-        <div className='transparent mt-4'>
-          <Table dataSource={dataSource} columns={columns} />
+        <div className='transparent mt-4 mb-4'>
+          <Table dataSource={dataSource} columns={columns} pagination={false} />
         </div>
-        <div className='d-flex justify-content-end'>
+        <div className='d-flex justify-content-between'>
+          <Space>
+            <div>
+              <img src={Sign} alt="signature" />
+              <div>John Doe</div>
+              <div>08/11/2022, 10:025 Am</div>
+              <Button onClick={() => {
+                setVisible(true)
+              }} className='bg-primary text-white'>Sign</Button>
+            </div>
+          </Space>
           <div style={{ minWidth: '250px', marginRight: '5px' }}>
             <div className='d-flex justify-content-between'>
               <p>
@@ -119,23 +133,60 @@ const ViewQuotation = () => {
             </div>
           </div>
         </div>
-        
+
       </div>
       <div style={{ gap: '8px' }} className="d-flex justify-content-end mt-3">
 
-          <Space>
-            <Button>
-              Cancel
-            </Button>
-            <Button>
-              Download PF
-            </Button>
-            <Button className='bg-primary text-white'>
+        <Space>
+          <Button>
+            Cancel
+          </Button>
+          <Button className='bg-primary text-white'>
+            Download PF
+          </Button>
+          {/* <Button className='bg-primary text-white'>
               Send
-            </Button>
-          </Space>
+            </Button> */}
+        </Space>
+
+      </div>
+      <Modal title="Signature" visible={visible} onOk={() => { }} onCancel={() => {
+        setVisible(false)
+      }}>
+        <div style={{
+          outlineStyle: "dashed",
+          outlineColor: "#E6EBF1",
+          borderRadius: "12px",
+        }}>
+          <SignatureCanvas
+            canvasProps={{ width: 500, height: 200, className: 'sigCanvas' }}
+            ref={sigCanvas}
+          />
+        </div>
+        <div style={{
+          display: "flex",
+          justifyContent: "end",
+          color: "#FF6A00",
+          width: "100%",
+          marginTop: "10px",
+
+        }}>
+          <div style={{
+            borderBottom: "1px solid #FF6A00",
+            cursor: "pointer"
+          }}
+            onClick={() => {
+              sigCanvas.current.clear()
+            }}
+          >Clear</div>
 
         </div>
+        <div>
+          <Checkbox style={{
+            fontWeight: "bold",
+          }}>By signing, I hereby acknowledged and agree to the terms & conditions of JD Works. </Checkbox>
+        </div>
+      </Modal>
     </div>
   )
 }
