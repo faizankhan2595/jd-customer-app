@@ -16,6 +16,9 @@ export const AppViews = () => {
         <Route exact path={`${APP_PREFIX_PATH}/order-management/order-detail`} component={lazy(() => import(`./order-management/order-detail/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/order-management/view-quotation`} component={lazy(() => import(`./order-management/view-quotation/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/order-management/schedule-order`} component={lazy(() => import(`./order-management/schedule-order/index`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/inquiry-management`} component={lazy(() => import(`./inquiry-management/InquiryManagement`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/inquiry-management/new-inquiry`} component={lazy(() => import(`./inquiry-management/AddInquiry/AddInquiry`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/inquiry-management/inquiry-details`} component={lazy(() => import(`./inquiry-management/InquiryDetails/InquiryDetails`))} />
         <Redirect from={`${APP_PREFIX_PATH}`} to={`${APP_PREFIX_PATH}/dashboard`} />
       </Switch>
     </Suspense>

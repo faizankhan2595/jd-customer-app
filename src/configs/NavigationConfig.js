@@ -1,6 +1,7 @@
 import { 
   BellOutlined,
   DashboardOutlined,
+  QuestionCircleOutlined,
   SettingOutlined,
   TeamOutlined,
   ToolOutlined,
@@ -96,7 +97,7 @@ const dashBoardNavTree =[
   key: 'inquiry-management',
   path: `${APP_PREFIX_PATH}/inquiry-management`,
   title: 'Inquiry Management',
-  icon: SettingOutlined,
+  icon: QuestionCircleOutlined,
   breadcrumb: false,
   submenu: []
 },
