@@ -508,3 +508,8 @@ aside ul.customSideNav {
 .grey-radio .ant-radio-checked .ant-radio-inner{
   border-color: #d2d2d2 !important;
 }
+.custom-event-bg {
+  background-color: #FDF1D8 !important; 
+  border: none; 
+  color: #0000 !important;
+}
