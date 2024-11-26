@@ -264,7 +264,7 @@ const ViewSensor = () => {
             // onClick={showModal}
             className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
           >
-            <Link to={`add-new/${id}`}>
+            <Link to={`/app/machine-and-sensors/machine-details/sensors/add-new`}>
               + Add New</Link>
           </Button>
         </div>

@@ -115,7 +115,7 @@ const MiscFiles = () => {
             // onClick={showModal}
             className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
           >
-            <Link to={`/app/machine-and-sensors/machine-details/sensor/misc-files/${2}/add-new`}>
+            <Link to={`misc/add-new`}>
               + Add New</Link>
           </Button>
         </div>

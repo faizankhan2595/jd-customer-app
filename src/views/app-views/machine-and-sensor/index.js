@@ -9,6 +9,7 @@ import {
   Button,
   Popconfirm,
   message,
+  Select,
 } from "antd";
 import {
   DeleteOutlined,
@@ -24,6 +25,7 @@ import { Link } from "react-router-dom/cjs/react-router-dom.min";
 import { useHistory } from "react-router-dom/cjs/react-router-dom";
 import { axiosInstance } from "App";
 import moment from "moment";
+import CardMachine from "./Card/CardMachine";
 
 const MachineAndSensor = () => {
   const history = useHistory();
@@ -124,69 +126,6 @@ const MachineAndSensor = () => {
     </Menu>
   );
 
-  const columns = [
-    {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-    },
-    {
-      title: "Image",
-      dataIndex: "image",
-      key: "image",
-      render: (text, record) => (
-        <Avatar src={text} alt={`Avatar for ${record.Customer}`} />
-      ),
-    },
-    {
-      title: "Customer",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Jobsite",
-      dataIndex: "Jobsite",
-      key: "Jobsite",
-    },
-    {
-      title: "Machines",
-      dataIndex: "machine_detail",
-      key: "machine_detail",
-    },
-    {
-      title: "Active Since",
-      dataIndex: "ActiveSince",
-      key: "ActiveSince",
-      render: (row) => {
-        return <>{moment(row?.created_at).format("MMMM Do YYYY, h:mm:ss a")}</>;
-      },
-    },
-    {
-      title: "Machine Status",
-      dataIndex: "machine_status",
-      key: "machine_status",
-    },
-    {
-      title: "Overall Status",
-      dataIndex: "OverallStatus",
-      key: "OverallStatus",
-    },
-    {
-      title: "Action",
-      key: "action",
-      render: (text, record) => (
-        <Space size="middle">
-          <Dropdown
-            overlay={getMenu(record)}
-            placement="bottomRight"
-            trigger={["hover"]}
-          >
-            <MoreOutlined />
-          </Dropdown>
-        </Space>
-      ),
-    },
-  ];
 
   return (
     <div>
@@ -210,14 +149,30 @@ const MachineAndSensor = () => {
           >
             Export
           </Button>
+          <Select placeholder="Select Area" style={{ width: 200,margin:"0 10px" }} />
+          <Select placeholder="Select Jobsite" style={{ width: 200 }} />
         </div>
         <div className="mb-2 d-flex align-items-center">
           <Button className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4">
-            <Link to={"machine-and-sensors/add-new"}>+ Add New</Link>
+            <Link to={"machine-and-sensors/add-new"}>+ Add New Machines</Link>
           </Button>
         </div>
       </div>
-      <Table dataSource={data} columns={columns} />
+      <div style={{
+        display:'flex',
+        flexWrap:'wrap',
+        justifyContent:"space-between",
+        gap:"20px",
+      }}>
+          <CardMachine />
+          <CardMachine />
+          <CardMachine />
+          <CardMachine />
+          <CardMachine />
+          <CardMachine />
+
+      </div>
+
     </div>
   );
 };

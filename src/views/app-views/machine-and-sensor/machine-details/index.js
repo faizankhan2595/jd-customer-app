@@ -47,6 +47,7 @@ import Icon from "@ant-design/icons/lib/components/Icon";
 import { axiosInstance } from "App";
 import { useParams } from "react-router-dom";
 import moment from "moment";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
 
 const { Option } = Select;
@@ -111,6 +112,7 @@ const MachineDetails = () => {
   const [frequency, setFrequency] = useState(null);
   const [rpm, setRpm] = useState(null);
 
+  const history = useHistory()
 
   const fetchData = async () => {
     const response = await axiosInstance.get(`api/admin/machine/${id}/show`);
@@ -208,7 +210,7 @@ const MachineDetails = () => {
       dataIndex: "created_at",
       key: "created_at",
       render:(row)=>{
-        return<>{moment(row.created_at).format('MMMM Do YYYY, h:mm:ss A')}</>
+        return<></>
       }
     },
   ];
@@ -347,7 +349,9 @@ const MachineDetails = () => {
                   >
                     <Button
                       className="px-4 font-weight-semibold"
-                      onClick={() => { }}
+                      onClick={() => {
+                        history.push("/app/machine-and-sensors/machine-details/sensors")
+                       }}
                     >
                       View Sensors
                     </Button>
@@ -477,14 +481,14 @@ const MachineDetails = () => {
                 </Button>
                 <Button>
                   <Link
-                    to={`/app/machine-and-sensors/machine-details/sensor/view-past-event/${2}`}
+                    to={`/app/machine-and-sensors/machine-details/view-past-event`}
                   >
                     View Past Event
                   </Link>
                 </Button>
                 <Button>
                   <Link
-                    to={`/app/machine-and-sensors/machine-details/sensor/misc-files/${2}`}
+                    to={`/app/machine-and-sensors/machine-details/misc`}
                   >
                     Misc File Upload
                   </Link>
