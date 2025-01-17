@@ -1,9 +1,20 @@
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useEffect } from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
 import Loading from 'components/shared-components/Loading';
 import { APP_PREFIX_PATH } from 'configs/AppConfig'
+import { useHistory } from "react-router-dom/cjs/react-router-dom";
 
 export const AppViews = () => {
+  const history = useHistory();
+
+  useEffect(() => {
+    if (sessionStorage.getItem("token")) {
+
+    } else {
+      history.push('/auth/login')
+    }
+
+  });
   return (
     <Suspense fallback={<Loading cover="content" />}>
       <Switch>
@@ -31,6 +42,7 @@ export const AppViews = () => {
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/misc/add-new`} component={lazy(() => import(`./machine-and-sensor/machine-details/misc-files/add-new/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensors`} component={lazy(() => import(`./machine-and-sensor/view-sensor/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensors/add-new`} component={lazy(() => import(`./machine-and-sensor/add-new-sensor/index`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/life-cycle`} component={lazy(() => import(`./machine-and-sensor/machine-details/add-new-life-cycle-event/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/reports`} component={lazy(() => import(`./Reports/Index`))} />
         <Redirect from={`${APP_PREFIX_PATH}`} to={`${localStorage.getItem("dashboardType") != "workshop" ? `${APP_PREFIX_PATH}/dashboard` : `${APP_PREFIX_PATH}/machine-and-sensors`}`} />
       </Switch>

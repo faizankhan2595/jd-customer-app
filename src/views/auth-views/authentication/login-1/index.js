@@ -1,13 +1,17 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import LoginForm from '../../components/LoginForm'
-import { Card, Row, Col, InputNumber, Select, Input, Button } from "antd";
+import { Card, Row, Col, InputNumber, Select, Input, Button, message } from "antd";
 import { useSelector } from 'react-redux';
 import Logo from '../../../../Logo.svg'
+import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth';
 import { OrangeLogo } from 'assets/svg/icon';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import OTPInput from 'otp-input-react';
+import { axiosInstance } from 'App';
+import { auth } from 'auth/FirebaseOtp';
+import { useHistory } from 'react-router-dom/cjs/react-router-dom.min';
 const backgroundStyle = {
 	backgroundImage: 'url(/img/others/wave.svg)',
 	backgroundRepeat: 'no-repeat',
@@ -22,22 +26,22 @@ const logoCss = {
 }
 
 const { Option } = Select;
-const selectBefore = (
-	<Select
-		defaultValue="in"
-		style={{
-			width: 80,
-		}}
-	>
-		<Option value="in">IND</Option>
-		<Option value="sg">SG</Option>
-	</Select>
-);
+
 const LoginOne = props => {
 	const theme = useSelector(state => state.theme.currentTheme)
 	const [step, setStep] = useState(1);
 	const [phoneNumber, setPhoneNumber] = useState('');
+	const [countryCode, setCountryCode] = useState('+65');
+	const history = useHistory()
 	const [otp, setOtp] = useState('');
+	useEffect(() => {
+		if (sessionStorage.getItem("token")) {
+			history.push('/app')
+		} else {
+			// history.push('/auth/login')
+		}
+
+	});
 	const settings = {
 		dots: true,
 		infinite: true,
@@ -48,15 +52,124 @@ const LoginOne = props => {
 		autoplaySpeed: 2000,
 		arrows: false,
 	};
-	const handlePhoneNumberSubmit = () => {
-		setStep(2);
+
+	const selectBefore = (
+		<Select
+			onChange={(e) => {
+				setCountryCode(e)
+			}}
+			value={countryCode}
+			// defaultValue="in"
+			style={{
+				width: 80,
+			}}
+		>
+			<Option value="+91">IND</Option>
+			<Option value="+65">SG</Option>
+		</Select>
+	);
+
+	function onCaptchVerify() {
+
+		const recaptchaContainer = document.getElementById("recaptcha-container");
+
+
+		if (!recaptchaContainer) {
+			console.error("Error: recaptcha-container element not found!");
+			return;
+		}
+		if (!window.recaptchaVerifier) {
+			window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+				'size': 'invisible',
+				'callback': (response) => {
+
+					console.log("recaptcha resolved");
+				}
+			});
+		}
+	}
+
+	const firebaseLogin = async () => {
+
+		const appVerifier = await window.recaptchaVerifier;
+		const formatPh = `${countryCode}${phoneNumber}`;
+
+
+		signInWithPhoneNumber(auth, formatPh, appVerifier)
+			.then((confirmationResult) => {
+				window.confirmationResult = confirmationResult;
+				console.log("confirmationResult", confirmationResult);
+				setStep(2);
+			})
+			.catch((error) => {
+				console.log("error", error);
+				// setOtpToggle(false);
+				// console.log("error", error);
+				if (error) {
+					message.error("Invalid number entered ! please confirm country code and registered number")
+				}
+			});
+
+	}
+	const handlePhoneNumberSubmit = async () => {
+		if (phoneNumber.length <= 8) {
+			message.error('Please enter a valid phone number');
+			return
+		}
+		try {
+			const res = await axiosInstance.post('/api/firebase/auth/check-phone', { phoneNumber: countryCode + phoneNumber });
+			console.log(res.data)
+			if (res.data.item.exists == false) {
+				message.error(res.data.message)
+			} else {
+
+				onCaptchVerify();
+				firebaseLogin();
+
+			}
+		} catch (err) {
+			console.log(err);
+			message.error('Something went wrong. Please try again later');
+		}
+		// setStep(2);
 	};
 
+
+	const sendUID = async (uid) => {
+		try {
+			const res = await axiosInstance.post('/api/web/auth/login', { uid: uid });
+			message.success('Logged in successfully');
+			// console.log(res.data.)
+			sessionStorage.setItem('token', res.data.item.token?.token);
+			window.location.reload();
+		} catch (err) {
+			console.log(err);
+			message.error('Something went wrong. Please try again later');
+		}
+	}
+
 	const handleOTPSubmit = () => {
-		console.log('OTP submitted:', otp);
+		if (otp.length < 6) {
+			message.error('Please enter a valid OTP');
+			return
+		}
+		window.confirmationResult.confirm(otp).then((result) => {
+			// User signed in successfully.
+			// console.log(result.user);
+			const user = result.user.uid;
+			sendUID(user);
+			// ...
+		}).catch((error) => {
+			message.error('Invalid OTP entered');
+			// User couldn't sign in (bad verification code?)
+			// ...
+		});
 	};
+
+
 	return (
 		<div className="h-100" style={backgroundStyle}>
+			<div id="recaptcha-container"></div>
 			<div style={logoCss}> <img src={Logo} alt='...'></img></div>
 			<div className="row d-flex h-100" style={{ paddingTop: '110px' }}>
 				<div style={{ marginTop: '80px', width: '50%' }} className='d-flex flex-column justify-content-start align-items-center'>
@@ -67,7 +180,7 @@ const LoginOne = props => {
 						<h2 className='text-center mt-2'>{step === 1 ? 'LOGIN' : 'Enter OTP'}</h2>
 						<p className='text-center'> {step === 1
 							? 'Please enter your phone number below to get started.'
-							: `Please enter 4 digit OTP sent to +65 ${phoneNumber} below.`}</p>
+							: `Please enter 4 digit OTP sent to ${countryCode} ${phoneNumber} below.`}</p>
 						{step === 1 && (
 							<><h4 style={{ marginTop: '2.7rem' }} className='font-bolder '>Phone Number</h4>
 								<Input addonBefore={selectBefore} onChange={(e) => setPhoneNumber(e.target.value)} value={phoneNumber} />
@@ -77,32 +190,39 @@ const LoginOne = props => {
 								<h4 style={{ marginTop: '2.7rem' }} className='font-bolder '>OTP Verification</h4>
 								{/* Use the OTPInput component here */}
 								<OTPInput
-								className='OtpInput'
-  value={otp}
-  onChange={(otpValue) => setOtp(otpValue)}
-  autoFocus
-  OTPLength={4}
-  isNumberInput
-  shouldAutoFocus
-  isInputNum
-  inputStyle={{
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    padding: '0.5rem',
-    boxShadow: '0 0 5px rgba(0, 0, 0, 0.2)',
-    outline: 'none',
-  }}
-  containerStyle={{ justifyContent: 'space-between' }} // Adjust to space between inputs
-  inputContainerStyle={{ margin: '0 0.5rem' }}
-  inputClassName="custom-otp-input"
-  disabled={false}
-  hasErrored={false}
-  errorStyle={{ borderColor: 'red' }}
-  focusStyle={{ borderColor: 'blue' }}
-  onComplete={(otpValue) => handleOTPSubmit(otpValue)}
-/>
+									className='OtpInput'
+									value={otp}
+									onChange={(otpValue) => setOtp(otpValue)}
+									autoFocus
+									OTPLength={6}
+									isNumberInput
+									shouldAutoFocus
+									isInputNum
+									inputStyle={{
+										border: '1px solid #ccc',
+										borderRadius: '4px',
+										padding: '0.5rem',
+										boxShadow: '0 0 5px rgba(0, 0, 0, 0.2)',
+										outline: 'none',
+									}}
+									containerStyle={{ justifyContent: 'space-between' }} // Adjust to space between inputs
+									inputContainerStyle={{ margin: '0 0.5rem' }}
+									inputClassName="custom-otp-input"
+									disabled={false}
+									hasErrored={false}
+									errorStyle={{ borderColor: 'red' }}
+									focusStyle={{ borderColor: 'blue' }}
+									onComplete={(otpValue) => handleOTPSubmit(otpValue)}
+								/>
 
-  <p className='text-center mt-2'>Don't receive OTP?<a className='text-center' href='#' >Request Again</a></p>
+								<p className='text-center mt-2'>Don't receive OTP?<span style={{
+									color: '#3CA6C1',
+									cursor: 'pointer'
+								}} className='text-center'
+									onClick={() => {
+										handlePhoneNumberSubmit()
+									}}
+								>Request Again</span></p>
 								<Button
 									style={{ backgroundColor: '#3CA6C1', color: 'white', marginTop: '4rem', marginBottom: '1.9rem' }}
 									className='w-100'

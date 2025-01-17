@@ -1,13 +1,13 @@
-const FirebaseConfig = {
-  apiKey: 'AIzaSyAOWoRQGoegkmwnCca7B2GG5GUG_ZP1lcM',
-  authDomain: 'emilus.firebaseapp.com',
-  databaseURL: 'https://emilus.firebaseio.com',
-  projectId: 'emilus',
-  storageBucket: 'emilus.appspot.com',
-  messagingSenderId: '807555350717',
-  appId: '1:807555350717:web:145ba7c21af47203a2f7d4',
-  measurementId: 'G-8KE7HJB252'
+const firebaseConfig = {
+  apiKey: "AIzaSyBW4y5A8HAiboG6UJjtlj9sMUc0Zuh-Ns0",
+  authDomain: "jdworks-49200.firebaseapp.com",
+  projectId: "jdworks-49200",
+  storageBucket: "jdworks-49200.firebasestorage.app",
+  messagingSenderId: "997372637377",
+  appId: "1:997372637377:web:cf324cadf69546016de440",
+  measurementId: "G-QVDVQPRZLT"
 };
 
-export default FirebaseConfig
+
+export default firebaseConfig
 

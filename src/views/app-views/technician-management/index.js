@@ -21,17 +21,7 @@ function TechnicianManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const history = useHistory();
   const [data, setData] = useState([
-    {
-      id: 1,
-      name: "Technician 1",
-      gender: "Male",
-      nationality: "Indian",
-      mobile: "9876543210",
-      email: "test@gmail.com",
-      jobAssigned: 5,
-      activeJobs: 3
-       
-    },
+    
     
   ])
   const getMenu = (record) => (
@@ -157,9 +147,9 @@ function TechnicianManagement() {
     </Menu>
   );
   const getOrderList = async () => {
-    const res1 = await axiosInstance.get('api/admin/order/list');
+    const res1 = await axiosInstance.get('api/web/technician/list');
     console.log('res1', res1);
-    setData(res1.data.item.results.map((elm) => {
+    setData(res1.data.items.map((elm) => {
       return {
         id: elm.id,
         name: elm.company_name,
