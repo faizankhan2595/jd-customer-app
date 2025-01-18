@@ -30,7 +30,9 @@ function TechnicianManagement() {
   ])
   const getMenu = (record) => (
     <Menu>
-      <Menu.Item key="edit" onClick={() => handleView(record.id)}>
+      <Menu.Item key="edit" onClick={() => {
+        history.push(`/app/technician-management/edit/${record}`)
+      }}>
         <EditOutlined /> Edit
       </Menu.Item>
       {/* <Menu.Item key="delete" onClick={() => handleDelete(record.key)}>
@@ -41,7 +43,7 @@ function TechnicianManagement() {
         description={"This action cannot be undone."}
         okText="Yes"
         cancelText="No"
-        onConfirm={() => deleteRow(record.id)}
+        onConfirm={() => deleteRow(record)}
       >
         <Menu.Item key="delete">
           <span style={{ display: "flex", gap: "8px", alignItems: "center" }}>
@@ -93,33 +95,51 @@ function TechnicianManagement() {
         dataIndex:"id",
     },
     {
+      dataIndex:"profile_pic",
+      render: (text, record) => (
+        <>
+          <img src={record.profile_pic} style={{width: '20px', height: '20px', borderRadius: '50%'}} />
+        </>
+      )
+    },
+    {
         title:"Technician Name",
         dataIndex:"name",
     },
     {
         title:"Gender",
         dataIndex:"gender",
+        render: (text, record) => (
+          <>
+            {text==1?"Male":"Female"}
+          </>
+        ) 
     },
-    {
-        title:"Nationality",
-        dataIndex:"nationality",
-    },
+    // {
+    //     title:"Nationality",
+    //     dataIndex:"nationality",
+    // },
     {
         title:"Mobile Number",
-        dataIndex:"mobile",
+        dataIndex:"phone_no",
+        render: (text, record) => (
+          <>
+            {record.phone_code+" "+text}
+          </>
+        )
     },
     {
         title:"Email ID",
         dataIndex:"email",
     },
-    {
-      title:"Job Assigned",
-      dataIndex:"jobAssigned"
-    },
-    {
-      title:"Active Jobs",
-      dataIndex:"activeJobs"
-    },
+    // {
+    //   title:"Job Assigned",
+    //   dataIndex:"jobAssigned"
+    // },
+    // {
+    //   title:"Active Jobs",
+    //   dataIndex:"activeJobs"
+    // },
     {
         title: 'Action',
         key: 'action',
@@ -194,20 +214,27 @@ function TechnicianManagement() {
   );
 
   const getOrderList = async (search = "", filter = 'all') => {
-    const res1 = await axiosInstance.get(`api/web/technician/list?search=${search}` + (filter != 'all' ? `&status=${filter}` : ""));
+    let url = `?search=${search}`
+    //for 0 it is not handling
+    if((filter !== '' && filter != 'all')) {
+      url += `&status=${filter}`
+    }
+
+    const res1 = await axiosInstance.get(`api/web/technician/list?${url}`);
     console.log('res1', res1);
-    setData(res1.data.items.map((elm) => {
-      return {
-        id: elm.id,
-        name: elm.company_name,
-        jobSite: elm.jobsite,
-        machine: 'Excavator',
-        faults: 'Engine Failure',
-        orderDate: moment(elm.created_at).format('YYYY-MM-DD'),
-        technicianAssigned: 'Technician 1',
-        status: true,
-      }
-    }));
+    setData(res1.data.items);
+    // setData(res1.data.items.map((elm) => {
+    //   return {
+    //     id: elm.id,
+    //     name: elm.company_name,
+    //     jobSite: elm.jobsite,
+    //     machine: 'Excavator',
+    //     faults: 'Engine Failure',
+    //     orderDate: moment(elm.created_at).format('YYYY-MM-DD'),
+    //     technicianAssigned: 'Technician 1',
+    //     status: true,
+    //   }
+    // }));
   }
   useEffect(() => {
     getOrderList();
@@ -246,10 +273,10 @@ function TechnicianManagement() {
               Filters
             </Button>
           </Filter>
-          <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" >Export</Button>
-          <Button className="d-flex align-items-center ml-2">
+          {/* <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" >Export</Button> */}
+          {/* <Button className="d-flex align-items-center ml-2">
             <img src={CalendarIcon} className="mr-2" alt="Calendar Icon" /> Schedule
-          </Button>
+          </Button> */}
         </div>
         <div className="mb-2 d-flex align-items-center">
           <Button

@@ -140,14 +140,14 @@ else{
         breadcrumb: false,
         submenu: []
       },
-      {
-        key: 'machines',
-        path: `${APP_PREFIX_PATH}/operator-master/machines`,
-        title: 'Machines',
-        // icon: Masters,
-        breadcrumb: false,
-        submenu: []
-      },
+      // {
+      //   key: 'machines',
+      //   path: `${APP_PREFIX_PATH}/operator-master/machines`,
+      //   title: 'Machines',
+      //   // icon: Masters,
+      //   breadcrumb: false,
+      //   submenu: []
+      // },
       {
         key: 'operational-areas',
         path: `${APP_PREFIX_PATH}/operator-master/operational-areas`,

@@ -9,7 +9,7 @@ import { Option } from "antd/lib/mentions";
 // import axios from "../../../../axios";
 import moment from "moment";
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom/cjs/react-router-dom";
+import { useLocation, useParams } from "react-router-dom/cjs/react-router-dom";
 import { useHistory } from 'react-router-dom';
 // import uploadImage from "middleware/uploadImage";
 import { API_BASE_URL } from "constants/ApiConstant";
@@ -31,7 +31,8 @@ export default function AddNewTechnician() {
     const queryParams = new URLSearchParams(location.search);
     const [fileList, setFileList] = useState([]);
     const [imageUrl, setImageUrl] = useState();
-    const id = queryParams.get('id')
+    // const id = queryParams.get('id')
+    const {id } = useParams();
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [alertModal, setAlertModal] = useState(false)
     const [country, setCountry] = useState([
@@ -169,7 +170,7 @@ export default function AddNewTechnician() {
         try {
             // handleOpenAlert()
 
-            const resp = await axiosInstance.post(`/api/web/technician/${id}/update`, {
+            const resp = await axiosInstance.put(`/api/web/technician/${id}/update`, {
                 ...form1.getFieldsValue(),
                 ...form2.getFieldsValue(),
                 dob: form1.getFieldValue('dob').format('YYYY-MM-DD'),
@@ -290,25 +291,26 @@ export default function AddNewTechnician() {
 
     const getData = async () => {
         try {
-            const response = await axiosInstance.get(`/api/admin/staff/${id}/show`);
-            const data = response.data;
+            const response = await axiosInstance.get(`/api/web/technician/${id}/show`);
+            const data = response.data.item;
+
             form1.setFieldsValue({
-                name: data.name,
-                email: data.email,
-                phone_no: data.phone_no,
-                nric_fin_number: data.nric_fin_number,
+                ...data,
                 dob: moment(data.dob),
+                gender: data.gender.toString(),
             })
-
             form2.setFieldsValue({
-                postal_code: data.postal_code,
-                block_number: data.block_number,
-                street_number: data.street_number,
-                unit_number: data.unit_number,
-                levelNumber: data.levelNumber,
-                country: data.country
-
+                ...data.address,
+                country: data.address.country.toString()
             })
+            setCountryCode(data.phone_code)
+            setImageUrl(data.profile_pic)
+            setSelectedFiles(data?.documents.map((item,index) => {
+                return {
+                    url: item?.document_url,
+                    name: `Document ${index+1}`
+                }
+            }))
 
         } catch (error) {
             // console.error(error);
@@ -391,7 +393,7 @@ export default function AddNewTechnician() {
                                 </Upload>
                             </Form.Item>
                             <div style={{ gap: "60px" }} className="d-flex ">
-                                {id && <div style={{ width: "45%" }}>
+                                {/* {id && <div style={{ width: "45%" }}>
                                     <Form.Item
                                         name="Technician_id"
                                         label="Technician ID"
@@ -404,7 +406,7 @@ export default function AddNewTechnician() {
                                     >
                                         <Input />
                                     </Form.Item>
-                                </div>}
+                                </div>} */}
                                 <div style={{ width: "45%" }}>
                                     <Form.Item
                                         name="name"
@@ -466,6 +468,7 @@ export default function AddNewTechnician() {
                                                 >
                                                     <Option value="+91">+91</Option>
                                                     <Option value="+65">+65</Option>
+                                                     
                                                 </Select>
                                             }
                                             style={{ width: "100%" }}
@@ -507,8 +510,8 @@ export default function AddNewTechnician() {
                                         rules={[{ required: true, message: "Please Select Nationality" }]}
                                     >
                                         <Select>
-                                                    <Option value="singapore">Singapore</Option>
-                                                                <Option value="india">India</Option>
+                                        <Option value={155}>Singapore</Option>
+                                        <Option value={75}>India</Option>
                                         </Select>
                                     </Form.Item>
                                 </div>
@@ -605,8 +608,8 @@ export default function AddNewTechnician() {
                                         rules={[{ required: true, message: 'Please select a country!' }]}
                                     >
                                         <Select placeholder='Country' style={{ width: '100%' }}>
-                                                      <Option value="singapore">Singapore</Option>
-                                                       <Option value="india">India</Option>
+                                        <Option value={155}>Singapore</Option>
+                                        <Option value={75}>India</Option>
                                             {/* Add more countries as needed */}
                                         </Select>
                                     </Form.Item>

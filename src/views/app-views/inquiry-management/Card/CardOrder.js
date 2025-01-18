@@ -8,9 +8,11 @@ import CalendarIcon from "assets/calendarForDesc.png";
 import LocationForIcon from "assets/LocationIcon.png"
 import ProfileForCard from "assets/ProfileForCard.png"
 import { useHistory } from 'react-router-dom/cjs/react-router-dom.min'
+import moment from 'moment'
 
 
-function CardOrder() {
+function CardOrder({data}) {
+    console.log(data)
     const history = useHistory();
     return (
         <>
@@ -19,7 +21,7 @@ function CardOrder() {
                 cursor: "pointer",
             }}
                 onClick={() => {
-                    history.push("/app/order-management/order-detail")
+                    history.push("/app/inquiry-management/inquiry-details/" + data.id)
                 }}
             >
                 <div style={{
@@ -36,10 +38,12 @@ function CardOrder() {
                             fontWeight: "bold",
                             fontSize: "20px",
                             color: "#000"
-                        }}>Vibration Analysis</div>
-                        <div>#123123421</div>
+                        }}>{data.inquiry_type}</div>
+                        <div>#{data.id}</div>
                         <div>
-                            <Tag color='gold'>Pending</Tag>
+                            {
+                                data.inquiry_status === 0 ? <Tag color="orange">Pending</Tag> : <Tag color="green">Completed</Tag>
+                            }
                         </div>
                     </div>
                     <div >
@@ -51,11 +55,12 @@ function CardOrder() {
                         <img style={{
                             cursor: "pointer"
                         }} src={LocationForIcon} />
-                    </div> <div>
+                    </div> 
+                    {/* <div>
                         <img style={{
                             cursor: "pointer"
                         }} src={ProfileForCard} />
-                    </div>
+                    </div> */}
                 </div>
                 <Divider
                     variant="dashed"
@@ -81,7 +86,9 @@ function CardOrder() {
                         <div style={{
                             color: "#72849A",
                             fontSize: "14px",
-                        }}>Jobsite 1-Pumping Station East</div>
+                        }}>
+                            {data.job_site?.jobsite_name}
+                        </div>
                     </div>
 
                     <div style={{
@@ -95,7 +102,7 @@ function CardOrder() {
                         <div style={{
                             color: "#72849A",
                             fontSize: "14px",
-                        }}>Water Pump</div>
+                        }}>  {data.job_site?.jobsite_description}</div>
                     </div>
 
 
@@ -110,7 +117,9 @@ function CardOrder() {
                         <div style={{
                             color: "#72849A",
                             fontSize: "14px",
-                        }}>Fri, 5 Jan 2022, 4:00 PM-6:00 PM</div>
+                        }}>{
+                            moment(data.created_at).format('DD-MM-YYYY HH:mm A')
+                        }</div>
                     </div>
 
 

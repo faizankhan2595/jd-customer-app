@@ -1,4 +1,4 @@
-import { Button, Menu, Modal, Select, Rate, Switch, Divider, message, Dropdown, Table, Checkbox } from "antd";
+import { Button, Menu, Modal, Select, Rate, Switch, Divider, message, Dropdown, Table, Checkbox, Empty, Card } from "antd";
 import { Space, Tag } from 'antd';
 import { BellOutlined, EditOutlined, EyeOutlined, MoreOutlined, SearchOutlined, SettingOutlined } from '@ant-design/icons';
 import Icon from '@ant-design/icons';
@@ -21,7 +21,15 @@ function Index() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const history = useHistory();
   const [data, setData] = useState([])
-  const onSearch = (value) => console.log(value);
+  const [searchText, setSearchText] = useState('');
+  var timeout = ""
+  const onSearch = (value) => {
+    setSearchText(value.target.value)
+    clearTimeout(timeout)
+    timeout = setTimeout(() => {
+      getData(value.target.value)
+    }, 500)
+  }
   const FilterMenu = (
     <Menu mode="horizontal">
       <Menu.SubMenu key="item1" title="Service Type">
@@ -45,6 +53,21 @@ function Index() {
     </Menu>
   );
 
+  const getData = async (Search="") => {
+    try {
+      const response = await axiosInstance.get('api/web/inquiries?search='+Search);
+      if (response.status === 200) {
+        setData(response.data.items);
+        // console.log(response.data.items)
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    getData();
+  }, [])
 
   return (
     <div>
@@ -56,6 +79,7 @@ function Index() {
             <Input
               placeholder="Search"
               allowClear
+              value={searchText}
               onChange={onSearch}
               style={{
                 width: 200,
@@ -63,7 +87,7 @@ function Index() {
               prefix={<SearchOutlined style={{ marginRight: 8 }} />}
             />
           </Space>
-          <Filter filters={FilterMenu}>
+          {/* <Filter filters={FilterMenu}>
             <Button
               icon={<Icon component={FilterIcon} />}
               className="d-flex align-items-center ml-2"
@@ -71,8 +95,8 @@ function Index() {
               Filters
             </Button>
           </Filter>
-          <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" >Export</Button>
-      
+          <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" >Export</Button> */}
+
         </div>
         <div className="mb-2 d-flex align-items-center">
           <Button
@@ -84,19 +108,24 @@ function Index() {
           </Button>
         </div>
       </div>
-      <div style={{
-        display:'flex',
-        flexWrap:'wrap',
-        justifyContent:"space-between",
-        gap:"20px",
-      }}>
-          <CardOrder />
-          <CardOrder />
-          <CardOrder />
-          <CardOrder />
-          <CardOrder />
-          <CardOrder />
-      </div>
+      {
+        data.length!==0?
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          // justifyContent: "space-between",
+          gap: "20px",
+        }}>
+          {
+            data.map((item, index) => (
+              <CardOrder key={index} data={item} />
+            ))}
+        </div>:
+       <Card>
+         <Empty />
+       </Card>
+
+      }
 
     </div>
   )

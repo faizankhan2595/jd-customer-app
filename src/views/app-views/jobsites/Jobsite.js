@@ -56,8 +56,15 @@ const Jobsites = () => {
   const [data, setData] = useState([]);
 
   const getData = async (search="",status = '', workshop = '') => {
+    // ?search=${search}&status=${status!='all'?status:''}&area=${workshop!='all'?workshop:''}
+    let url = `?search=${search}`
+    //for 0 it is not handling
+    if((status !== '' && status != 'all')) {
+      url += `&status=${status}`
+    }
+   
     try {
-      const resp = await axiosInstance.get(`/api/web/jobsites?search=${search}&status=${status!='all'?status:''}&area=${workshop!='all'?workshop:''}`);
+      const resp = await axiosInstance.get(`/api/web/jobsites${url}`);
       setData(resp.data.items);
     } catch (err) {
       console.log(err)
@@ -135,7 +142,9 @@ const Jobsites = () => {
     <Menu>
      
       <Menu.Item key="edit" onClick={() => {
-        history.push(`/app/operator-master/operational-areas/edit/${record}`)
+        // history.push(`/app/operator-master/operational-areas/edit/${record}`)
+        // /operator-master/jobsites/edit/:id
+        history.push(`/app/operator-master/jobsites/edit/${record}`)
       }}>
         <EditOutlined /> Edit
       </Menu.Item>
