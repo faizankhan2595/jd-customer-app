@@ -1,6 +1,7 @@
 import { 
   BellOutlined,
   DashboardOutlined,
+  EnvironmentOutlined,
   FileOutlined,
   QuestionCircleOutlined,
   SettingOutlined,
@@ -127,10 +128,35 @@ else{
   {
     key: 'operator-master',
     path: `${APP_PREFIX_PATH}/operator-master`,
-    title: 'Operator Master',
-    icon: SettingOutlined,
+    title: 'Operation Master',
+    icon: EnvironmentOutlined,
     breadcrumb: false,
-    submenu: []
+    submenu: [
+      {
+        key: 'jobsites',
+        path: `${APP_PREFIX_PATH}/operator-master/jobsites`,
+        title: 'Jobsites',
+        // icon: Masters,
+        breadcrumb: false,
+        submenu: []
+      },
+      {
+        key: 'machines',
+        path: `${APP_PREFIX_PATH}/operator-master/machines`,
+        title: 'Machines',
+        // icon: Masters,
+        breadcrumb: false,
+        submenu: []
+      },
+      {
+        key: 'operational-areas',
+        path: `${APP_PREFIX_PATH}/operator-master/operational-areas`,
+        title: 'Areas',
+        // icon: Masters,
+        breadcrumb: false,
+        submenu: []
+      }
+    ],
   },
   {
     key: 'reports',

@@ -534,7 +534,8 @@ export default function AddNewAdminAccount() {
                                         rules={[{ required: true, message: 'Please select a country!' }]}
                                     >
                                         <Select placeholder='Country' style={{ width: '100%' }}>
-                                            <Select.Option value="1">India</Select.Option>
+                                                     <Option value="singapore">Singapore</Option>
+                                                    <Option value="india">India</Option>
                                             {/* Add more countries as needed */}
                                         </Select>
                                     </Form.Item>

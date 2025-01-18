@@ -1,4 +1,4 @@
-import { Button, Menu, Modal, Select, Rate, Switch, Divider, message, Dropdown, Table, Checkbox } from "antd";
+import { Button, Menu, Modal, Select, Rate, Switch, Divider, message, Dropdown, Table, Checkbox, Popconfirm } from "antd";
 import { Space, Tag } from 'antd';
 import { BellOutlined, EditOutlined, EyeOutlined, MoreOutlined, SearchOutlined, SettingOutlined } from '@ant-design/icons';
 import Icon from '@ant-design/icons';
@@ -15,11 +15,15 @@ import { CsvIcon, FilterIcon } from "assets/svg/icon";
 import { axiosInstance } from "App";
 import CalendarIcon from "assets/calendar.png"
 import moment from "moment";
+import SubMenu from "antd/lib/menu/SubMenu";
 
 
 function TechnicianManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const history = useHistory();
+  const [searchText, setSearchText] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('all');
+
   const [data, setData] = useState([
     
     
@@ -29,11 +33,40 @@ function TechnicianManagement() {
       <Menu.Item key="edit" onClick={() => handleView(record.id)}>
         <EditOutlined /> Edit
       </Menu.Item>
-      <Menu.Item key="delete" onClick={() => handleDelete(record.key)}>
+      {/* <Menu.Item key="delete" onClick={() => handleDelete(record.key)}>
         <DeleteOutlined /> Delete
-      </Menu.Item>
+      </Menu.Item> */}
+        <Popconfirm
+        title={"Are you sure you want to delete this item?"}
+        description={"This action cannot be undone."}
+        okText="Yes"
+        cancelText="No"
+        onConfirm={() => deleteRow(record.id)}
+      >
+        <Menu.Item key="delete">
+          <span style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <DeleteOutlined /> Delete
+          </span>
+        </Menu.Item>
+      </Popconfirm>
     </Menu>
   );
+
+  
+  const deleteRow = async (id) => {
+    console.log(id);
+    try {
+      const response = await axiosInstance.delete(
+        `api/web/technician/${id}/delete`
+      );
+      if (response.status === 200) {
+        message.success("Technicial deleted successfully");
+        setData((prevData) => prevData.filter((item) => item.id !== id));
+      }
+    } catch (error) {
+      console.error("Error deleting row:", error);
+    }
+  };
 
   const handleSwitchChange = (checked, key) => {
     // Add logic for handling the switch change
@@ -101,18 +134,6 @@ function TechnicianManagement() {
 ]
 
 
-  const onDeleteData = (Id) => {
-    // console.log(Id)
-    // console.log(record)
-    Modal.confirm({
-      title: "Are you sure, you want to delete this Broadcast notification ?",
-      okText: "Yes",
-      okType: "danger",
-      onOk: () => {
-        handleDelete(Id);
-      },
-    });
-  };
 
   const handleView = (key) => {
     // Add logic for editing a notification
@@ -123,31 +144,57 @@ function TechnicianManagement() {
     // Add logic for deleting a notification
     console.log('Delete notification with key:', key);
   };
-  const onSearch = (value) => console.log(value);
+  var timeout = ""
+  const onSearch = (value) => {
+    setSearchText(value.target.value)
+    clearTimeout(timeout)
+    timeout = setTimeout(() => {
+      getOrderList(value.target.value, selectedFilter)
+    }, 500)
+  }
   const FilterMenu = (
-    <Menu mode="horizontal">
-      <Menu.SubMenu key="item1" title="Service Type">
-        <Menu.Item key="subitem1">
-          <Checkbox>All</Checkbox>
+    <Menu mode="horizontal" onChange={(e) => {
+      console.log(e)
+    }}>
+      <SubMenu key="item1" title="Status">
+        <Menu.Item key="subitem1"
+
+        >
+          <Checkbox onChange={() => {
+            getOrderList(searchText);
+            setSelectedFilter('all')
+          }} checked={
+            selectedFilter === 'all'
+          }>All</Checkbox>
         </Menu.Item>{" "}
-        <Menu.Item key="subitem3">
-          <Checkbox>workshop</Checkbox>
-        </Menu.Item>{" "}
-        <Menu.Item key="subitem2">
-          <Checkbox>Onsite</Checkbox>
+        <Menu.Item key="subitem2"
+
+        >
+          <Checkbox
+            onChange={() => {
+              getOrderList(searchText, 1);
+              setSelectedFilter(1)
+            }}
+            checked={selectedFilter == 1}
+
+          >Active</Checkbox>
         </Menu.Item>
-      </Menu.SubMenu>
+        <Menu.Item key="subitem3"
 
-      <Menu.SubMenu key="item2" title="Status">
-        <Menu.Item key="subitem5">
-          <Checkbox>All</Checkbox>
-        </Menu.Item>{" "}
+        >
+          <Checkbox onChange={() => {
+            getOrderList(searchText, 0);
+            setSelectedFilter(0)
+          }}
 
-      </Menu.SubMenu>
+            checked={selectedFilter === 0}>Inactive</Checkbox>
+        </Menu.Item>
+      </SubMenu>
     </Menu>
   );
-  const getOrderList = async () => {
-    const res1 = await axiosInstance.get('api/web/technician/list');
+
+  const getOrderList = async (search = "", filter = 'all') => {
+    const res1 = await axiosInstance.get(`api/web/technician/list?search=${search}` + (filter != 'all' ? `&status=${filter}` : ""));
     console.log('res1', res1);
     setData(res1.data.items.map((elm) => {
       return {

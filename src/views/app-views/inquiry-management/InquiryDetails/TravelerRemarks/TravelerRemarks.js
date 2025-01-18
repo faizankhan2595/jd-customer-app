@@ -29,7 +29,7 @@ function TravelerRemarks({ id, remarksArray, getRemarks, remarksModal, setRemark
             formData.append("file", fileList);
             const response = await axios.post(`${BASE_URL}/api/timelines/upload`, formData, {
                 headers: {
-                    Authorization: 'Bearer ' + sessionStorage.getItem('adminToken')
+                    Authorization: 'Bearer ' + localStorage.getItem('adminToken')
 
                 }
             });

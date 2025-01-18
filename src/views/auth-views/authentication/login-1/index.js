@@ -35,7 +35,7 @@ const LoginOne = props => {
 	const history = useHistory()
 	const [otp, setOtp] = useState('');
 	useEffect(() => {
-		if (sessionStorage.getItem("token")) {
+		if (localStorage.getItem("token")) {
 			history.push('/app')
 		} else {
 			// history.push('/auth/login')
@@ -112,7 +112,7 @@ const LoginOne = props => {
 
 	}
 	const handlePhoneNumberSubmit = async () => {
-		if (phoneNumber.length <= 8) {
+		if (phoneNumber.length < 8) {
 			message.error('Please enter a valid phone number');
 			return
 		}
@@ -138,10 +138,15 @@ const LoginOne = props => {
 	const sendUID = async (uid) => {
 		try {
 			const res = await axiosInstance.post('/api/web/auth/login', { uid: uid });
-			message.success('Logged in successfully');
-			// console.log(res.data.)
-			sessionStorage.setItem('token', res.data.item.token?.token);
-			window.location.reload();
+			console.log(res.data)
+			if(res.data.item.token?.token){
+				message.success('Logged in successfully');
+
+				localStorage.setItem('token', res.data.item.token?.token);
+				window.location.reload();
+			}else{
+				message.error(res.data.message)
+			}
 		} catch (err) {
 			console.log(err);
 			message.error('Something went wrong. Please try again later');

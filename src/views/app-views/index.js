@@ -8,7 +8,7 @@ export const AppViews = () => {
   const history = useHistory();
 
   useEffect(() => {
-    if (sessionStorage.getItem("token")) {
+    if (localStorage.getItem("token")) {
 
     } else {
       history.push('/auth/login')
@@ -33,6 +33,14 @@ export const AppViews = () => {
         <Route exact path={`${APP_PREFIX_PATH}/inquiry-management/inquiry-details`} component={lazy(() => import(`./inquiry-management/InquiryDetails/InquiryDetails`))} />
         <Route exact path={`${APP_PREFIX_PATH}/technician-management`} component={lazy(() => import(`./technician-management`))} />
         <Route exact path={`${APP_PREFIX_PATH}/technician-management/addNew`} component={lazy(() => import(`./technician-management/AddNew/AddNew`))} />
+
+
+        <Route exact path={`${APP_PREFIX_PATH}/operator-master/operational-areas`} component={lazy(() => import(`./operational-areas/operational-area`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/operator-master/operational-areas/add-new`} component={lazy(() => import(`./operational-areas/add-new/index`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/operator-master/operational-areas/edit/:id`} component={lazy(() => import(`./operational-areas/add-new/index`))} />
+
+        <Route exact path={`${APP_PREFIX_PATH}/operator-master/jobsites`} component={lazy(() => import(`./jobsites/Jobsite`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/operator-master/jobsites/add-new`} component={lazy(() => import(`./jobsites/AddNew/AddNew`))} />
     
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors`} component={lazy(() => import(`./machine-and-sensor`))} />
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/add-new`} component={lazy(() => import(`./machine-and-sensor/add-new/index`))} />

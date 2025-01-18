@@ -137,10 +137,21 @@ export default function AddNewTechnician() {
         console.log(fileList);
         console.log(selectedFiles);
         // const image = await uploadImage(fileList);
-        const profile_pic = await UploadImage(fileList);
+        let profile_pic = imageUrl
+        console.log('profile_pic', fileList)
+        if(fileList.length>0 && id || fileList && !id){
+            profile_pic = await UploadImage(fileList);
+        }
 
-        let file = [];
-        const uploadPromise = selectedFiles.map(async (item) => {
+        let file= [];
+        const temp = selectedFiles.filter((item) => {
+            return item.url === undefined;
+        })
+        const temp2 = selectedFiles.filter((item) => {
+            return item.url !== undefined;
+        })
+        if(temp.length !== 0){
+        const uploadPromise = temp.map(async (item) => {
             if (item.url === undefined) {
                 const url = await UploadImage(item);
                 return url;
@@ -148,20 +159,23 @@ export default function AddNewTechnician() {
                 return item.url;
             }
         })
-
         file = await Promise.all(uploadPromise);
-        console.log(file)
-        console.log(profile_pic)
-
-
+        console.log(file);
+    }
+    file = [ ...file,...temp2.map((item)=>{
+        return item.url
+    })];
+    if(id){
         try {
             // handleOpenAlert()
 
-            const resp = await axiosInstance.post(`/api/admin/staff/store`, {
+            const resp = await axiosInstance.post(`/api/web/technician/${id}/update`, {
                 ...form1.getFieldsValue(),
                 ...form2.getFieldsValue(),
-                phone_no: countryCode + form1.getFieldValue('phone_no'),
+                dob: form1.getFieldValue('dob').format('YYYY-MM-DD'),
+                phone_code : countryCode,
                 profile_pic,
+                documents: file,
 
 
             })
@@ -175,6 +189,31 @@ export default function AddNewTechnician() {
             console.error(error)
             message.error(error.response.data.message)
         }
+    }else{
+        try {
+            // handleOpenAlert()
+
+            const resp = await axiosInstance.post(`/api/web/technician/store`, {
+                ...form1.getFieldsValue(),
+                ...form2.getFieldsValue(),
+                dob: form1.getFieldValue('dob').format('YYYY-MM-DD'),
+                phone_code : countryCode,
+                profile_pic,
+                documents: file,
+
+
+            })
+            handleCloseAlert()
+            setTimeout(() => {
+                history.goBack()
+            }, 1000)
+            // history.goBack();
+
+        } catch (error) {
+            console.error(error)
+            message.error(error.response.data.message)
+        }
+    }
     };
 
     const sendStatus = async (status) => {
@@ -243,15 +282,7 @@ export default function AddNewTechnician() {
 
     // Fetch Country
     useEffect(() => {
-        const fetchCountry = async () => {
-            try {
-                const response = await axiosInstance.get('/api/admin/country/list');
-                setCountry(response.data.items);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-        fetchCountry();
+      
         if (id) {
             getData();
         }
@@ -360,7 +391,7 @@ export default function AddNewTechnician() {
                                 </Upload>
                             </Form.Item>
                             <div style={{ gap: "60px" }} className="d-flex ">
-                                <div style={{ width: "45%" }}>
+                                {id && <div style={{ width: "45%" }}>
                                     <Form.Item
                                         name="Technician_id"
                                         label="Technician ID"
@@ -373,7 +404,7 @@ export default function AddNewTechnician() {
                                     >
                                         <Input />
                                     </Form.Item>
-                                </div>
+                                </div>}
                                 <div style={{ width: "45%" }}>
                                     <Form.Item
                                         name="name"
@@ -424,7 +455,7 @@ export default function AddNewTechnician() {
                                         <Input
                                             addonBefore={
                                                 <Select
-                                                    defaultValue={"In"}
+                                                    // defaultValue={"In"}
                                                     style={{
                                                         width: 80,
                                                     }}
@@ -476,7 +507,8 @@ export default function AddNewTechnician() {
                                         rules={[{ required: true, message: "Please Select Nationality" }]}
                                     >
                                         <Select>
-                                            <Select.Option value={"Singapore"}>Singapore</Select.Option>
+                                                    <Option value="singapore">Singapore</Option>
+                                                                <Option value="india">India</Option>
                                         </Select>
                                     </Form.Item>
                                 </div>
@@ -489,8 +521,8 @@ export default function AddNewTechnician() {
                                         ]}
                                     >
                                         <Radio.Group>
-                                            <Radio value={"male"}>Male</Radio>
-                                            <Radio value={"female"}>Female</Radio>
+                                        <Radio value={"1"}>Male</Radio>
+                                        <Radio value={"2"}>Female</Radio>
                                         </Radio.Group>
                                     </Form.Item>
                                 </div>
@@ -561,7 +593,7 @@ export default function AddNewTechnician() {
 
                                     <Form.Item
                                         label={'Level Number'}
-                                        name="levelNumber"
+                                        name="level_number"
                                         rules={[{ required: true, message: 'Please enter the level number!' }]}
                                     >
                                         <Input placeholder="Level Number" style={{ width: '100%' }} />
@@ -573,7 +605,8 @@ export default function AddNewTechnician() {
                                         rules={[{ required: true, message: 'Please select a country!' }]}
                                     >
                                         <Select placeholder='Country' style={{ width: '100%' }}>
-                                            <Select.Option value="1">India</Select.Option>
+                                                      <Option value="singapore">Singapore</Option>
+                                                       <Option value="india">India</Option>
                                             {/* Add more countries as needed */}
                                         </Select>
                                     </Form.Item>
