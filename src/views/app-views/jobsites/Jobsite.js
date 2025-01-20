@@ -21,6 +21,7 @@ const Jobsites = () => {
   const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false)
   const [alertModal, setAlertModal] = useState(false)
   const [searchText, setSearchText] = useState('');
+  const [selectedDashboards, setSelectedDashboards] = useState([]);
   // const [data, setData] = useState([]);
   const handleCancel = () => {
     setModalVisible(false);

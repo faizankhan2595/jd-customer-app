@@ -19,6 +19,7 @@ const OperationalAreas = () => {
   const history = useHistory();
   const [modalVisible, setModalVisible] = useState(false);
   const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false)
+  const [selectedDashboards, setSelectedDashboards] = useState([]);
   const [alertModal, setAlertModal] = useState(false)
   const [searchText, setSearchText] = useState('');
   // const [data, setData] = useState([]);

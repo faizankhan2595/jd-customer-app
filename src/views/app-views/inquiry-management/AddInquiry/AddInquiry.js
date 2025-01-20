@@ -1,5 +1,5 @@
 import { CloseCircleOutlined, EyeOutlined, FileOutlined, FilterOutlined, InboxOutlined, SettingOutlined } from '@ant-design/icons'
-import { Button, Card, Divider, Form, Input, InputNumber, Select, Upload } from 'antd'
+import { Button, Card, Divider, Form, Input, InputNumber, Select, Upload,message } from 'antd'
 import { axiosInstance } from 'App'
 import { UploadFileIcon } from 'assets/svg/icon'
 import { UploadImage } from 'utils/Upload'

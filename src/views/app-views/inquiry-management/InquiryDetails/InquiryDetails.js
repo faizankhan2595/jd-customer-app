@@ -9,8 +9,8 @@ import SampleImage from "assets/OrderDetail/360_F_185851253_EmJWmKOrReArl27PN6bV
 import Icon5 from "assets/OrderDetail/task_black_24dp (4) 1.png"
 import Icon6 from "assets/OrderDetail/analytics-icon 1.png"
 import { useHistory, useParams } from 'react-router-dom/cjs/react-router-dom'
-import TravelerRemarksLabel from './TravelerRemarks/TravelerRemarksLabel'
-import TravelerRemarks from './TravelerRemarks/TravelerRemarks'
+// import TravelerRemarksLabel from './TravelerRemarks/TravelerRemarksLabel'
+// import TravelerRemarks from './TravelerRemarks/TravelerRemarks'
 import { axiosInstance } from 'App'
 import moment from 'moment'
 
@@ -452,7 +452,7 @@ function InquiryDetails() {
 
                 }}>Save</Button>
             </div> */}
-            <Modal width={800} footer={null} visible={remarksModal} onOk={() => {
+            {/* <Modal width={800} footer={null} visible={remarksModal} onOk={() => {
 
             }} onCancel={() => {
                 setRemarksModal(false)
@@ -460,7 +460,7 @@ function InquiryDetails() {
 
             }}>
                 <TravelerRemarks remarksReply={remarksReply} setRemarksReply={setRemarksReply} remarksReplying={remarksReplying} setRemarksReplying={setRemarksReplying} remarksModal={remarksModal} setRemarksModal={setRemarksModal} remarksArray={reamarks} />
-            </Modal>
+            </Modal> */}
         </div>
     )
 }
