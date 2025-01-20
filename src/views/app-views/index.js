@@ -51,8 +51,10 @@ export const AppViews = () => {
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/view-past-event`} component={lazy(() => import(`./machine-and-sensor/machine-details/view-past-event/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/misc`} component={lazy(() => import(`./machine-and-sensor/machine-details/misc-files/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/misc/add-new`} component={lazy(() => import(`./machine-and-sensor/machine-details/misc-files/add-new/index`))} />
-        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensors`} component={lazy(() => import(`./machine-and-sensor/view-sensor/index`))} />
-        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensors/add-new`} component={lazy(() => import(`./machine-and-sensor/add-new-sensor/index`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensors/:id`} component={lazy(() => import(`./machine-and-sensor/view-sensor/index`))} />
+        {/* <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensors/add-new`} component={lazy(() => import(`./machine-and-sensor/add-new-sensor/index`))} /> */}
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensors/add-new/:id`} component={lazy(() => import(`./machine-and-sensor/add-new-sensor/index`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensors/edit-sensor/:id/:editId`} component={lazy(() => import(`./machine-and-sensor/add-new-sensor/edit.js`))} />
         <Route exact path={`${APP_PREFIX_PATH}/life-cycle`} component={lazy(() => import(`./machine-and-sensor/machine-details/add-new-life-cycle-event/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/reports`} component={lazy(() => import(`./Reports/Index`))} />
         <Redirect from={`${APP_PREFIX_PATH}`} to={`${localStorage.getItem("dashboardType") != "workshop" ? `${APP_PREFIX_PATH}/dashboard` : `${APP_PREFIX_PATH}/machine-and-sensors`}`} />

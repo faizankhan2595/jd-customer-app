@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Input, Select, Row, Col, Button, Switch, message } from 'antd';
 import { MachineSensorIcon, UploadFileIcon } from 'assets/svg/icon';
 import { CloseCircleOutlined } from '@ant-design/icons';
 import { useHistory, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { axiosInstance } from 'App';
+import { UploadImage } from 'utils/Upload';
 
 const { Option } = Select;
 
 const AddNewSensor = () => {
   const history = useHistory();
   const { id } = useParams();
+  const query = new URLSearchParams(history.location.search);
+  const machineName = query.get('machine_name');
   const [form] = Form.useForm();
   const [machineStatus, setMachineStatus] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -50,19 +53,41 @@ const AddNewSensor = () => {
   };
 
   const onFinish = async (values) => {
+    let file = [];
+    const temp = selectedFiles.filter((item) => {
+      return item.url === undefined;
+    })
+    const temp2 = selectedFiles.filter((item) => {
+      return item.url !== undefined;
+    })
+    if (temp.length !== 0) {
+      const uploadPromise = temp.map(async (item) => {
+        if (item.url === undefined) {
+          const url = await UploadImage(item);
+          return url;
+        } else {
+          return item.url;
+        }
+      })
+      file = await Promise.all(uploadPromise);
+      console.log(file);
+    }
+    file = [...file, ...temp2.map((item) => {
+      return item.url
+    })];
+
     const payload = {
-      machine_id: id, // Assuming id is the machine ID from the URL
       sensor_type: values.sensor_type,
       sensor_id: values.sensor_id,
       sensor_name: values.sensor_name,
       sensor_location: values.sensor_location,
       sensor_details: values.sensor_details,
       sensor_status: machineStatus,
-      is_deleted: false,
+      pictures: file
     };
 
     try {
-      const response = await axiosInstance.post('/api/admin/machine-senser/store', payload);
+      const response = await axiosInstance.post(`/api/admin/machines/${id}/sensors`, payload);
       message.success('Sensor added successfully!');
       history.goBack(); // Navigate to the sensors list page
     } catch (error) {
@@ -70,6 +95,10 @@ const AddNewSensor = () => {
       console.error('Error:', error);
     }
   };
+
+  useEffect(() => {
+    form.setFieldsValue({ machineName: machineName })
+  }, [])
 
   const handleFileSelect = (event) => {
     const fileList = event.target.files;
@@ -119,10 +148,7 @@ const AddNewSensor = () => {
                 name="sensor_type"
                 rules={[{ required: true, message: 'Please Select Sensor Type' }]}
               >
-                <Select>
-                  <Option value="Temperature">Sensor Type 1</Option>
-                  <Option value="Pressure">Sensor Type 2</Option>
-                </Select>
+                <Input />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -187,6 +213,7 @@ const AddNewSensor = () => {
                     style={styles.uploadFile}
                     className="uploadFile"
                     type="file"
+                      accept="image/*"
                     multiple
                     onChange={handleFileSelect}
                   />

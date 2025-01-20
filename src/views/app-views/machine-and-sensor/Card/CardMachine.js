@@ -5,12 +5,14 @@ import Machine from "assets/Machine/Avatar.png"
 import Address from "assets/Machine/Frame 367.png"
 import { useHistory } from 'react-router-dom/cjs/react-router-dom.min'
 import VibrationIcon from "assets/Frame 1171275235.png"
+import moment from 'moment'
 
-function CardMachine() {
+function CardMachine({data}) {
     const history = useHistory();
     return (
         <>
-            <Card style={{
+            <Card 
+            style={{
                 width: "32%",
                 cursor: "pointer",
             }}
@@ -20,26 +22,27 @@ function CardMachine() {
             >
                 <div style={{
                     display: "flex",
+                    gap:"10px"
                 }}>
                     <div style={{
                         display: "flex",
                         color: "#8C8E8F",
                         alignItems: "center",
                         flexDirection: "column",
-                        width:"30%"
+                        width:"40%"
                     }}>
                         <div><img src={MeterIcon} /></div>
                         <div style={{
 
-                            fontSize: "15px"
+                            fontSize: "12px"
                         }}>Machine Health</div>
                         <div style={{
 
-                            fontSize: "11px"
-                        }} >*updated on 16 Jan 2023</div>
+                            fontSize: "10px"
+                        }} >*updated on {moment(data.updated_at).format("DD MMM YYYY")}</div>
                     </div>
                     <div style={{
-                      width:"70%"
+                      width:"60%"
                     }}>
                         <div style={{
                             display:"flex",
@@ -51,19 +54,24 @@ function CardMachine() {
                                     fontSize:"20px",
                                     fontWeight:"bold",
                                     color:"#000"
-                                }}>Centrifugal pump</div>
+                                }}>{
+                                    data?.name
+                                }</div>
                                 <div style={{
                                     fontSize:"12px",
 
-                                }}>#MC245F556</div>
+                                }}>#{data.id}</div>
                             </div>
-                            <div style={{
-                                height:"70px"
+                            {/* <div style={{
+                                height:"70px",
+                                width:"70px",
                             }}>
                                 <img style={{
                                     height:"100%",
-                                }} src={Machine}/>
-                            </div>
+                                    width:"100%",
+                                    objectFit:"cover",
+                                }} src={data?.pictures[0]?.file_path}/>
+                            </div> */}
                         </div>
                         <div style={{
                             display:"flex",
@@ -71,9 +79,14 @@ function CardMachine() {
                             alignItems:"center"
                         }}>
                                 <div>  <img src={Address}/></div>
-                                <div>Jobsite 1-Pumping Station East</div>
+                                <div>{data?.job_site?.jobsite_name}</div>
                         </div>
-                        <div style={{
+                        <div
+                        onClick={(e) => {
+                            history.push("/app/machine-and-sensors/machine-details/sensors/"+data.id)
+                            e.stopPropagation();
+                        }}
+                        style={{
                             display:"flex",
                             justifyContent:"flex-end"
                         }}>

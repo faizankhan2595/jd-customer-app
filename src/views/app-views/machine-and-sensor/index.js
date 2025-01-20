@@ -34,7 +34,7 @@ const MachineAndSensor = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axiosInstance.get("api/admin/machine");
+        const response = await axiosInstance.get("api/web/machines");
         if (response.status === 200) {
           const responseData = response.data.items;
           if (Array.isArray(responseData)) {
@@ -51,23 +51,6 @@ const MachineAndSensor = () => {
 
     fetchData();
   }, []);
-
-  const datas = Array.isArray(data)
-    ? data.map((value) => ({
-        key: value.id,
-        ID: value.id,
-        image:
-          value.image ||
-          "https://images.unsplash.com/photo-1708616748538-bdd66d6a9e25?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        Customer: value.name,
-        Jobsite: value.Jobsite,
-        Machines: value.machine_detail,
-        ActiveSince: value.ActiveSince,
-        MachineStatus: value.machine_status,
-        OverallStatus: value.OverallStatus,
-        created_at: value.created_at,
-      }))
-    : [];
 
   const deleteRow = async (id) => {
     console.log(id);
@@ -149,8 +132,8 @@ const MachineAndSensor = () => {
           >
             Export
           </Button>
-          <Select placeholder="Select Area" style={{ width: 200,margin:"0 10px" }} />
-          <Select placeholder="Select Jobsite" style={{ width: 200 }} />
+          {/* <Select placeholder="Select Area" style={{ width: 200,margin:"0 10px" }} />
+          <Select placeholder="Select Jobsite" style={{ width: 200 }} /> */}
         </div>
         <div className="mb-2 d-flex align-items-center">
           <Button className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4">
@@ -161,15 +144,20 @@ const MachineAndSensor = () => {
       <div style={{
         display:'flex',
         flexWrap:'wrap',
-        justifyContent:"space-between",
-        gap:"20px",
+        // justifyContent:"space-between",
+        gap:"5px",
       }}>
+          {/* <CardMachine />
           <CardMachine />
           <CardMachine />
           <CardMachine />
           <CardMachine />
-          <CardMachine />
-          <CardMachine />
+          <CardMachine /> */}
+          {
+            data.map((item) => (
+              <CardMachine key={item.id} data={item} />
+            ))
+          }
 
       </div>
 
