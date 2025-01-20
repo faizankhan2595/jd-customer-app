@@ -141,6 +141,15 @@ function TechnicianManagement() {
     //   dataIndex:"activeJobs"
     // },
     {
+        title:"Status",
+        dataIndex:"status",
+        render: (text, record) => (
+          <>
+            {text==1?<Tag color="green">Active</Tag>:<Tag color="red">Inactive</Tag>}
+          </>
+        )
+    },
+    {
         title: 'Action',
         key: 'action',
         render: (text, record) => (

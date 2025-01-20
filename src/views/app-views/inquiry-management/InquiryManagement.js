@@ -16,11 +16,13 @@ import { axiosInstance } from "App";
 import CalendarIcon from "assets/calendar.png"
 import moment from "moment";
 import CardOrder from "./Card/CardOrder";
+import SubMenu from "antd/lib/menu/SubMenu";
 
 function Index() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const history = useHistory();
   const [data, setData] = useState([])
+  const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchText, setSearchText] = useState('');
   var timeout = ""
   const onSearch = (value) => {
@@ -30,32 +32,15 @@ function Index() {
       getData(value.target.value)
     }, 500)
   }
-  const FilterMenu = (
-    <Menu mode="horizontal">
-      <Menu.SubMenu key="item1" title="Service Type">
-        <Menu.Item key="subitem1">
-          <Checkbox>All</Checkbox>
-        </Menu.Item>{" "}
-        <Menu.Item key="subitem3">
-          <Checkbox>workshop</Checkbox>
-        </Menu.Item>{" "}
-        <Menu.Item key="subitem2">
-          <Checkbox>Onsite</Checkbox>
-        </Menu.Item>
-      </Menu.SubMenu>
 
-      <Menu.SubMenu key="item2" title="Status">
-        <Menu.Item key="subitem5">
-          <Checkbox>All</Checkbox>
-        </Menu.Item>{" "}
-
-      </Menu.SubMenu>
-    </Menu>
-  );
-
-  const getData = async (Search="") => {
+  const getData = async (Search="",filter="all") => {
+    let url = `?search=${Search}`
+    //for 0 it is not handling
+    if((filter !== '' && filter != 'all')) {
+      url += `&status=${filter}`
+    }
     try {
-      const response = await axiosInstance.get('api/web/inquiries?search='+Search);
+      const response = await axiosInstance.get('api/web/inquiries' + url);
       if (response.status === 200) {
         setData(response.data.items);
         // console.log(response.data.items)
@@ -68,6 +53,47 @@ function Index() {
   useEffect(() => {
     getData();
   }, [])
+
+  const FilterMenu = (
+    <Menu mode="horizontal" onChange={(e) => {
+      console.log(e)
+    }}>
+      <SubMenu key="item1" title="Status">
+        <Menu.Item key="subitem1"
+
+        >
+          <Checkbox onChange={() => {
+            getData(searchText);
+            setSelectedFilter('all')
+          }} checked={
+            selectedFilter === 'all'
+          }>All</Checkbox>
+        </Menu.Item>{" "}
+        <Menu.Item key="subitem2"
+
+        >
+          <Checkbox
+            onChange={() => {
+              getData(searchText, 1);
+              setSelectedFilter(1)
+            }}
+            checked={selectedFilter == 1}
+
+          >Completed</Checkbox>
+        </Menu.Item>
+        <Menu.Item key="subitem3"
+
+        >
+          <Checkbox onChange={() => {
+            getData(searchText, 0);
+            setSelectedFilter(0)
+          }}
+
+            checked={selectedFilter === 0}>Closed</Checkbox>
+        </Menu.Item>
+      </SubMenu>
+    </Menu>
+  );
 
   return (
     <div>
@@ -87,6 +113,14 @@ function Index() {
               prefix={<SearchOutlined style={{ marginRight: 8 }} />}
             />
           </Space>
+          <Filter filters={FilterMenu}>
+            <Button
+              icon={<Icon component={FilterIcon} />}
+              className="d-flex align-items-center ml-2"
+            >
+              Filters
+            </Button>
+          </Filter>
           {/* <Filter filters={FilterMenu}>
             <Button
               icon={<Icon component={FilterIcon} />}

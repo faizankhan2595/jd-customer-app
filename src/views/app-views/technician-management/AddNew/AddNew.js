@@ -20,6 +20,7 @@ export default function AddNewTechnician() {
 
     const history = useHistory();
     const [statu, setStatu] = useState("")
+    const [remark, setRemark] = useState("")
     const [mainStatus, setMainStatus] = useState('')
     const [mainId, setMainId] = useState(null)
     const [activeTab, setActiveTab] = useState("1");
@@ -217,8 +218,23 @@ export default function AddNewTechnician() {
     }
     };
 
-    const sendStatus = async (status) => {
-
+    const sendStatus = async () => {
+        try {
+            const response = await axiosInstance.put(`/api/web/technician/${id}/update-status`, {
+                status: statu,
+                remark: remark
+            });
+            setIsChangeStudModalOpen(false);
+            setSuccessModal(true);
+            setSuccesmodaltext({
+                title: "Technician Status Change Successfully!",
+                text: "Technician status changed to terminated.",
+            });
+            history.goBack();
+        } catch (error) {
+            console.error(error);
+            message.error(error.response.data.message);
+        }
     }
 
     // const onFinishFailed = (errorInfo) => {
@@ -301,7 +317,7 @@ export default function AddNewTechnician() {
             })
             form2.setFieldsValue({
                 ...data.address,
-                country: data.address.country.toString()
+                country: data.address.country
             })
             setCountryCode(data.phone_code)
             setImageUrl(data.profile_pic)
@@ -312,6 +328,8 @@ export default function AddNewTechnician() {
                 }
             }))
 
+            setRemark(data.status_remark)
+            setStatu(data.status)
         } catch (error) {
             // console.error(error);
             message.error(error.response.data.message);
@@ -745,11 +763,15 @@ export default function AddNewTechnician() {
                             setStatu(e.target.value);
                         }}
                         value={statu}>
-                        <Radio value={"active"}>Active</Radio>
-                        <Radio value={"inactive"}>Inactive</Radio>
+                        <Radio value={1}>Active</Radio>
+                        <Radio value={0}>Inactive</Radio>
                     </Radio.Group>
                     <h5 className="mt-4">Remarks</h5>
-                    <Input.TextArea placeholder="Reason" />
+                    <Input.TextArea  value={remark}
+                        onChange={(e)=>{
+                            setRemark(e.target.value) 
+                        }}
+                    placeholder="Reason" />
                 </div>
                 <div
                     style={{ gap: "10px" }}
@@ -764,11 +786,15 @@ export default function AddNewTechnician() {
                     <Button
                         className="px-4 font-weight-semibold text-white bg-info"
                         onClick={() => {
-                            if (statu === '') {
-                                message.error(`Please select status first !`)
+                            // if (statu === '') {
+                            //     message.error(`Please select status first !`)
+                            //     return
+                            // }
+                            if(remark === ''){
+                                message.error(`Please enter remarks !`)
                                 return
                             }
-                            sendStatus(statu)
+                            sendStatus()
                         }}
                     >
                         Save

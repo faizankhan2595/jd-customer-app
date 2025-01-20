@@ -56,9 +56,76 @@ const OperationalAreas = () => {
   };
   const [data, setData] = useState([]);
 
-  const getData = async (search="") => {
+ const [selectedStatus, setSelectedStatus] = useState('all');
+  const FilterMenu = (
+    <Menu mode="horizontal">
+      {/* Status Filter */}
+      <SubMenu key="status" title="Status">
+        <Menu.Item key="status-all">
+          <Checkbox
+            checked={selectedStatus === 'all'}
+            onChange={() => handleStatusChange('all')}
+          >
+            All
+          </Checkbox>
+        </Menu.Item>
+        <Menu.Item key="status-active">
+          <Checkbox
+            checked={selectedStatus === 'active'}
+            onChange={() => handleStatusChange('active')}
+          >
+            Active
+          </Checkbox>
+        </Menu.Item>
+        <Menu.Item key="status-inactive">
+          <Checkbox
+            checked={selectedStatus === 'inactive'}
+            onChange={() => handleStatusChange('inactive')}
+          >
+            Inactive
+          </Checkbox>
+        </Menu.Item>
+      </SubMenu>
+
+   
+      {/* <SubMenu key="workshop" title="Area">
+        <Menu.Item key="area-all">
+          <Checkbox
+            checked={selectedWorkshop === 'all'}
+            onChange={() => handleWorkshopChange('all')}
+          >
+            All
+          </Checkbox>
+        </Menu.Item>
+        {workshopData.map((item, i) => (
+          <Menu.Item key={`workshop-${i}`}>
+            <Checkbox
+              checked={selectedWorkshop === item.id}
+              onChange={() => handleWorkshopChange(item.id)}
+            >
+              {item.workshop_name}
+            </Checkbox>
+          </Menu.Item>
+        ))}
+      </SubMenu> */}
+    </Menu>
+  );
+
+  const handleStatusChange = (filter) => {
+    setSelectedStatus(filter);
+    getData(searchText,filter=='active'?1:filter=='inactive'?0:'all');
+    // Trigger the data fetch or update logic here for status
+    console.log(`Applied status filter: ${filter}`);
+  };
+
+  const getData = async (search="",status="") => {
+    let url = `?search=${search}`
+    //for 0 it is not handling
+    if((status !== '' && status != 'all')) {
+      url += `&status=${status}`
+    }
     try {
-      const resp = await axiosInstance.get('/api/web/operational-area?search='+search);
+      const resp = await axiosInstance.get('/api/web/operational-area'+url);
       setData(resp.data.items);
     } catch (err) {
       console.log(err)
@@ -203,7 +270,14 @@ const OperationalAreas = () => {
               prefix={<SearchOutlined style={{ marginRight: 8 }} />}
             />
           </Space>
-         
+          <Filter filters={FilterMenu}>
+            <Button
+              icon={<Icon component={FilterIcon} />}
+              className="d-flex align-items-center ml-2"
+            >
+              Filters
+            </Button>
+          </Filter>
           {/* <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" >Export</Button> */}
         </div>
         <div className="mb-2 d-flex align-items-center">

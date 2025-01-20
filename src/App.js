@@ -43,7 +43,8 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response.data.message === "Unauthorized") {
+    // console.log(error.response);
+    if (error.response.status===401 || error.response.data.message === "Unauthorized") {
       localStorage.removeItem("token");
       window.location.href = "/auth/login";
     }

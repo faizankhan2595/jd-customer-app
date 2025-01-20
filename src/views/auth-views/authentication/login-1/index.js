@@ -112,6 +112,7 @@ const LoginOne = props => {
 
 	}
 	const handlePhoneNumberSubmit = async () => {
+		setOtp("");
 		if (phoneNumber.length < 8) {
 			message.error('Please enter a valid phone number');
 			return
@@ -220,7 +221,7 @@ const LoginOne = props => {
 									onComplete={(otpValue) => handleOTPSubmit(otpValue)}
 								/>
 
-								<p className='text-center mt-2'>Don't receive OTP?<span style={{
+								<p className='text-center mt-2'>Don't receive OTP? <span style={{
 									color: '#3CA6C1',
 									cursor: 'pointer'
 								}} className='text-center'

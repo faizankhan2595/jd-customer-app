@@ -118,7 +118,7 @@ function AddNew() {
 
     const getOperationArea = async () => {
         try {
-            const response = await axiosInstance.get('api/web/operational-area');
+            const response = await axiosInstance.get('api/web/operational-area?status=1');
             if (response.status === 200) {
                 setData(response.data.items);
                 if (id) {
