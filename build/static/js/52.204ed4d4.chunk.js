@@ -1,0 +1,2 @@
+(this.webpackJsonpemilus=this.webpackJsonpemilus||[]).push([[52],{895:function(s,e,i){"use strict";i.r(e);i(0);var t=i(1);e.default=()=>Object(t.jsx)("div",{children:"Dashboard component works!"})}}]);
+//# sourceMappingURL=52.204ed4d4.chunk.js.map
