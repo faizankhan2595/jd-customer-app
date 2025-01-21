@@ -83,14 +83,14 @@ else{
         breadcrumb: false,
         submenu: []
       },
-      {
-        key: 'free-user',
-        path: `${APP_PREFIX_PATH}/user-management/free-user`,
-        title: 'Free Users',
-        // icon: Masters,
-        breadcrumb: false,
-        submenu: []
-      }
+      // {
+      //   key: 'free-user',
+      //   path: `${APP_PREFIX_PATH}/user-management/free-user`,
+      //   title: 'Free Users',
+      //   // icon: Masters,
+      //   breadcrumb: false,
+      //   submenu: []
+      // }
     ],
   },
   {

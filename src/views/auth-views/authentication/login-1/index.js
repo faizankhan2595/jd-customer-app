@@ -186,7 +186,7 @@ const LoginOne = props => {
 						<h2 className='text-center mt-2'>{step === 1 ? 'LOGIN' : 'Enter OTP'}</h2>
 						<p className='text-center'> {step === 1
 							? 'Please enter your phone number below to get started.'
-							: `Please enter 4 digit OTP sent to ${countryCode} ${phoneNumber} below.`}</p>
+							: `Please enter 6 digit OTP sent to ${countryCode} ${phoneNumber} below.`}</p>
 						{step === 1 && (
 							<><h4 style={{ marginTop: '2.7rem' }} className='font-bolder '>Phone Number</h4>
 								<Input addonBefore={selectBefore} onChange={(e) => setPhoneNumber(e.target.value)} value={phoneNumber} />

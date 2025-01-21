@@ -51,11 +51,11 @@ const StaffManagement = () => {
       setSelectedDashboards(selectedValues);
     }
   };
-  const [fetch, setData] = useState([]);
+  const [data, setData] = useState([]);
 
   const getData = async () => {
     try {
-      const resp = await axiosInstance.get('/api/admin/staff/list');
+      const resp = await axiosInstance.post('/api/admin/customer-users/list');
       setData(resp.data.items);
     } catch (err) {
       console.log(err)
@@ -68,54 +68,7 @@ const StaffManagement = () => {
   }, [])
 
 
-  const data = true ? [
-    {
-      id: '1',
-      image: 'https://via.placeholder.com/150',
-      username: 'JohnDoe',
-      type: 'Admin',
-      contactNumber: '9876543210',
-      email: 'john.doe@example.com',
-      userSince: '2022-01-15',
-      status: true, // Active
-      organization: 'Company A',
-    },
-    {
-      id: '2',
-      image: 'https://via.placeholder.com/150',
-      username: 'JaneSmith',
-      type: 'User',
-      contactNumber: '9123456789',
-      email: 'jane.smith@example.com',
-      userSince: '2023-05-10',
-      status: false, // Inactive
-      organization: 'Company B',
-    },
-    {
-      id: '3',
-      image: 'https://via.placeholder.com/150',
-      username: 'MikeRoss',
-      type: 'Moderator',
-      contactNumber: '8765432109',
-      email: 'mike.ross@example.com',
-      userSince: '2021-11-23',
-      status: true, // Active
-      organization: 'Company C',
-    },
-  ] : fetch.map((value, i) => {
-    return {
-      id: value.id,
-      image: value.profile_pic,
-      username: value.name,
-      workshop: value.workshop,
-
-      contactNumber: value.phone_no,
-      // membershipType: value.membershipType,
-      email: value.email,
-      userSince: moment(value.created_at).format('DD MMM YYYY'),
-      status: value.status_remark == 1 ? "Active" : "Inactive",
-    }
-  })
+  
 
   const columns = [
     {
@@ -257,7 +210,7 @@ const StaffManagement = () => {
           </Filter>
           <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" >Export</Button>
         </div>
-        {/* <div className="mb-2 d-flex align-items-center">
+        <div className="mb-2 d-flex align-items-center">
           <Button
             // onClick={showModal}
             className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
@@ -265,7 +218,7 @@ const StaffManagement = () => {
             <Link to={'admin-accounts/add-new'}>
               + Add New</Link>
           </Button>
-        </div> */}
+        </div>
       </div>
       <div>
         <Table
