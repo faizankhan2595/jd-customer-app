@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom/cjs/react-router-dom.min'
 import { axiosInstance } from 'App'
 import moment from 'moment'
 import { useHistory } from 'react-router-dom/cjs/react-router-dom'
+import { role, Status } from 'utils/role'
 
 const { Option } = Select;
 
@@ -56,7 +57,7 @@ const StaffManagement = () => {
   const getData = async () => {
     try {
       const resp = await axiosInstance.post('/api/admin/customer-users/list');
-      setData(resp.data.items);
+      setData(resp.data);
     } catch (err) {
       console.log(err)
       message.error('Something went wrong')
@@ -68,7 +69,7 @@ const StaffManagement = () => {
   }, [])
 
 
-  
+
 
   const columns = [
     {
@@ -78,24 +79,30 @@ const StaffManagement = () => {
     },
     {
       // title: 'Image',
-      dataIndex: 'image',
-      key: 'image',
-      render: (text, record) => <Avatar src={text} alt={`Avatar for ${record.organization}`} />,
+      dataIndex: 'profile_pic',
+      key: 'profile_pic',
+      render: (text, record) => <Avatar src={text} alt={`Avatar for ${text}`} />,
     },
     {
       title: 'Name',
-      dataIndex: 'username',
+      dataIndex: 'name',
       key: 'username',
     },
     {
       title: 'Accopunt Type',
-      dataIndex: 'type',
-      key: 'type',
+      dataIndex: 'role_id',
+      key: 'role_id',
+      render: (role_id) => {
+        return role(role_id)
+      }
     },
     {
       title: 'Mobile Number',
-      dataIndex: 'contactNumber',
-      key: 'contactNumber',
+      dataIndex: 'phone_no',
+      key: 'phone_no',
+      render:(phone_no, record)=>(
+        <span>{record.phone_code +-+ phone_no}</span>
+      ) 
     },
     {
       title: 'Email ID',
@@ -104,14 +111,18 @@ const StaffManagement = () => {
     },
     {
       title: 'Created On',
-      dataIndex: 'userSince',
+      dataIndex: 'created_at',
       key: 'userSince',
+      render: (date) => moment(date).format('DD-MM-YYYY'),
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (active) => (active ? <Tag color="green">Active</Tag> : <Tag color="red">Inactive</Tag>),
+      render: (role_id) => {
+        const {status,color} = Status(role_id)
+        return <Tag color={color}>{status}</Tag>
+      }
     },
     {
       title: 'Action',
@@ -137,10 +148,12 @@ const StaffManagement = () => {
 
   const getMenu = (record) => (
     <Menu>
-      <Menu.Item key="view" onClick={() =>  history.push(`/app/user-management/user-accounts/account-details/${record.id}`)}>
+      <Menu.Item key="view" onClick={() => history.push(`/app/user-management/user-accounts/account-details/${record}`)}>
         <EyeOutlined /> View
       </Menu.Item>
-      <Menu.Item key="edit" onClick={() => console.log(record.key)}>
+      <Menu.Item key="edit" onClick={() =>{
+        history.push(`user-accounts/edit/${record}`)
+      }}>
         <EditOutlined /> Edit
       </Menu.Item>
       <Menu.Item key="delete" onClick={() => {
@@ -149,9 +162,9 @@ const StaffManagement = () => {
       }}>
         <DeleteOutlined /> Delete
       </Menu.Item>
-      <Menu.Item onClick={() => setModalVisible(true)}>
+      {/* <Menu.Item onClick={() => setModalVisible(true)}>
         <AccountStatusIcon /> Account Status
-      </Menu.Item>
+      </Menu.Item> */}
     </Menu>
   );
 
@@ -215,7 +228,7 @@ const StaffManagement = () => {
             // onClick={showModal}
             className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
           >
-            <Link to={'admin-accounts/add-new'}>
+            <Link to={'user-accounts/add-new'}>
               + Add New</Link>
           </Button>
         </div>

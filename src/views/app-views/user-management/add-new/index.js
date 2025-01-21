@@ -4,18 +4,20 @@ import { BasicDetail, LocationIcon, SuccessTickIcon, UploadDocument, UploadFileI
 import React from "react";
 import { useState } from "react";
 import { Tabs } from "antd";
-import { CloseCircleOutlined, EnvironmentOutlined, PlusOutlined, TeamOutlined, UserSwitchOutlined } from "@ant-design/icons";
+import { CloseCircleOutlined, EnvironmentOutlined, EyeOutlined, PlusOutlined, TeamOutlined, UserSwitchOutlined } from "@ant-design/icons";
 import { Option } from "antd/lib/mentions";
 // import axios from "../../../../axios";
 import moment from "moment";
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom/cjs/react-router-dom";
+import { useLocation, useParams } from "react-router-dom/cjs/react-router-dom";
 import { useHistory } from 'react-router-dom';
 // import uploadImage from "middleware/uploadImage";
 import { API_BASE_URL } from "constants/ApiConstant";
 import { axiosInstance } from "App";
+import { UploadFile, UploadImage } from "utils/Upload";
 export default function AddNewAdminAccount() {
     const { TabPane } = Tabs;
+    const {id } = useParams();
     const history = useHistory();
     const [statu, setStatu] = useState("")
     const [mainStatus, setMainStatus] = useState('')
@@ -29,7 +31,7 @@ export default function AddNewAdminAccount() {
     const queryParams = new URLSearchParams(location.search);
     const [fileList, setFileList] = useState([]);
     const [imageUrl, setImageUrl] = useState();
-    const id = queryParams.get('id')
+    // const id = queryParams.get('id')
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [alertModal, setAlertModal] = useState(false)
     const [country, setCountry] = useState([
@@ -132,23 +134,89 @@ export default function AddNewAdminAccount() {
     const [form2] = Form.useForm();
     const [form3] = Form.useForm();
     const onFinish = async (values) => {
-        // const image = await uploadImage(fileList);
-        console.log(form1.getFieldsValue())
-        try {
-            // handleOpenAlert()
+        let profile_pic = imageUrl
 
-            const resp = await axiosInstance.post(`/api/admin/staff/store`, {
-                ...form1.getFieldsValue(),
-                ...form2.getFieldsValue(),
-                phone_no: countryCode + form1.getFieldValue('phone_no'),
+        if (fileList.length > 0) {
+            profile_pic = await UploadImage(fileList);
+        }
 
+        let file = [];
+
+        const temp = selectedFiles.filter((item) => {
+            return item.url === undefined;
+        })
+
+        const temp2 = selectedFiles.filter((item) => {
+            return item.url !== undefined;
+        })
+
+        if (temp.length !== 0) {
+            const uploadPromise = temp.map(async (item) => {
+                if (item.url === undefined) {
+                    const url = await UploadImage(item);
+                    return url;
+                } else {
+                    return item.url;
+                }
             })
-            // handleCloseAlert()
-            // history.goBack();
 
-            console.log(resp)
-        } catch (error) {
-            console.error(error)
+            file = await Promise.all(uploadPromise);
+            console.log(file);
+        }
+
+        file = [...file, ...temp2.map((item) => {
+            return item.url
+        })];
+
+        if (id) {
+            try {
+                const resp = await axiosInstance.put(`/api/admin/staff/${id}/update`, {
+                    ...form1.getFieldsValue(),
+                    ...form2.getFieldsValue(),
+                    dob: form1.getFieldValue('dob').format('YYYY-MM-DD'),
+                    phone_code: countryCode,
+                    profile_pic,
+                    documents: file,
+                    // documents: file,
+                })
+                history.goBack();
+            } catch (error) {
+                const errorResponse = error.response.data.data;
+                if (errorResponse && errorResponse.error) {
+                    const errorMessage = errorResponse.error[0];
+
+                    message.warn(errorMessage);
+                }
+            }
+        } else {
+
+
+            try {
+                // handleOpenAlert()
+
+                const resp = await axiosInstance.post(`/api/admin/staff/store`, {
+                    ...form1.getFieldsValue(),
+                    ...form2.getFieldsValue(),
+                    phone_code: countryCode,
+                    profile_pic,
+                    dob: form1.getFieldValue('dob').format('YYYY-MM-DD'),
+
+                })
+                handleCloseAlert()
+                setTimeout(() => {
+                    history.goBack()
+                }, 1000)
+                // history.goBack();
+
+            } catch (error) {
+                const errorResponse = error.response.data.data;
+
+                if (errorResponse && errorResponse.error) {
+                    const errorMessage = errorResponse.error[0];
+
+                    message.warn(errorMessage);
+                }
+            }
         }
     };
 
@@ -213,6 +281,7 @@ export default function AddNewAdminAccount() {
     }
     const handleCloseAlert = () => {
         setAlertModal(false)
+
     }
 
     // Fetch Country
@@ -226,7 +295,47 @@ export default function AddNewAdminAccount() {
             }
         };
         fetchCountry();
+        if (id) {
+            getData();
+        }
     }, []);
+
+    const getData = async () => {
+        try {
+            const response = await axiosInstance.post(`/api/admin/customer-users/${id}/show`);
+            const data = response.data.item;
+            setImageUrl(data.profile_pic)
+            form1.setFieldsValue({
+                name: data.name,
+                email: data.email,
+                phone_no: data.phone_no,
+                nric_fin_number: data.nric_fin_number,
+                dob: data.dob ? moment(data.dob) : null,
+                gender: data.gender?.toString(),
+                role_id: data.role_id
+            })
+
+            form2.setFieldsValue({
+                postal_code: data.address.postal_code,
+                block_number: data.address.block_number,
+                street_number: data.address.street_number,
+                unit_number: data.address.unit_number,
+                level_number: data.address.level_number,
+                country: data.address.country
+
+            })
+            setSelectedFiles(data?.documents.map((item, index) => {
+                return {
+                    url: item?.document_url,
+                    name: `Document ${index + 1}`
+                }
+            }))
+            setCountryCode(data.phone_code)
+        } catch (error) {
+            // console.error(error);
+            message.error(error.response.data.message);
+        }
+    }
 
 
     return (
@@ -250,7 +359,9 @@ export default function AddNewAdminAccount() {
             <h4> <UserSwitchOutlined /><span style={{
                 color: '#6a6a6a',
                 fontWeight: '300'
-            }}> Staff Management / Admin Accounts</span> / Add New Accounts </h4>
+            }}> User Management / User Accounts</span> / {
+                    id ? "Edit Admin Account" : "Add New Admin Account"
+            }</h4>
 
             <Tabs activeKey={activeTab} onTabClick={handleTabClick} >
                 <TabPane
@@ -358,7 +469,7 @@ export default function AddNewAdminAccount() {
                                         <Input
                                             addonBefore={
                                                 <Select
-                                                    defaultValue={"In"}
+                                                    // defaultValue={"In"}
                                                     style={{
                                                         width: 80,
                                                     }}
@@ -412,52 +523,28 @@ export default function AddNewAdminAccount() {
                                         ]}
                                     >
                                         <Radio.Group>
-                                            <Radio value={"male"}>Male</Radio>
-                                            <Radio value={"female"}>Female</Radio>
+                                            <Radio value={"1"}>Male</Radio>
+                                            <Radio value={"2"}>Female</Radio>
                                         </Radio.Group>
                                     </Form.Item>
                                 </div>
                                 <div style={{ width: "45%" }}>
                                     <Form.Item
                                         name="role_id"
-                                        label="Admin Type"
+                                        label="Role"
                                         rules={[
-                                            { required: true, message: "Please select admin type." },
+                                            { required: true, message: "Please select role." },
                                         ]}
                                     >
                                         <Radio.Group>
-                                            <Radio value={"admin"}>Admin</Radio>
-                                            <Radio value={"superAdmin"}>Super Admin</Radio>
+                                            <Radio value={7}>Admin</Radio>
+                                            <Radio value={8}>Manager</Radio>
+                                            <Radio value={9}>User</Radio>
                                         </Radio.Group>
                                     </Form.Item>
                                 </div>
                             </div>
-                            <div style={{ gap: "60px" }} className="d-flex ">
-                                <div style={{ width: "45%" }}>
-                                    <Form.Item
-                                        name="password"
-                                        label="Password"
-                                        rules={[
-                                            { required: true, message: "Please enter Password" },
-                                            { min: 6, message: "Password must be minimum 6 characters" },
-                                        ]}
-                                    >
-                                        <Input.Password style={{ width: "100%" }} placeholder="Password" />
-                                    </Form.Item>
-                                </div>
-                                <div style={{ width: "45%" }}>
-                                    <Form.Item
-                                        name="confirm_password"
-                                        label="Confirm Password"
-                                        rules={[
-                                            { required: true, message: "Please enter Confirm Password" },
-                                            { min: 6, message: "Password must be minimum 6 characters" },
-                                        ]}
-                                    >
-                                        <Input.Password style={{ width: "100%" }} placeholder="Confirm Password" />
-                                    </Form.Item>
-                                </div>
-                            </div>
+
                         </div>
                     </Form>
                 </TabPane>
@@ -522,7 +609,7 @@ export default function AddNewAdminAccount() {
 
                                     <Form.Item
                                         label={'Level Number'}
-                                        name="levelNumber"
+                                        name="level_number"
                                         rules={[{ required: true, message: 'Please enter the level number!' }]}
                                     >
                                         <Input placeholder="Level Number" style={{ width: '100%' }} />
@@ -534,8 +621,8 @@ export default function AddNewAdminAccount() {
                                         rules={[{ required: true, message: 'Please select a country!' }]}
                                     >
                                         <Select placeholder='Country' style={{ width: '100%' }}>
-                                        <Option value={155}>Singapore</Option>
-                                        <Option value={75}>India</Option>
+                                            <Option value={155}>Singapore</Option>
+                                            <Option value={75}>India</Option>
                                             {/* Add more countries as needed */}
                                         </Select>
                                     </Form.Item>
@@ -612,6 +699,9 @@ export default function AddNewAdminAccount() {
                                             <div className="d-flex align-items-center">
                                                 <UploadFileIcon />{" "}
                                                 <span className="ml-2">{file.name} </span>{" "}
+                                                <span className="ml-5">
+                                                    {file.url ? (<EyeOutlined style={{ cursor: "pointer" }} onClick={() => window.open(file.url)} />) : null}
+                                                </span>
                                             </div>
                                             <span
                                                 style={{ cursor: "pointer" }}

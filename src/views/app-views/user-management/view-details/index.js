@@ -32,12 +32,12 @@ import { Option } from "antd/lib/mentions";
 // import axios from "../../../../axios";
 import moment from "moment";
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom/cjs/react-router-dom";
+import { useLocation, useParams } from "react-router-dom/cjs/react-router-dom";
 import { useHistory } from "react-router-dom";
 // import uploadImage from "middleware/uploadImage";
 import { API_BASE_URL } from "constants/ApiConstant";
 import { axiosInstance } from "App";
-import { Row, Col, Avatar, Typography,Card } from "antd";
+import { Row, Col, Avatar, Typography, Card } from "antd";
 import {
   Table,
   Tag,
@@ -52,26 +52,19 @@ import { MoreOutlined, SearchOutlined } from "@ant-design/icons";
 
 const { Search } = Input;
 const { Title, Text } = Typography;
-const dataMobileAppPer = [
-    { title: "Jobsites", key: "jobsites" },
-    { title: "Machines", key: "machines" },
-    { title: "Machine Reports", key: "machine_reports" },
-    { title: "Life Cycle Management", key: "life_cycle_management" },
-    { title: "Order Management", key: "order_management" },
-    { title: "Inquiry Management", key: "inquiry_management" },
-  ];
-  const SwitchCard = ({ title }) => (
-    <Card bordered={false} style={{ borderRadius: '10px', border: '1px solid #e5e5e5', }}>
-      <Row justify="space-between" align="middle">
-        <Col span={18}>
-          <div>{title}</div>
-        </Col>
-        <Col>
-          <Switch defaultChecked />
-        </Col>
-      </Row>
-    </Card>
-  );
+
+const SwitchCard = ({ title }) => (
+  <Card bordered={false} style={{ borderRadius: '10px', border: '1px solid #e5e5e5', }}>
+    <Row justify="space-between" align="middle">
+      <Col span={18}>
+        <div>{title}</div>
+      </Col>
+      <Col>
+        <Switch defaultChecked />
+      </Col>
+    </Row>
+  </Card>
+);
 export default function AddNewAdminAccount() {
   const { TabPane } = Tabs;
   const history = useHistory();
@@ -87,7 +80,24 @@ export default function AddNewAdminAccount() {
   const queryParams = new URLSearchParams(location.search);
   const [fileList, setFileList] = useState([]);
   const [imageUrl, setImageUrl] = useState();
-  const id = queryParams.get("id");
+  // const id = queryParams.get("id");
+  const { id } = useParams();
+  // const dataMobileAppPer = [
+  //   { title: "Jobsites", key: "jobsites", check:true },
+  //   { title: "Machines", key: "machines", check:true },
+  //   { title: "Machine Reports", key: "machine_reports" , check:true},
+  //   { title: "Life Cycle Management", key: "life_cycle_management", check:true },
+  //   { title: "Order Management", key: "order_management" , check:true},
+  //   { title: "Inquiry Management", key: "inquiry_management" , check:true},
+  // ];
+  const [dataMobileAppPer, setDataMobileAppPer] = useState(
+    [{ title: "Jobsites", key: "jobsites", check: true },
+    { title: "Machines", key: "machines", check: true },
+    { title: "Machine Reports", key: "machine_reports", check: true },
+    { title: "Life Cycle Management", key: "life_cycle_management", check: true },
+    { title: "Order Management", key: "order_management", check: true },
+    { title: "Inquiry Management", key: "inquiry_management", check: true }]
+  )
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [alertModal, setAlertModal] = useState(false);
   const [country, setCountry] = useState([
@@ -394,26 +404,77 @@ export default function AddNewAdminAccount() {
   const [form1] = Form.useForm();
   const [form2] = Form.useForm();
   const onFinish = async (values) => {
-    // const image = await uploadImage(fileList);
-    console.log(form1.getFieldsValue());
-    try {
-      // handleOpenAlert()
+    const can_access = {
+      web_app: {
+        order_management: orderManagementCheck,
+        inquiry_management: InquirymanagementCheck,
+        operation_master: operationMasterCheck
+      },
+      mobile_app: dataMobileAppPer
+    }
 
-      const resp = await axiosInstance.post(`/api/admin/staff/store`, {
-        ...form1.getFieldsValue(),
-        ...form2.getFieldsValue(),
-        phone_no: countryCode + form1.getFieldValue("phone_no"),
-      });
-      // handleCloseAlert()
-      // history.goBack();
+    let profile_pic = imageUrl
 
-      console.log(resp);
-    } catch (error) {
-      console.error(error);
+    if (fileList.length > 0) {
+      profile_pic = await UploadImage(fileList);
+    }
+
+    let file = [];
+
+    const temp = selectedFiles.filter((item) => {
+      return item.url === undefined;
+    })
+
+    const temp2 = selectedFiles.filter((item) => {
+      return item.url !== undefined;
+    })
+
+    if (temp.length !== 0) {
+      const uploadPromise = temp.map(async (item) => {
+        if (item.url === undefined) {
+          const url = await UploadImage(item);
+          return url;
+        } else {
+          return item.url;
+        }
+      })
+
+      file = await Promise.all(uploadPromise);
+      console.log(file);
+    }
+
+    file = [...file, ...temp2.map((item) => {
+      return item.url
+    })];
+
+    if (id) {
+      try {
+        const resp = await axiosInstance.post(`/api/admin/customer-users/${id}/update`, {
+          ...form1.getFieldsValue(),
+          ...form2.getFieldsValue(),
+          parent_id:localStorage.getItem("parent_id"),
+          dob: form1.getFieldValue('dob')? form1.getFieldValue('dob').format('YYYY-MM-DD'):null,
+          phone_code: countryCode,
+          profile_pic,
+          documents: file,
+          can_access: JSON.stringify(can_access)
+          // documents: file,
+        })
+        message.success(resp.data.message); 
+        history.goBack();
+      } catch (error) {
+    
+        const errorResponse = error.response.data.message;
+        if (errorResponse && errorResponse.error) {
+          const errorMessage = errorResponse.error[0];
+
+          message.warn(errorMessage);
+        }
+      }
     }
   };
 
-  const sendStatus = async (status) => {};
+  const sendStatus = async (status) => { };
 
   // const onFinishFailed = (errorInfo) => {
   //   console.log("Failed:", errorInfo);
@@ -483,7 +544,56 @@ export default function AddNewAdminAccount() {
       }
     };
     fetchCountry();
+    if (id) {
+      getData();
+    }
   }, []);
+
+  const getData = async () => {
+    try {
+      const response = await axiosInstance.post(`/api/admin/customer-users/${id}/show`);
+      const data = response.data.item;
+      setImageUrl(data.profile_pic)
+      form1.setFieldsValue({
+        name: data.name,
+        email: data.email,
+        phone_no: data.phone_no,
+        nric_fin_number: data.nric_fin_number,
+        dob: data.dob ? moment(data.dob) : null,
+        gender: data.gender?.toString(),
+        role_id: data.role_id
+      })
+
+      form2.setFieldsValue({
+        postal_code: data.address.postal_code,
+        block_number: data.address.block_number,
+        street_number: data.address.street_number,
+        unit_number: data.address.unit_number,
+        level_number: data.address.level_number,
+        country: data.address.country
+
+      })
+      setSelectedFiles(data?.documents.map((item, index) => {
+        return {
+          url: item?.document_url,
+          name: `Document ${index + 1}`
+        }
+      }))
+      setCountryCode(data.phone_code)
+      const can_access = data.can_access 
+      if (can_access) {
+        setOrderManagementCheck(can_access.web_app.order_management)
+        setInquirymanagementCheck(can_access.web_app.inquiry_management)
+        setOperationMasterCheck(can_access.web_app.operation_master)
+        setDataMobileAppPer(can_access.mobile_app)
+      }
+      
+
+    } catch (error) {
+      console.error(error);
+      message.error(error.response.data.message);
+    }
+  }
 
   return (
     <div className="customTableBackground">
@@ -529,6 +639,7 @@ export default function AddNewAdminAccount() {
 
       <Tabs activeKey={activeTab} onTabClick={handleTabClick}>
         <TabPane
+
           tab={
             <div className="d-flex justify-content-center">
               <BasicDetail /> <span className="ml-2">Basic Details</span>
@@ -536,108 +647,276 @@ export default function AddNewAdminAccount() {
           }
           key="1"
         >
-          <div className="border rounded p-3 bg-white">
-            <div style={{ padding: "0px" }}>
-              <Row gutter={[16, 24]}>
-                {/* User Profile Picture */}
-                <Col span={12}>
-                  <div style={{ textAlign: "" }}>
-                    <Title level={5}>User Profile Picture</Title>
-                    <Avatar
-                      shape="square"
-                      size={100}
-                      src="https://via.placeholder.com/100"
-                      style={{ border: "1px dashed #d9d9d9" }}
+          <Form
+            layout="vertical"
+            // onFinish={onFinish}
+            // onFinishFailed={onFinishFailed}
+            form={form1}
+            name="control-hooks"
+          >
+            <div className="border rounded p-3 bg-white">
+              {" "}
+              <Form.Item name="profile_pic">
+                <Upload
+                  name="avatar"
+                  disabled
+                  listType="picture-card"
+                  className="avatar-uploader"
+                  showUploadList={false}
+                  beforeUpload={() => false}
+                  maxCount={1}
+                  onChange={handleChange}
+                  accept='image/*'
+                >
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt="avatar"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                      }}
                     />
-                  </div>
-                </Col>
+                  ) : (
+                    uploadButton
+                  )}
+                </Upload>
+              </Form.Item>
+              <div style={{ gap: "60px" }} className="d-flex ">
+                <div style={{ width: "45%" }}>
+                  <Form.Item
+                    name="name"
+                    label="Admin Name"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter Admin Name",
+                      }
+                    ]}
+                  >
+                    <Input disabled />
+                  </Form.Item>
+                </div>
+                <div style={{ width: "45%" }}>
 
-                {/* Company Logo */}
-                <Col span={12}>
-                  <div style={{ textAlign: "" }}>
-                    <Title level={5}>Company Logo (If Any)</Title>
-                    <Avatar
-                      shape="square"
-                      size={100}
-                      src="https://via.placeholder.com/100"
-                      style={{ border: "1px dashed #d9d9d9" }}
+                  {/* <Form.Item
+                                        name="workshop_user_name"
+                                        label="Workshop User name"
+                                        rules={[
+                                            { required: true, message: "Please enter full name" },
+                                        ]}
+                                    >
+                                        <Input placeholder="Workshop User name" />
+                                    </Form.Item> */}
+                </div>
+              </div>
+              <div style={{ gap: "60px" }} className="d-flex ">
+                <div style={{ width: "45%" }}>
+                  <Form.Item
+                    name="email"
+                    label="Email Id"
+                    rules={[
+                      { required: true, message: "Please enter Email Id" },
+                    ]}
+                  >
+                    <Input disabled style={{ width: "100%" }} placeholder="Email Id" />
+                  </Form.Item>
+                </div>
+                <div style={{ width: "45%" }}>
+
+                  {/* <Form.Item
+                                        name="workshop_user_name"
+                                        label="Workshop User name"
+                                        rules={[
+                                            { required: true, message: "Please enter full name" },
+                                        ]}
+                                    >
+                                        <Input placeholder="Workshop User name" />
+                                    </Form.Item> */}
+                  <div></div>
+                  <Form.Item
+                    name="phone_no"
+                    label="Phone Number"
+                    rules={[
+                      { required: true, message: "Please enter Full Name" },
+                    ]}
+                  >
+                    <Input disabled
+                      addonBefore={
+                        <Select
+                          // defaultValue={"In"}
+                          style={{
+                            width: 80,
+                          }}
+                          value={countryCode}
+                          onChange={(e) => {
+                            setCountryCode(e)
+                          }}
+                        >
+                          <Option value="+91">+91</Option>
+                          <Option value="+65">+65</Option>
+                        </Select>
+                      }
+                      style={{ width: "100%" }}
+                      placeholder="Phone number"
                     />
-                  </div>
-                </Col>
-              </Row>
+                  </Form.Item>
+                </div>
+              </div>
+              <div style={{ gap: "60px" }} className="d-flex ">
+                <div style={{ width: "45%" }}>
+                  <Form.Item
+                    name="nric_fin_number"
+                    label="NRIC/FIN"
+                    rules={[
+                      { required: true, message: "Please enter NRIC/FIN" },
+                    ]}
+                  >
+                    <Input disabled style={{ width: "100%" }} placeholder="NRIC/FIN" />
+                  </Form.Item>
+                </div>
+                <div style={{ width: "45%" }}>
+                  <Form.Item
+                    name="dob"
+                    label="Date of Birth"
+                    rules={[{ required: true, message: "Please enter DOB" }]}
+                  >
+                    <DatePicker disabled
+                      placeholder="Date of birth"
+                      style={{ width: "100%" }}
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+              <div style={{ gap: "60px" }} className="d-flex ">
+                <div style={{ width: "45%" }}>
+                  <Form.Item
+                    name="gender"
+                    label="Gender"
+                    rules={[
+                      { required: true, message: "Please select gender." },
+                    ]}
+                  >
+                    <Radio.Group disabled>
+                      <Radio value={"1"}>Male</Radio>
+                      <Radio value={"2"}>Female</Radio>
+                    </Radio.Group>
+                  </Form.Item>
+                </div>
+                <div style={{ width: "45%" }}>
+                  <Form.Item
+                    name="role_id"
+                    label="Role"
+                    rules={[
+                      { required: true, message: "Please select role." },
+                    ]}
+                  >
+                    <Radio.Group disabled>
+                      <Radio value={7}>Admin</Radio>
+                      <Radio value={8}>Manager</Radio>
+                      <Radio value={9}>User</Radio>
+                    </Radio.Group>
+                  </Form.Item>
+                </div>
+              </div>
 
-              <Row gutter={[16, 24]} style={{ marginTop: "40px" }}>
-                {/* Account ID */}
-                <Col span={12}>
-                  <Text strong>Account ID</Text>
-                  <br />
-                  <Text>#1234</Text>
-                </Col>
-
-                {/* Full Name */}
-                <Col span={12}>
-                  <Text strong>Full Name</Text>
-                  <br />
-                  <Text>John Smith</Text>
-                </Col>
-              </Row>
-
-              <Row gutter={[16, 24]} style={{ marginTop: "20px" }}>
-                {/* Email ID */}
-                <Col span={12}>
-                  <Text strong>Email ID</Text>
-                  <br />
-                  <Text>johnsmith@gmail.com</Text>
-                </Col>
-
-                {/* Phone Number */}
-                <Col span={12}>
-                  <Text strong>Phone Number</Text>
-                  <br />
-                  <Text>+65 1245896</Text>
-                </Col>
-              </Row>
-
-              <Row gutter={[16, 24]} style={{ marginTop: "20px" }}>
-                {/* Date of Birth */}
-                <Col span={12}>
-                  <Text strong>Date of Birth</Text>
-                  <br />
-                  <Text>12 Jun 1990</Text>
-                </Col>
-              </Row>
             </div>
-          </div>
+          </Form>
         </TabPane>
         <TabPane
+
           tab={
             <div className="d-flex justify-content-center">
-              <LocationIcon /> <span className="ml-2">Assign Jobsites</span>
+              <LocationIcon /> <span className="ml-2">Address Details</span>
             </div>
           }
           key="2"
         >
-          <div style={{ padding: "0", minHeight: "" }}>
-            <Search
-              placeholder="Search for jobsites"
-              // size="large"
-              onSearch={handleSearch}
-              style={{ marginBottom: "20px" }}
-            />
+          <Form
+            layout="vertical"
+            // onFinish={onFinish}
+            // onFinishFailed={onFinishFailed}
+            form={form2}
+            name="control-hooks"
+          >
+            <div className="border rounded p-3 bg-white">
 
-            <Table columns={columns1} dataSource={data1} rowKey="id" />
-          </div>
+              <div style={{ gap: "60px" }} className="d-flex ">
+                <div style={{ width: "45%" }}>
+                  <Form.Item
+                    label={'Postal Code'}
+                    name="postal_code"
+                    rules={[{ required: true, message: 'Please enter the postal code!' }]}
+                  >
+                    <Input disabled placeholder="Postal Code" style={{ width: '100%' }} />
+                  </Form.Item>
+                </div><div style={{ width: "45%" }}>
+                  <Form.Item
+                    label={'Block Number'}
+                    name="block_number"
+                    rules={[{ required: true, message: 'Please enter the block number!' }]}
+                  >
+                    <InputNumber disabled placeholder="Block Number" style={{ width: '100%' }} />
+                  </Form.Item>
+                </div>
+              </div>
+              <div style={{ gap: "60px" }} className="d-flex ">
+                <div style={{ width: "45%" }}>
+                  <Form.Item
+                    label={'Street Number'}
+                    name="street_number"
+                    rules={[{ required: true, message: 'Please enter the street number!' }]}
+                  >
+                    <Input disabled placeholder="Street Number" style={{ width: '100%' }} />
+                  </Form.Item>
+                </div><div style={{ width: "45%" }}>
+                  <Form.Item
+                    label={'Unit Number'}
+                    name="unit_number"
+                    rules={[{ required: true, message: 'Please enter the unit number!' }]}
+                  >
+                    <Input disabled placeholder='Unit Number' style={{ width: '100%' }} />
+                  </Form.Item>
+                </div>
+              </div>
+              <div style={{ gap: "60px" }} className="d-flex ">
+                <div style={{ width: "45%" }}>
+
+                  <Form.Item
+                    label={'Level Number'}
+                    name="level_number"
+                    rules={[{ required: true, message: 'Please enter the level number!' }]}
+                  >
+                    <Input disabled placeholder="Level Number" style={{ width: '100%' }} />
+                  </Form.Item>
+                </div><div style={{ width: "45%" }}>
+                  <Form.Item
+                    label={'Country'}
+                    name="country"
+                    rules={[{ required: true, message: 'Please select a country!' }]}
+                  >
+                    <Select disabled placeholder='Country' style={{ width: '100%' }}>
+                      <Option value={155}>Singapore</Option>
+                      <Option value={75}>India</Option>
+                      {/* Add more countries as needed */}
+                    </Select>
+                  </Form.Item>
+                </div>
+              </div>
+            </div>
+          </Form>
         </TabPane>
         <TabPane
-          //   disabled={true}
+
           tab={
             <div className="d-flex justify-content-center">
-              <UploadDocument /> <span className="ml-2">Upload Documents</span>
+              <UploadDocument />{" "}
+              <span className="ml-2">Upload Documents</span>
             </div>
           }
           key="3"
         >
-          <div className="border bg-white rounded p-3">
+          <div className="border bg-white rounded p-3 mt-4">
             <div className="d-flex flex-column justify-content-center align-items-center position-relative uploaddoc">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -678,13 +957,13 @@ export default function AddNewAdminAccount() {
               <h5 className="mb-0" style={{ color: "#3CA6C1" }}>
                 Choosen File
               </h5>
-              <input
+              {/* <input
                 style={styles.uploadFile}
                 className="uploadFile"
                 type="file"
                 multiple
                 onChange={handleFileSelect}
-              />
+              /> */}
             </div>
             <div className="mt-4">
               {selectedFiles.length > 0 && (
@@ -695,14 +974,17 @@ export default function AddNewAdminAccount() {
                       <div className="d-flex align-items-center">
                         <UploadFileIcon />{" "}
                         <span className="ml-2">{file.name} </span>{" "}
+                        <span className="ml-5">
+                          {file.url ? (<EyeOutlined style={{ cursor: "pointer" }} onClick={() => window.open(file.url)} />) : null}
+                        </span>
                       </div>
-                      <span
+                      {/* <span
                         style={{ cursor: "pointer" }}
                         onClick={() => delUplFile(i)}
                       >
                         {" "}
                         <CloseCircleOutlined />{" "}
-                      </span>
+                      </span> */}
                     </li>
                   ))}
                 </ul>
@@ -725,13 +1007,13 @@ export default function AddNewAdminAccount() {
               {/* Web App Tab */}
               <TabPane
                 tab={
-                  <div className="d-flex align-items-center justify-content-center" style={{gap:'5px'}}>
-                    <Checkbox
+                  <div className="d-flex align-items-center justify-content-center" style={{ gap: '5px' }}>
+                    {/* <Checkbox
                       onChange={onWebAppCheckAllChange}
                       checked={webAppChecked}
                     >
-                    </Checkbox>
-                      Web App
+                    </Checkbox> */}
+                    Web App
                   </div>
                 }
                 key="1"
@@ -744,38 +1026,61 @@ export default function AddNewAdminAccount() {
                         border: "1px solid #d9d9d9",
                         borderRadius: "8px",
                         padding: "20px",
-                        minHeight:'300px'
+                        minHeight: '300px'
                       }}
                     >
                       <Row justify="space-between" align="middle">
                         <Title level={5}>Order Management</Title>
-                        <Switch
+                        {/* <Switch
                           checked={orderManagement}
-                          onChange={(checked) => setOrderManagement(checked)}
-                        />
+                          onChange={(checked) => {
+                            setOrderManagement(checked)
+                            if(checked){
+                              setOrderManagementCheck((previos) => {
+                                return previos.map((elm) => {
+                                  return {
+                                    ...elm,
+                                    check: true
+                                  }
+                                })
+                              })
+                            }else{
+                              setOrderManagementCheck((previos) => {
+                                return previos.map((elm) => {
+                                  return {
+                                    ...elm,
+                                    check: false
+                                  }
+                                })
+                              })
+                            }
+                          }}
+                        /> */}
                       </Row>
                       <Divider />
                       <div className="d-flex flex-column">
-                      {
-                        orderManagementCheck.map((element, index) =>{
-                            return<>
-                        <Checkbox disabled={!orderManagement} style={{margin:'0'}} key={index} checked={element.check} onChange={(val)=>setOrderManagementCheck((previos)=>{
-                            return previos.map((elm,i)=>{
-                                if (i==index) {
-                                    return {
+                        {
+                          orderManagementCheck.map((element, index) => {
+                            return <>
+                              <Checkbox
+                                //  disabled={!orderManagement}
+                                style={{ margin: '0' }} key={index} checked={element.check} onChange={(val) => setOrderManagementCheck((previos) => {
+                                  return previos.map((elm, i) => {
+                                    if (i == index) {
+                                      return {
                                         ...elm,
-                                        check:val.target.checked,
+                                        check: val.target.checked,
+                                      }
+                                    } else {
+                                      return elm
                                     }
-                                } else {
-                                    return elm
-                                }
-                            })
-                        })}>
-                            {element.label}
-                        </Checkbox>
+                                  })
+                                })}>
+                                {element.label}
+                              </Checkbox>
                             </>
-                        })
-                      }
+                          })
+                        }
                       </div>
                     </div>
                   </Col>
@@ -787,38 +1092,62 @@ export default function AddNewAdminAccount() {
                         border: "1px solid #d9d9d9",
                         borderRadius: "8px",
                         padding: "20px",
-                        minHeight:'300px'
+                        minHeight: '300px'
                       }}
                     >
                       <Row justify="space-between" align="middle">
                         <Title level={5}>Inquiry Management</Title>
-                        <Switch
+                        {/* <Switch
                           checked={inquiryManagement}
-                          onChange={(checked) => setInquiryManagement(checked)}
-                        />
+                          onChange={(checked) => {
+                            setInquiryManagement(checked)
+                            if(checked){
+                              setInquirymanagementCheck((previos) => {
+                                return previos.map((elm) => {
+                                  return {
+                                    ...elm,
+                                    check: true
+                                  }
+                                })
+                              })
+                            }else{
+                              setInquirymanagementCheck((previos) => {
+                                return previos.map((elm) => {
+                                  return {
+                                    ...elm,
+                                    check: false
+                                  }
+                                })
+                              })
+                            }
+                          }}
+                        /> */}
                       </Row>
                       <Divider />
                       <div className="d-flex flex-column">
-                      {
-                        InquirymanagementCheck.map((element, index) =>{
-                            return<>
-                        <Checkbox disabled={!inquiryManagement} style={{margin:'0'}} key={index} checked={element.check} onChange={(val)=>setInquirymanagementCheck((previos)=>{
-                            return previos.map((elm,i)=>{
-                                if (i==index) {
-                                    return {
+                        {
+                          InquirymanagementCheck.map((element, index) => {
+                            return <>
+                              <Checkbox
+                                // disabled={!inquiryManagement} 
+
+                                style={{ margin: '0' }} key={index} checked={element.check} onChange={(val) => setInquirymanagementCheck((previos) => {
+                                  return previos.map((elm, i) => {
+                                    if (i == index) {
+                                      return {
                                         ...elm,
-                                        check:val.target.checked,
+                                        check: val.target.checked,
+                                      }
+                                    } else {
+                                      return elm
                                     }
-                                } else {
-                                    return elm
-                                }
-                            })
-                        })}>
-                            {element.label}
-                        </Checkbox>
+                                  })
+                                })}>
+                                {element.label}
+                              </Checkbox>
                             </>
-                        })
-                      }
+                          })
+                        }
                       </div>
                     </div>
                   </Col>
@@ -830,37 +1159,60 @@ export default function AddNewAdminAccount() {
                         border: "1px solid #d9d9d9",
                         borderRadius: "8px",
                         padding: "20px",
-                        minHeight:'300px'
+                        minHeight: '300px'
                       }}
                     >
                       <Row justify="space-between" align="middle">
                         <Title level={5}>Operation Master</Title>
-                        <Switch
+                        {/* <Switch
                           checked={operationMaster}
-                          onChange={(checked) => setOperationMaster(checked)}
-                        />
+                          onChange={(checked) =>{
+                            setOperationMaster(checked)
+                            if(checked){
+                              setOperationMasterCheck((previos) => {
+                                return previos.map((elm) => {
+                                  return {
+                                    ...elm,
+                                    check: true
+                                  }
+                                })
+                              })
+                            }else{
+                              setOperationMasterCheck((previos) => {
+                                return previos.map((elm) => {
+                                  return {
+                                    ...elm,
+                                    check: false
+                                  }
+                                })
+                              })
+                            }
+                          }}
+                        /> */}
                       </Row>
                       <Divider />
-                      {
-                        operationMasterCheck.map((element, index) =>{
-                            return<>
-                        <Checkbox disabled={!operationMaster} style={{margin:'0'}} key={index} checked={element.check} onChange={(val)=>setOperationMasterCheck((previos)=>{
-                            return previos.map((elm,i)=>{
-                                if (i==index) {
+                      <div className="d-flex flex-column">
+                        {
+                          operationMasterCheck.map((element, index) => {
+                            return <>
+                              <Checkbox style={{ margin: '0' }} key={index} checked={element.check} onChange={(val) => setOperationMasterCheck((previos) => {
+                                return previos.map((elm, i) => {
+                                  if (i == index) {
                                     return {
-                                        ...elm,
-                                        check:val.target.checked,
+                                      ...elm,
+                                      check: val.target.checked,
                                     }
-                                } else {
+                                  } else {
                                     return elm
-                                }
-                            })
-                        })}>
-                            {element.label}
-                        </Checkbox>
+                                  }
+                                })
+                              })}>
+                                {element.label}
+                              </Checkbox>
                             </>
-                        })
-                      }
+                          })
+                        }
+                      </div>
                     </div>
                   </Col>
                 </Row>
@@ -869,24 +1221,57 @@ export default function AddNewAdminAccount() {
               {/* Mobile App Tab */}
               <TabPane
                 tab={
-                  <div className="d-flex align-items-center justify-content-center" style={{gap:'5px'}}>
-                    <Checkbox
+                  <div className="d-flex align-items-center justify-content-center" style={{ gap: '5px' }}>
+                    {/* <Checkbox
                       onChange={onMobileAppCheckAllChange}
                       checked={mobileAppChecked}
                     >
-                    </Checkbox>
-                      Mobile App
+                    </Checkbox> */}
+                    Mobile App
                   </div>
                 }
                 key="2"
               >
                 <Row gutter={[24, 24]} style={{ padding: '20px' }}>
-    {dataMobileAppPer.map((item) => (
-      <Col xs={24} sm={12} key={item.key}>
-        <SwitchCard title={item.title} />
-      </Col>
-    ))}
-  </Row>
+                  {dataMobileAppPer.map((item) => (
+                    <Col xs={24} sm={12} key={item.key}>
+                      {/* <SwitchCard title={item.title}
+                       
+                      /> */}
+                      <Card>
+                        <div  style={{
+                        display: 'flex',
+                        justifyContent: 'space-between'
+                      }}>
+                        <div>
+                          {item.title}
+                        </div>
+                        <div>
+                          <Switch
+                             checked={item.check}
+                             onChange={(checked) => {
+                               console.log(checked);
+                               setDataMobileAppPer((prev)=>{
+                                 return prev.map((elm)=>{
+                                   if(elm.key === item.key){
+                                     return {
+                                       ...elm,
+                                       check: checked
+                                     }
+                                   }else{
+                                     return elm
+                                   }
+                                 })
+                               })
+     
+                             }}
+                          />
+                        </div>
+                        </div>
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
               </TabPane>
             </Tabs>
           </div>
@@ -897,25 +1282,25 @@ export default function AddNewAdminAccount() {
           style={{ gap: "10px" }}
           className="mt-5 d-flex justify-content-end"
         >
-          <Button
+          {/* <Button
             className="px-4 font-weight-semibold"
             htmlType="button"
             onClick={handleBackClick}
           >
             Back
-          </Button>
-          {/* <Button className="px-4 font-weight-semibold" htmlType="button">
-                            Save Draft
-                        </Button> */}
-          <Button
+          </Button> */}
+         
+          {
+            activeTab=="4" &&
+            <Button
             className="px-4 bg-primary font-weight-semibold text-white bg-info"
             htmlType="submit"
             onClick={() => {
-              handleNext(activeTab);
+              onFinish();
             }}
           >
-            {activeTab === "3" ? "Save" : "Next"}
-          </Button>
+            Save
+          </Button>}
         </div>
       </Form.Item>
 
