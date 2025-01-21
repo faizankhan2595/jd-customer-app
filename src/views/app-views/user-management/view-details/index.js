@@ -24,6 +24,7 @@ import { Tabs } from "antd";
 import {
   CloseCircleOutlined,
   EnvironmentOutlined,
+  EyeOutlined,
   PlusOutlined,
   TeamOutlined,
   UserSwitchOutlined,
@@ -49,6 +50,7 @@ import {
   Divider,
 } from "antd";
 import { MoreOutlined, SearchOutlined } from "@ant-design/icons";
+import { UploadImage } from "utils/Upload";
 
 const { Search } = Input;
 const { Title, Text } = Typography;
