@@ -581,11 +581,11 @@ export default function AddNewAdminAccount() {
       }))
       setCountryCode(data.phone_code)
       const can_access = data.can_access 
-      if (can_access) {
-        setOrderManagementCheck(can_access.web_app.order_management)
-        setInquirymanagementCheck(can_access.web_app.inquiry_management)
-        setOperationMasterCheck(can_access.web_app.operation_master)
-        setDataMobileAppPer(can_access.mobile_app)
+      if (Object.keys(can_access).length !== 0) {
+        setOrderManagementCheck(can_access?.web_app?.order_management)
+        setInquirymanagementCheck(can_access?.web_app?.inquiry_management)
+        setOperationMasterCheck(can_access?.web_app?.operation_master)
+        setDataMobileAppPer(can_access?.mobile_app)
       }
       
 
