@@ -174,6 +174,7 @@ export default function AddNewAdminAccount() {
                     ...form1.getFieldsValue(),
                     ...form2.getFieldsValue(),
                     dob: form1.getFieldValue('dob').format('YYYY-MM-DD'),
+                    parent_id:localStorage.getItem("parent_id"),
                     phone_code: countryCode,
                     profile_pic,
                     documents: file,
@@ -198,6 +199,7 @@ export default function AddNewAdminAccount() {
                     ...form1.getFieldsValue(),
                     ...form2.getFieldsValue(),
                     phone_code: countryCode,
+                    parent_id:localStorage.getItem("parent_id"),
                     profile_pic,
                     dob: form1.getFieldValue('dob').format('YYYY-MM-DD'),
 

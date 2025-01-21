@@ -54,9 +54,14 @@ const StaffManagement = () => {
   };
   const [data, setData] = useState([]);
 
-  const getData = async () => {
+  const getData = async (search="",status="") => {
+    let url = `?search=${search}`
+    //for 0 it is not handling
+    if((status !== '' && status != 'all')) {
+      url += `&status=${status}`
+    }
     try {
-      const resp = await axiosInstance.post('/api/admin/customer-users/list');
+      const resp = await axiosInstance.post('/api/admin/customer-users/list'+url);
       setData(resp.data);
     } catch (err) {
       console.log(err)
@@ -172,24 +177,61 @@ const StaffManagement = () => {
     console.log('Received values:', values);
     // You can handle form submission logic here
   };
+  const [searchText, setSearchText] = useState('');
+  var timeout = ""
+  const onSearch = (value) => {
+    setSearchText(value.target.value)
+    clearTimeout(timeout)
+    timeout = setTimeout(() => {
+      getData(value.target.value,selectedStatus==='all'?'':selectedStatus==='pending-approval'?0:selectedStatus==='approved'?1:2);
+    }, 500)
+  }
+   const [selectedStatus, setSelectedStatus] = useState('all');
+  const handleStatusChange = (filter) => {
+    setSelectedStatus(filter);
+    getData(searchText,filter==='all'?'':filter==='pending-approval'?0:filter==='approved'?1:2);
 
+  };
 
-  const onSearch = (value) => console.log(value);
 
 
   const FilterMenu = (
     <Menu mode="horizontal">
-      <SubMenu key="item1" title="Status">
-        <Menu.Item key="subitem1">
-          <Checkbox>All</Checkbox>
-        </Menu.Item>{" "}
-        <Menu.Item key="subitem2">
-          <Checkbox>Active</Checkbox>
+          <SubMenu key="status" title="Status">
+        <Menu.Item key="status-all">
+          <Checkbox
+            checked={selectedStatus === 'all'}
+            onChange={() => handleStatusChange('all')}
+          >
+            All
+          </Checkbox>
         </Menu.Item>
-        <Menu.Item key="subitem3">
-          <Checkbox>Terminated</Checkbox>
+        <Menu.Item key="status-active">
+          <Checkbox
+            checked={selectedStatus === 'pending-approval'}
+            onChange={() => handleStatusChange('pending-approval')}
+          >
+            Pending Approval
+          </Checkbox>
+        </Menu.Item>
+        <Menu.Item key="status-inactive">
+          <Checkbox
+            checked={selectedStatus === 'approved'}
+            onChange={() => handleStatusChange('approved')}
+          >
+            Approved
+          </Checkbox>
+        </Menu.Item>
+        <Menu.Item key="status-rejected">
+          <Checkbox
+            checked={selectedStatus === 'rejected'}
+            onChange={() => handleStatusChange('rejected')}
+          >
+            Rejected
+          </Checkbox>
         </Menu.Item>
       </SubMenu>
+
     </Menu>
   );
 
@@ -206,6 +248,7 @@ const StaffManagement = () => {
             <Input
               placeholder="Search"
               allowClear
+              value={searchText}
               onChange={onSearch}
               style={{
                 width: 200,
