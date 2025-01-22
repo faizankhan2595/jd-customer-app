@@ -79,7 +79,7 @@ function Index() {
             }}
             checked={selectedFilter == 1}
 
-          >Completed</Checkbox>
+          >Open</Checkbox>
         </Menu.Item>
         <Menu.Item key="subitem3"
 

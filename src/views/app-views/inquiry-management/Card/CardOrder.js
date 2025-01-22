@@ -44,7 +44,7 @@ function CardOrder({data}) {
                         {/* <div></div> */}
                         <div>
                             {
-                                data.inquiry_status === 0 ? <Tag color="orange">Closed</Tag> : <Tag color="green">Completed</Tag>
+                                data.inquiry_status === 0 ? <Tag color="orange">Closed</Tag> : <Tag color="green">Open</Tag>
                             }
                         </div>
                     </div>

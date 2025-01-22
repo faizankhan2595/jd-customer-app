@@ -28,7 +28,7 @@ function TraverlerRemarksReplyContainer({ index, editedLogs, remarksReply, setRe
                                     color: 'gray'
                                 }}>{moment(item.createdAt).format('DD MMM YYYY hh:mm a')}</div>
                             </div>
-                            {item.previousFilePath ?
+                            {/* {item.previousFilePath ?
                                         <div style={{
                                             display: 'flex',
                                             flexDirection: 'column',
@@ -62,8 +62,9 @@ function TraverlerRemarksReplyContainer({ index, editedLogs, remarksReply, setRe
                                             }
 
                                         </div>
-                                        :
-                                        <div>{item.previousContent}</div>}
+                                        : */}
+                                        <div>{item.comment}</div>
+                                        {/* } */}
 
                         </>
                     )
