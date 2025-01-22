@@ -65,10 +65,13 @@ function AddOrder() {
         machine_faults: machineFault,
         files:file,
         model: machineData.find((item) => item.id === values.machine_id).model,
-        status:"Order Created"
+        status:0,
+        //    0 -> Order Created 
       });
       if (response.status === 200) {
         console.log("response", response);
+        message.success("Order created successfully");
+        history.push("/app/order-management");
       }
     } catch (error) {
       console.error("Error fetching data:", error);
