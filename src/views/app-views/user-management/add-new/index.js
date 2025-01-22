@@ -136,9 +136,10 @@ export default function AddNewAdminAccount() {
     const onFinish = async (values) => {
         let profile_pic = imageUrl
 
-        if (fileList.length > 0) {
-            profile_pic = await UploadImage(fileList);
-        }
+        console.log(fileList);
+      if(profile_pic.includes('base64')){
+         profile_pic = await UploadImage(fileList);
+     }
 
         let file = [];
 

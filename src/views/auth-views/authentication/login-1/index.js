@@ -142,8 +142,8 @@ const LoginOne = props => {
 			console.log(res.data)
 			if(res.data.item.token?.token){
 				message.success('Logged in successfully');
-
-				localStorage.setItem("parent_id",res.data.item.user?.parent_id)
+				localStorage.setItem("user",res.data.item.user?.company_name);
+				localStorage.setItem("parent_id",res.data.item.user?.parent_id);
 				localStorage.setItem('token', res.data.item.token?.token);
 				window.location.reload();
 			}else{

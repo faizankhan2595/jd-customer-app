@@ -140,11 +140,11 @@ export default function AddNewTechnician() {
         console.log(selectedFiles);
         // const image = await uploadImage(fileList);
         let profile_pic = imageUrl
-        console.log('profile_pic', fileList)
-        if(fileList.length>0 && id || fileList && !id){
-            profile_pic = await UploadImage(fileList);
-        }
 
+        console.log(fileList);
+      if(profile_pic.includes('base64')){
+         profile_pic = await UploadImage(fileList);
+     }
         let file= [];
         const temp = selectedFiles.filter((item) => {
             return item.url === undefined;
