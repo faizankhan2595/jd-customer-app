@@ -171,7 +171,7 @@ export default function AddNewAdminAccount() {
 
         if (id) {
             try {
-                const resp = await axiosInstance.put(`/api/admin/staff/${id}/update`, {
+                const resp = await axiosInstance.post(`/api/admin/customer-users/${id}/update`, {
                     ...form1.getFieldsValue(),
                     ...form2.getFieldsValue(),
                     dob: form1.getFieldValue('dob').format('YYYY-MM-DD'),
@@ -196,7 +196,7 @@ export default function AddNewAdminAccount() {
             try {
                 // handleOpenAlert()
 
-                const resp = await axiosInstance.post(`/api/admin/staff/store`, {
+                const resp = await axiosInstance.post(`/api/admin/customer-users/store`, {
                     ...form1.getFieldsValue(),
                     ...form2.getFieldsValue(),
                     phone_code: countryCode,
@@ -319,12 +319,12 @@ export default function AddNewAdminAccount() {
             })
 
             form2.setFieldsValue({
-                postal_code: data.address.postal_code,
-                block_number: data.address.block_number,
-                street_number: data.address.street_number,
-                unit_number: data.address.unit_number,
-                level_number: data.address.level_number,
-                country: data.address.country
+                postal_code: data.address?.postal_code,
+                block_number: data.address?.block_number,
+                street_number: data.address?.street_number,
+                unit_number: data.address?.unit_number,
+                level_number: data.address?.level_number,
+                country: data.address?.country
 
             })
             setSelectedFiles(data?.documents.map((item, index) => {

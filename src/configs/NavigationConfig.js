@@ -3,6 +3,7 @@ import {
   DashboardOutlined,
   EnvironmentOutlined,
   FileOutlined,
+  LaptopOutlined,
   QuestionCircleOutlined,
   SettingOutlined,
   TeamOutlined,
@@ -121,7 +122,7 @@ else{
     key: 'technician-management',
     path: `${APP_PREFIX_PATH}/technician-management`,
     title: 'Technician Management',
-    icon: ToolOutlined,
+    icon: LaptopOutlined,
     breadcrumb: false,
     submenu: []
   },

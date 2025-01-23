@@ -11,6 +11,7 @@ import {
   Table,
   Checkbox,
   Empty,
+  Card,
 } from "antd";
 import { Space, Tag } from "antd";
 import {
@@ -36,13 +37,16 @@ import { axiosInstance } from "App";
 import CalendarIcon from "assets/calendar.png";
 import moment from "moment";
 import CardOrder from "./Card/CardOrder";
+import SubMenu from "antd/lib/menu/SubMenu";
 
 function OrderManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const history = useHistory();
   const [data, setData] = useState([]);
   const [searchText, setSearchText] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState("all");
+  // const [selectedFilter, setSelectedFilter] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedWorkshop, setSelectedWorkshop] = useState('all');
   const getMenu = (record) => (
     <Menu>
       <Menu.Item key="edit" onClick={() => handleView(record.id)}>
@@ -118,35 +122,107 @@ function OrderManagement() {
     setSearchText(value.target.value)
     clearTimeout(timeout)
     timeout = setTimeout(() => {
-      getOrderList(value.target.value, selectedFilter)
+      getOrderList(value.target.value, selectedStatus=='active'?1:selectedStatus=='inactive'?0:'all'
+
+        , 
+        selectedWorkshop=='Onsite'?'Onsite':selectedWorkshop=='Workshop'?'Workshop':'all'
+      )
     }, 500)
   }
+
+  const handleStatusChange = (filter) => {
+    setSelectedStatus(filter);
+    getOrderList(searchText,filter=='active'?1:filter=='inactive'?0:'all',
+    selectedWorkshop=='Onsite'?'Onsite':selectedWorkshop=='Workshop'?'Workshop':'all'
+
+    );
+    // Trigger the data fetch or update logic here for status
+    console.log(`Applied status filter: ${filter}`);
+  };
+
+  const handleService = (filter) => {
+    setSelectedWorkshop(filter);
+    getOrderList(searchText,selectedStatus=='active'?1:selectedStatus=='inactive'?0:'all', 
+    filter=='Onsite'?'Onsite':filter=='Workshop'?'Workshop':'all'
+
+    );
+    // Trigger the data fetch or update logic here for workshop
+    console.log(`Applied workshop filter: ${filter}`);
+  };
+
+
   const FilterMenu = (
     <Menu mode="horizontal">
-      <Menu.SubMenu key="item1" title="Service Type">
-        <Menu.Item key="subitem1">
-          <Checkbox>All</Checkbox>
-        </Menu.Item>{" "}
-        <Menu.Item key="subitem3">
-          <Checkbox>workshop</Checkbox>
-        </Menu.Item>{" "}
-        <Menu.Item key="subitem2">
-          <Checkbox>Onsite</Checkbox>
+      {/* Status Filter */}
+      <SubMenu key="status" title="Status">
+        <Menu.Item key="status-all">
+          <Checkbox
+            checked={selectedStatus === 'all'}
+            onChange={() => handleStatusChange('all')}
+          >
+            All
+          </Checkbox>
         </Menu.Item>
-      </Menu.SubMenu>
+        <Menu.Item key="status-active">
+          <Checkbox
+            checked={selectedStatus === 'active'}
+            onChange={() => handleStatusChange('active')}
+          >
+            Completed
+          </Checkbox>
+        </Menu.Item>
+        <Menu.Item key="status-inactive">
+          <Checkbox
+            checked={selectedStatus === 'inactive'}
+            onChange={() => handleStatusChange('inactive')}
+          >
+            Order Created
+          </Checkbox>
+        </Menu.Item>
+      </SubMenu>
 
-      <Menu.SubMenu key="item2" title="Status">
-        <Menu.Item key="subitem5">
-          <Checkbox>All</Checkbox>
-        </Menu.Item>{" "}
-      </Menu.SubMenu>
+      {/* Workshop Filter */}
+      {/* <SubMenu key="serviceType" title="Service Type">
+        <Menu.Item key="service-all">
+          <Checkbox
+            checked={selectedWorkshop === 'all'}
+            onChange={() => handleService('all')}
+          >
+            All
+          </Checkbox>
+        </Menu.Item>
+        <Menu.Item key="service-onsite">
+          <Checkbox
+            checked={selectedWorkshop === 'Onsite'}
+            onChange={() => handleService('Onsite')}
+          >
+            Onsite
+          </Checkbox>
+         
+
+        </Menu.Item>
+        <Menu.Item key="service-workshop">
+         <Checkbox
+            checked={selectedWorkshop === 'Workshop'}
+            onChange={() => handleService('Workshop')}
+          >
+            Workshop
+          </Checkbox>
+        </Menu.Item>
+
+      </SubMenu> */}
     </Menu>
   );
-  const getOrderList = async (search="",filter="") => {
+  
+  
+  const getOrderList = async (search="",filter="",service="") => {
     let url = `?search=${search}`
     //for 0 it is not handling
     if((filter !== '' && filter != 'all')) {
       url += `&status=${filter}`
+    }
+    if((service !== '' && service != 'all')) {
+      url += `&maintenance_service_type=${service}`
     }
     const res1 = await axiosInstance.get("api/web/orders"+url);
     console.log("res1", res1);
@@ -212,26 +288,26 @@ function OrderManagement() {
           </Button>
         </div>
       </div>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          // justifyContent:"space-between",
-          gap: "20px",
-        }}
-      >
+      
         {data.length > 0 ? (
-          <>
+          <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            // justifyContent:"space-between",
+            gap: "20px",
+          }}
+        >
             {data.map((item) => (
               <CardOrder key={item.id} data={item} />
             ))}
-          </>
-        ) : (
-          <div>
-            <Empty />
           </div>
+        ) : (
+          <Card>
+          <Empty />
+        </Card>
         )}
-      </div>
+      
     </div>
   );
 }

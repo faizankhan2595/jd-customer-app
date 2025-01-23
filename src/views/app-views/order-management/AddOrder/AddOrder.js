@@ -14,6 +14,7 @@ import { axiosInstance } from "App";
 import { UploadFileIcon } from "assets/svg/icon";
 import UploadImage from "assets/uploadDocument.svg";
 import React, { useEffect, useState } from "react";
+import { useHistory } from "react-router-dom/cjs/react-router-dom";
 
 function AddOrder() {
   const [form] = Form.useForm();
@@ -25,6 +26,7 @@ function AddOrder() {
   const [machineFaultInput, setMachineFaultInput] = React.useState("");
   const [machineFault, setMachineFault] = React.useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const history = useHistory();
 
   const onFinish = async (values) => {
     // console.log("values", values);
