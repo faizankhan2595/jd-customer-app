@@ -6,11 +6,12 @@ import TravelerRemarksReply from './TravelerRemarksReply'
 import TraverlerRemarksReplyContainer from './TraverlerRemarksReplyContainer'
 import { InboxOutlined, UploadOutlined } from '@ant-design/icons'
 import Dragger from 'antd/lib/upload/Dragger'
+import { axiosInstance } from 'App'
 
 function TravelerRemarks({ id, remarksArray, getRemarks, remarksModal, setRemarksModal, remarksReply, setRemarksReply, remarksReplying, setRemarksReplying,imageUrl,setImageUrl }) {
     const BASE_URL = '';
     const [remarks, setRemarks] = useState('')
-
+    // console.log()
 
     const [remarksArrayFinal, setRemarksArrayFinal] = useState(remarksArray)
 
@@ -23,24 +24,7 @@ function TravelerRemarks({ id, remarksArray, getRemarks, remarksModal, setRemark
     }
 
 
-    const uploadDocument = async (fileList) => {
-        try {
-            const formData = new FormData();
-            formData.append("file", fileList);
-            const response = await axios.post(`${BASE_URL}/api/timelines/upload`, formData, {
-                headers: {
-                    Authorization: 'Bearer ' + sessionStorage.getItem('adminToken')
 
-                }
-            });
-            console.log(response.data?.data?.location)
-            return response.data?.data?.location
-
-        } catch (error) {
-            console.error('Error during image upload:', error);
-            throw error;
-        }
-    };
     const handlePreview = (file) => {
         if (file.originFileObj) {
             const fileUrl = URL.createObjectURL(file.originFileObj);
@@ -59,7 +43,24 @@ function TravelerRemarks({ id, remarksArray, getRemarks, remarksModal, setRemark
             return
         }
       
-
+        try {
+            const response = await axiosInstance.post(`/api/web/inquiries/${id}/comments`, {
+                // content: remarks,
+                // inquiryId: id,
+                comment: remarks,
+                parent_id: remarksReplying,
+                // type: 'TRAVELER',
+                // filePath: imageUrl.length>0?imageUrl[0].response.data.location:null
+            })
+            setRemarks('')
+            // setImageUrl([])
+            getRemarks()
+            message.success('Remarks posted successfully')
+            setRemarksModal(false) 
+        }catch(err){
+            console.log(err);
+            message.error('Error while posting remarks')
+        }
 
 
    
@@ -70,7 +71,7 @@ function TravelerRemarks({ id, remarksArray, getRemarks, remarksModal, setRemark
         <div>
 
 
-            <h3>Traveler Remarks</h3>
+            <h3>Remarks</h3>
             <Divider />
 
             <div>
@@ -92,108 +93,7 @@ function TravelerRemarks({ id, remarksArray, getRemarks, remarksModal, setRemark
             </div>
 
 
-            {remarksArrayFinal.length > 0 && <>     <Divider />  <Card>
-                <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '17px'
-                }}>
-                    {
-                        remarksArrayFinal.map((item, index) => {
-                            return (
-                                <div key={index} style={{
-                                    backgroundColor: remarksReply[index] ? '#F7F7F7' : 'white',
-                                    padding: '10px',
-                                    borderRadius: '10px',
-                                }}>
-                                    <div style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "10px",
-                                    }}>
-                                        <div style={{
-                                            fontSize: '16px',
-                                            fontWeight: 500,
-                                            color: 'black'
-                                        }}>{item.addedByName}</div>
-                                        <div style={{
-                                            fontSize: '12px',
-                                            color: 'gray'
-                                        }}>{moment(item.createdAt).format('DD MMM YYYY hh:mm a')}</div>
-                                    </div>
-                                    {item.filePath ?
-                                        <div style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: '10px',
-                                            // boxShadow: '0px 0px 5px 0px rgba(0,0,0,0.1)',
-                                            width: '40%',
-
-                                        }}>
-                                            {
-                                                item.filePath.split('.').pop() === 'pdf' ? <> <a style={{
-                                                    textDecoration: 'underline',
-                                                    color: '#2EA3F2',
-                                                    fontWeight: 700,
-                                                    cursor: 'pointer',
-                                                    // padding: '10px'
-                                                }} href={item.filePath} target="_blank" rel="noreferrer">PDF</a>   <Card style={{
-                                                        
-
-                                                }}>
-                                                    {item.content}
-                                                </Card>
-                                                </>
-                                                    : <><img src={item.filePath} alt="file" style={{ width: "200px", height: 'auto' }} />
-                                                        <Card style={{
-                                                        
-
-                                                        }}>
-                                                            {item.content}
-                                                        </Card>
-                                                    </>
-                                            }
-
-                                        </div>
-                                        :
-                                        <div>{item.content}</div>}
-                                    <div style={{
-                                        display: 'flex',
-                                        gap: '10px',
-                                        color: 'gray',
-                                        alignItems: 'center'
-                                    }}>
-                                        <div onClick={() => {
-
-                                            setRemarksReplying(item.id)
-                                            setRemarksModal(false);
-                                            setTimeout(() => {
-                                                setRemarksModal(true)
-                                            }, 500)
-
-                                        }} style={{
-                                            textDecoration: 'underline',
-                                            color: '#2EA3F2',
-                                            fontWeight: 700,
-                                            cursor: 'pointer'
-                                        }}>Reply</div>
-                                        <div style={{
-                                            width: '8px',
-                                            height: '8px',
-                                            backgroundColor: '#E7E7E7',
-                                            borderRadius: '50%'
-                                        }}></div>
-                                        <div> {item.editedLogs.length} Replies</div>
-                                        <TravelerRemarksReply index={index} editedLogs={item.editedLogs} id={item.id} remarksReply={remarksReply} setRemarksReply={setRemarksReply} />
-                                    </div>
-                                    <TraverlerRemarksReplyContainer index={index} editedLogs={item.editedLogs} id={item.id} remarksReply={remarksReply} setRemarksReply={setRemarksReply} />
-
-                                </div>
-                            )
-                        })
-                    }
-                </div>
-            </Card></>}
+            
 
 
         </div>
@@ -201,3 +101,5 @@ function TravelerRemarks({ id, remarksArray, getRemarks, remarksModal, setRemark
 }
 
 export default TravelerRemarks
+
+

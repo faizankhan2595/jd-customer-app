@@ -1,7 +1,9 @@
 import { 
   BellOutlined,
   DashboardOutlined,
+  EnvironmentOutlined,
   FileOutlined,
+  LaptopOutlined,
   QuestionCircleOutlined,
   SettingOutlined,
   TeamOutlined,
@@ -67,31 +69,32 @@ else{
     breadcrumb: false,
     submenu: []
   },
-  {
-    key: "user-management",
-    path: `${APP_PREFIX_PATH}/user-management`,
-    title: "User Management",
-    icon: UserSwitchOutlined,
-    breadcrumb: false,
-    submenu: [
-      {
-        key: 'user-accounts',
-        path: `${APP_PREFIX_PATH}/user-management/user-accounts`,
-        title: 'User Accounts',
-        // icon: Masters,
-        breadcrumb: false,
-        submenu: []
-      },
-      {
-        key: 'free-user',
-        path: `${APP_PREFIX_PATH}/user-management/free-user`,
-        title: 'Free Users',
-        // icon: Masters,
-        breadcrumb: false,
-        submenu: []
-      }
-    ],
-  },
+  ...(localStorage.getItem("parent_id")==="null" ? [] : [ // Only add if role is not 5
+    {
+      key: "user-management",
+      path: `${APP_PREFIX_PATH}/user-management`,
+      title: "User Management",
+      icon: UserSwitchOutlined,
+      breadcrumb: false,
+      submenu: [
+        {
+          key: 'user-accounts',
+          path: `${APP_PREFIX_PATH}/user-management/user-accounts`,
+          title: 'User Accounts',
+          breadcrumb: false,
+          submenu: []
+        },
+        // {
+        //   key: 'free-user',
+        //   path: `${APP_PREFIX_PATH}/user-management/free-user`,
+        //   title: 'Free Users',
+        //   breadcrumb: false,
+        //   submenu: []
+        // }
+      ],
+    },
+  ]),
+
   {
     key: 'order-management',
     path: `${APP_PREFIX_PATH}/order-management`,
@@ -120,17 +123,42 @@ else{
     key: 'technician-management',
     path: `${APP_PREFIX_PATH}/technician-management`,
     title: 'Technician Management',
-    icon: ToolOutlined,
+    icon: LaptopOutlined,
     breadcrumb: false,
     submenu: []
   },
   {
     key: 'operator-master',
     path: `${APP_PREFIX_PATH}/operator-master`,
-    title: 'Operator Master',
-    icon: SettingOutlined,
+    title: 'Operation Master',
+    icon: EnvironmentOutlined,
     breadcrumb: false,
-    submenu: []
+    submenu: [
+      {
+        key: 'jobsites',
+        path: `${APP_PREFIX_PATH}/operator-master/jobsites`,
+        title: 'Jobsites',
+        // icon: Masters,
+        breadcrumb: false,
+        submenu: []
+      },
+      // {
+      //   key: 'machines',
+      //   path: `${APP_PREFIX_PATH}/operator-master/machines`,
+      //   title: 'Machines',
+      //   // icon: Masters,
+      //   breadcrumb: false,
+      //   submenu: []
+      // },
+      {
+        key: 'operational-areas',
+        path: `${APP_PREFIX_PATH}/operator-master/operational-areas`,
+        title: 'Areas',
+        // icon: Masters,
+        breadcrumb: false,
+        submenu: []
+      }
+    ],
   },
   {
     key: 'reports',

@@ -9,7 +9,7 @@ import { Option } from "antd/lib/mentions";
 // import axios from "../../../../axios";
 import moment from "moment";
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom/cjs/react-router-dom";
+import { useLocation, useParams } from "react-router-dom/cjs/react-router-dom";
 import { useHistory } from 'react-router-dom';
 // import uploadImage from "middleware/uploadImage";
 import { API_BASE_URL } from "constants/ApiConstant";
@@ -20,6 +20,7 @@ export default function AddNewTechnician() {
 
     const history = useHistory();
     const [statu, setStatu] = useState("")
+    const [remark, setRemark] = useState("")
     const [mainStatus, setMainStatus] = useState('')
     const [mainId, setMainId] = useState(null)
     const [activeTab, setActiveTab] = useState("1");
@@ -31,7 +32,8 @@ export default function AddNewTechnician() {
     const queryParams = new URLSearchParams(location.search);
     const [fileList, setFileList] = useState([]);
     const [imageUrl, setImageUrl] = useState();
-    const id = queryParams.get('id')
+    // const id = queryParams.get('id')
+    const {id } = useParams();
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [alertModal, setAlertModal] = useState(false)
     const [country, setCountry] = useState([
@@ -137,10 +139,21 @@ export default function AddNewTechnician() {
         console.log(fileList);
         console.log(selectedFiles);
         // const image = await uploadImage(fileList);
-        const profile_pic = await UploadImage(fileList);
+        let profile_pic = imageUrl
 
-        let file = [];
-        const uploadPromise = selectedFiles.map(async (item) => {
+        console.log(fileList);
+      if(profile_pic.includes('base64')){
+         profile_pic = await UploadImage(fileList);
+     }
+        let file= [];
+        const temp = selectedFiles.filter((item) => {
+            return item.url === undefined;
+        })
+        const temp2 = selectedFiles.filter((item) => {
+            return item.url !== undefined;
+        })
+        if(temp.length !== 0){
+        const uploadPromise = temp.map(async (item) => {
             if (item.url === undefined) {
                 const url = await UploadImage(item);
                 return url;
@@ -148,20 +161,24 @@ export default function AddNewTechnician() {
                 return item.url;
             }
         })
-
         file = await Promise.all(uploadPromise);
-        console.log(file)
-        console.log(profile_pic)
-
-
+        console.log(file);
+    }
+    file = [ ...file,...temp2.map((item)=>{
+        return item.url
+    })];
+    if(id){
         try {
             // handleOpenAlert()
 
-            const resp = await axiosInstance.post(`/api/admin/staff/store`, {
+            const resp = await axiosInstance.put(`/api/web/technician/${id}/update`, {
                 ...form1.getFieldsValue(),
                 ...form2.getFieldsValue(),
-                phone_no: countryCode + form1.getFieldValue('phone_no'),
+                dob: form1.getFieldValue('dob').format('YYYY-MM-DD'),
+                phone_code : countryCode,
                 profile_pic,
+                parent_id: localStorage.getItem("parent_id"),
+                documents: file,
 
 
             })
@@ -175,10 +192,51 @@ export default function AddNewTechnician() {
             console.error(error)
             message.error(error.response.data.message)
         }
+    }else{
+        try {
+            // handleOpenAlert()
+
+            const resp = await axiosInstance.post(`/api/web/technician/store`, {
+                ...form1.getFieldsValue(),
+                ...form2.getFieldsValue(),
+                dob: form1.getFieldValue('dob').format('YYYY-MM-DD'),
+                phone_code : countryCode,
+                profile_pic,
+                documents: file,
+                parent_id: localStorage.getItem("parent_id"),
+
+
+            })
+            handleCloseAlert()
+            setTimeout(() => {
+                history.goBack()
+            }, 1000)
+            // history.goBack();
+
+        } catch (error) {
+            console.error(error)
+            message.error(error.response.data.message)
+        }
+    }
     };
 
-    const sendStatus = async (status) => {
-
+    const sendStatus = async () => {
+        try {
+            const response = await axiosInstance.put(`/api/web/technician/${id}/update-status`, {
+                status: statu,
+                remark: remark
+            });
+            setIsChangeStudModalOpen(false);
+            setSuccessModal(true);
+            setSuccesmodaltext({
+                title: "Technician Status Change Successfully!",
+                text: "Technician status changed to terminated.",
+            });
+            history.goBack();
+        } catch (error) {
+            console.error(error);
+            message.error(error.response.data.message);
+        }
     }
 
     // const onFinishFailed = (errorInfo) => {
@@ -243,15 +301,7 @@ export default function AddNewTechnician() {
 
     // Fetch Country
     useEffect(() => {
-        const fetchCountry = async () => {
-            try {
-                const response = await axiosInstance.get('/api/admin/country/list');
-                setCountry(response.data.items);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-        fetchCountry();
+      
         if (id) {
             getData();
         }
@@ -259,26 +309,29 @@ export default function AddNewTechnician() {
 
     const getData = async () => {
         try {
-            const response = await axiosInstance.get(`/api/admin/staff/${id}/show`);
-            const data = response.data;
+            const response = await axiosInstance.get(`/api/web/technician/${id}/show`);
+            const data = response.data.item;
+
             form1.setFieldsValue({
-                name: data.name,
-                email: data.email,
-                phone_no: data.phone_no,
-                nric_fin_number: data.nric_fin_number,
+                ...data,
                 dob: moment(data.dob),
+                gender: data.gender.toString(),
             })
-
             form2.setFieldsValue({
-                postal_code: data.postal_code,
-                block_number: data.block_number,
-                street_number: data.street_number,
-                unit_number: data.unit_number,
-                levelNumber: data.levelNumber,
-                country: data.country
-
+                ...data.address,
+                country: data.address.country
             })
+            setCountryCode(data.phone_code)
+            setImageUrl(data.profile_pic)
+            setSelectedFiles(data?.documents.map((item,index) => {
+                return {
+                    url: item?.document_url,
+                    name: `Document ${index+1}`
+                }
+            }))
 
+            setRemark(data.status_remark)
+            setStatu(data.status)
         } catch (error) {
             // console.error(error);
             message.error(error.response.data.message);
@@ -360,7 +413,7 @@ export default function AddNewTechnician() {
                                 </Upload>
                             </Form.Item>
                             <div style={{ gap: "60px" }} className="d-flex ">
-                                <div style={{ width: "45%" }}>
+                                {/* {id && <div style={{ width: "45%" }}>
                                     <Form.Item
                                         name="Technician_id"
                                         label="Technician ID"
@@ -373,7 +426,7 @@ export default function AddNewTechnician() {
                                     >
                                         <Input />
                                     </Form.Item>
-                                </div>
+                                </div>} */}
                                 <div style={{ width: "45%" }}>
                                     <Form.Item
                                         name="name"
@@ -424,7 +477,7 @@ export default function AddNewTechnician() {
                                         <Input
                                             addonBefore={
                                                 <Select
-                                                    defaultValue={"In"}
+                                                    // defaultValue={"In"}
                                                     style={{
                                                         width: 80,
                                                     }}
@@ -435,6 +488,7 @@ export default function AddNewTechnician() {
                                                 >
                                                     <Option value="+91">+91</Option>
                                                     <Option value="+65">+65</Option>
+                                                     
                                                 </Select>
                                             }
                                             style={{ width: "100%" }}
@@ -476,7 +530,8 @@ export default function AddNewTechnician() {
                                         rules={[{ required: true, message: "Please Select Nationality" }]}
                                     >
                                         <Select>
-                                            <Select.Option value={"Singapore"}>Singapore</Select.Option>
+                                        <Option value={155}>Singapore</Option>
+                                        <Option value={75}>India</Option>
                                         </Select>
                                     </Form.Item>
                                 </div>
@@ -489,8 +544,8 @@ export default function AddNewTechnician() {
                                         ]}
                                     >
                                         <Radio.Group>
-                                            <Radio value={"male"}>Male</Radio>
-                                            <Radio value={"female"}>Female</Radio>
+                                        <Radio value={"1"}>Male</Radio>
+                                        <Radio value={"2"}>Female</Radio>
                                         </Radio.Group>
                                     </Form.Item>
                                 </div>
@@ -561,7 +616,7 @@ export default function AddNewTechnician() {
 
                                     <Form.Item
                                         label={'Level Number'}
-                                        name="levelNumber"
+                                        name="level_number"
                                         rules={[{ required: true, message: 'Please enter the level number!' }]}
                                     >
                                         <Input placeholder="Level Number" style={{ width: '100%' }} />
@@ -573,7 +628,8 @@ export default function AddNewTechnician() {
                                         rules={[{ required: true, message: 'Please select a country!' }]}
                                     >
                                         <Select placeholder='Country' style={{ width: '100%' }}>
-                                            <Select.Option value="1">India</Select.Option>
+                                        <Option value={155}>Singapore</Option>
+                                        <Option value={75}>India</Option>
                                             {/* Add more countries as needed */}
                                         </Select>
                                     </Form.Item>
@@ -709,11 +765,15 @@ export default function AddNewTechnician() {
                             setStatu(e.target.value);
                         }}
                         value={statu}>
-                        <Radio value={"active"}>Active</Radio>
-                        <Radio value={"inactive"}>Inactive</Radio>
+                        <Radio value={1}>Active</Radio>
+                        <Radio value={0}>Inactive</Radio>
                     </Radio.Group>
                     <h5 className="mt-4">Remarks</h5>
-                    <Input.TextArea placeholder="Reason" />
+                    <Input.TextArea  value={remark}
+                        onChange={(e)=>{
+                            setRemark(e.target.value) 
+                        }}
+                    placeholder="Reason" />
                 </div>
                 <div
                     style={{ gap: "10px" }}
@@ -728,11 +788,15 @@ export default function AddNewTechnician() {
                     <Button
                         className="px-4 font-weight-semibold text-white bg-info"
                         onClick={() => {
-                            if (statu === '') {
-                                message.error(`Please select status first !`)
+                            // if (statu === '') {
+                            //     message.error(`Please select status first !`)
+                            //     return
+                            // }
+                            if(remark === ''){
+                                message.error(`Please enter remarks !`)
                                 return
                             }
-                            sendStatus(statu)
+                            sendStatus()
                         }}
                     >
                         Save

@@ -46,7 +46,7 @@ function TravelerRemarksLabel({ id, remarksArray, getRemarks, hide, remarksModal
                                             color: 'gray'
                                         }}>{moment(item.createdAt).format('DD MMM YYYY hh:mm a')}</div>
                                     </div>
-                                    {item.filePath ?
+                                    {/* {item.filePath ?
                                         <div style={{
                                             display: 'flex',
                                             flexDirection: 'column',
@@ -79,9 +79,10 @@ function TravelerRemarksLabel({ id, remarksArray, getRemarks, hide, remarksModal
                                                     </>
                                             }
 
-                                        </div>
-                                        :
-                                        <div>{item.content}</div>}
+                                        </div> */}
+                                        {/* : */}
+                                        <div>{item.content}</div>
+                                        {/* } */}
                                     <div style={{
                                         display: 'flex',
                                         gap: '10px',

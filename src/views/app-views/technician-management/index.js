@@ -1,4 +1,4 @@
-import { Button, Menu, Modal, Select, Rate, Switch, Divider, message, Dropdown, Table, Checkbox } from "antd";
+import { Button, Menu, Modal, Select, Rate, Switch, Divider, message, Dropdown, Table, Checkbox, Popconfirm } from "antd";
 import { Space, Tag } from 'antd';
 import { BellOutlined, EditOutlined, EyeOutlined, MoreOutlined, SearchOutlined, SettingOutlined } from '@ant-design/icons';
 import Icon from '@ant-design/icons';
@@ -15,35 +15,60 @@ import { CsvIcon, FilterIcon } from "assets/svg/icon";
 import { axiosInstance } from "App";
 import CalendarIcon from "assets/calendar.png"
 import moment from "moment";
+import SubMenu from "antd/lib/menu/SubMenu";
 
 
 function TechnicianManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const history = useHistory();
+  const [searchText, setSearchText] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('all');
+
   const [data, setData] = useState([
-    {
-      id: 1,
-      name: "Technician 1",
-      gender: "Male",
-      nationality: "Indian",
-      mobile: "9876543210",
-      email: "test@gmail.com",
-      jobAssigned: 5,
-      activeJobs: 3
-       
-    },
+    
     
   ])
   const getMenu = (record) => (
     <Menu>
-      <Menu.Item key="edit" onClick={() => handleView(record.id)}>
+      <Menu.Item key="edit" onClick={() => {
+        history.push(`/app/technician-management/edit/${record}`)
+      }}>
         <EditOutlined /> Edit
       </Menu.Item>
-      <Menu.Item key="delete" onClick={() => handleDelete(record.key)}>
+      {/* <Menu.Item key="delete" onClick={() => handleDelete(record.key)}>
         <DeleteOutlined /> Delete
-      </Menu.Item>
+      </Menu.Item> */}
+        <Popconfirm
+        title={"Are you sure you want to delete this item?"}
+        description={"This action cannot be undone."}
+        okText="Yes"
+        cancelText="No"
+        onConfirm={() => deleteRow(record)}
+      >
+        <Menu.Item key="delete">
+          <span style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <DeleteOutlined /> Delete
+          </span>
+        </Menu.Item>
+      </Popconfirm>
     </Menu>
   );
+
+  
+  const deleteRow = async (id) => {
+    console.log(id);
+    try {
+      const response = await axiosInstance.delete(
+        `api/web/technician/${id}/delete`
+      );
+      if (response.status === 200) {
+        message.success("Technicial deleted successfully");
+        setData((prevData) => prevData.filter((item) => item.id !== id));
+      }
+    } catch (error) {
+      console.error("Error deleting row:", error);
+    }
+  };
 
   const handleSwitchChange = (checked, key) => {
     // Add logic for handling the switch change
@@ -70,32 +95,59 @@ function TechnicianManagement() {
         dataIndex:"id",
     },
     {
+      dataIndex:"profile_pic",
+      render: (text, record) => (
+        <>
+          <img src={record.profile_pic} style={{width: '20px', height: '20px', borderRadius: '50%'}} />
+        </>
+      )
+    },
+    {
         title:"Technician Name",
         dataIndex:"name",
     },
     {
         title:"Gender",
         dataIndex:"gender",
+        render: (text, record) => (
+          <>
+            {text==1?"Male":"Female"}
+          </>
+        ) 
     },
-    {
-        title:"Nationality",
-        dataIndex:"nationality",
-    },
+    // {
+    //     title:"Nationality",
+    //     dataIndex:"nationality",
+    // },
     {
         title:"Mobile Number",
-        dataIndex:"mobile",
+        dataIndex:"phone_no",
+        render: (text, record) => (
+          <>
+            {record.phone_code+" "+text}
+          </>
+        )
     },
     {
         title:"Email ID",
         dataIndex:"email",
     },
+    // {
+    //   title:"Job Assigned",
+    //   dataIndex:"jobAssigned"
+    // },
+    // {
+    //   title:"Active Jobs",
+    //   dataIndex:"activeJobs"
+    // },
     {
-      title:"Job Assigned",
-      dataIndex:"jobAssigned"
-    },
-    {
-      title:"Active Jobs",
-      dataIndex:"activeJobs"
+        title:"Status",
+        dataIndex:"status",
+        render: (text, record) => (
+          <>
+            {text==1?<Tag color="green">Active</Tag>:<Tag color="red">Inactive</Tag>}
+          </>
+        )
     },
     {
         title: 'Action',
@@ -111,18 +163,6 @@ function TechnicianManagement() {
 ]
 
 
-  const onDeleteData = (Id) => {
-    // console.log(Id)
-    // console.log(record)
-    Modal.confirm({
-      title: "Are you sure, you want to delete this Broadcast notification ?",
-      okText: "Yes",
-      okType: "danger",
-      onOk: () => {
-        handleDelete(Id);
-      },
-    });
-  };
 
   const handleView = (key) => {
     // Add logic for editing a notification
@@ -133,44 +173,79 @@ function TechnicianManagement() {
     // Add logic for deleting a notification
     console.log('Delete notification with key:', key);
   };
-  const onSearch = (value) => console.log(value);
+  var timeout = ""
+  const onSearch = (value) => {
+    setSearchText(value.target.value)
+    clearTimeout(timeout)
+    timeout = setTimeout(() => {
+      getOrderList(value.target.value, selectedFilter)
+    }, 500)
+  }
   const FilterMenu = (
-    <Menu mode="horizontal">
-      <Menu.SubMenu key="item1" title="Service Type">
-        <Menu.Item key="subitem1">
-          <Checkbox>All</Checkbox>
+    <Menu mode="horizontal" onChange={(e) => {
+      console.log(e)
+    }}>
+      <SubMenu key="item1" title="Status">
+        <Menu.Item key="subitem1"
+
+        >
+          <Checkbox onChange={() => {
+            getOrderList(searchText);
+            setSelectedFilter('all')
+          }} checked={
+            selectedFilter === 'all'
+          }>All</Checkbox>
         </Menu.Item>{" "}
-        <Menu.Item key="subitem3">
-          <Checkbox>workshop</Checkbox>
-        </Menu.Item>{" "}
-        <Menu.Item key="subitem2">
-          <Checkbox>Onsite</Checkbox>
+        <Menu.Item key="subitem2"
+
+        >
+          <Checkbox
+            onChange={() => {
+              getOrderList(searchText, 1);
+              setSelectedFilter(1)
+            }}
+            checked={selectedFilter == 1}
+
+          >Active</Checkbox>
         </Menu.Item>
-      </Menu.SubMenu>
+        <Menu.Item key="subitem3"
 
-      <Menu.SubMenu key="item2" title="Status">
-        <Menu.Item key="subitem5">
-          <Checkbox>All</Checkbox>
-        </Menu.Item>{" "}
+        >
+          <Checkbox onChange={() => {
+            getOrderList(searchText, 0);
+            setSelectedFilter(0)
+          }}
 
-      </Menu.SubMenu>
+            checked={selectedFilter === 0}>Inactive</Checkbox>
+        </Menu.Item>
+      </SubMenu>
     </Menu>
   );
-  const getOrderList = async () => {
-    const res1 = await axiosInstance.get('api/admin/order/list');
+
+  const getOrderList = async (search = "", filter = 'all') => {
+    // let url = `?search=${search}`
+    let url = `?customer_id=${localStorage.getItem("user_id")}&search=${search}`
+
+    //for 0 it is not handling
+    if((filter !== '' && filter != 'all')) {
+      url += `&status=${filter}`
+    }
+
+    const res1 = await axiosInstance.get(`api/web/technician/list${url}`);
     console.log('res1', res1);
-    setData(res1.data.item.results.map((elm) => {
-      return {
-        id: elm.id,
-        name: elm.company_name,
-        jobSite: elm.jobsite,
-        machine: 'Excavator',
-        faults: 'Engine Failure',
-        orderDate: moment(elm.created_at).format('YYYY-MM-DD'),
-        technicianAssigned: 'Technician 1',
-        status: true,
-      }
-    }));
+    setData(res1.data.items);
+    // setData(res1.data.items.map((elm) => {
+    //   return {
+    //     id: elm.id,
+    //     name: elm.company_name,
+    //     jobSite: elm.jobsite,
+    //     machine: 'Excavator',
+    //     faults: 'Engine Failure',
+    //     orderDate: moment(elm.created_at).format('YYYY-MM-DD'),
+    //     technicianAssigned: 'Technician 1',
+    //     status: true,
+    //   }
+    // }));
   }
   useEffect(() => {
     getOrderList();
@@ -209,10 +284,10 @@ function TechnicianManagement() {
               Filters
             </Button>
           </Filter>
-          <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" >Export</Button>
-          <Button className="d-flex align-items-center ml-2">
+          {/* <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" >Export</Button> */}
+          {/* <Button className="d-flex align-items-center ml-2">
             <img src={CalendarIcon} className="mr-2" alt="Calendar Icon" /> Schedule
-          </Button>
+          </Button> */}
         </div>
         <div className="mb-2 d-flex align-items-center">
           <Button

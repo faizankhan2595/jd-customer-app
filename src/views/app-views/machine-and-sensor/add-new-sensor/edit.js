@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Input, Select, Row, Col, Button, Switch, message } from 'antd';
 import { MachineSensorIcon, UploadFileIcon } from 'assets/svg/icon';
-import { CloseCircleOutlined } from '@ant-design/icons';
+import { CloseCircleOutlined, EyeOutlined } from '@ant-design/icons';
 import { useHistory, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { axiosInstance } from 'App';
 
+import { UploadImage } from 'utils/Upload';
 const { Option } = Select;
 
 const AddNewSensor = () => {
   const history = useHistory();
   const { id } = useParams();
+  const query = new URLSearchParams(history.location.search);
+  const machineName = query.get('machine_name');
   const { editId } = useParams();
   const [form] = Form.useForm();
   const [machineStatus, setMachineStatus] = useState(false);
@@ -51,19 +54,41 @@ const AddNewSensor = () => {
   };
 
   const onFinish = async (values) => {
+       let file = [];
+        const temp = selectedFiles.filter((item) => {
+          return item.url === undefined;
+        })
+        const temp2 = selectedFiles.filter((item) => {
+          return item.url !== undefined;
+        })
+        if (temp.length !== 0) {
+          const uploadPromise = temp.map(async (item) => {
+            if (item.url === undefined) {
+              const url = await UploadImage(item);
+              return url;
+            } else {
+              return item.url;
+            }
+          })
+          file = await Promise.all(uploadPromise);
+          console.log(file);
+        }
+        file = [...file, ...temp2.map((item) => {
+          return item.url
+        })];
+    
     const payload = {
-      machine_id: id, // Assuming id is the machine ID from the URL
       sensor_type: values.sensor_type,
       sensor_id: values.sensor_id,
       sensor_name: values.sensor_name,
       sensor_location: values.sensor_location,
       sensor_details: values.sensor_details,
       sensor_status: machineStatus,
-      is_deleted: false,
+      pictures: file
     };
 
     try {
-      const response = await axiosInstance.put(`/api/admin/machine-senser/${editId}`, payload);
+      const response = await axiosInstance.put(`/api/web/machines/${id}/sensors/${editId}`, payload);
       message.success('Sensor updated successfully!');
       history.goBack(); // Navigate to the sensors list page
     } catch (error) {
@@ -91,10 +116,10 @@ const AddNewSensor = () => {
   };
   const getSensor = async () => {
     try {
-        const response = await axiosInstance.get(`api/admin/machine-senser/${editId}`);
+        const response = await axiosInstance.get(`api/web/machines/${id}/sensors/${editId}`);
         // message.success('Sensor added successfully!');
-        console.log(response.data.item.results);
-        const data = response.data.item.results;
+        console.log(response.data.item);
+        const data = response.data.item;
         // history.goBack(); 
         form.setFieldsValue({
             machineName:data.machine_id,
@@ -103,7 +128,14 @@ const AddNewSensor = () => {
             sensor_name:data.sensor_name,
             sensor_location:data.sensor_location,
             sensor_details:data.sensor_details,
+            machineName:machineName,
         })
+        setSelectedFiles(data?.pictures.map((item,index) => {
+          return {
+              url: item?.file_url,
+              name: `Picture ${index+1}`
+          }
+      }))
         setMachineStatus(data.sensor_status)
       } catch (error) {
         message.error('Failed to edit sensor. Please try again.');
@@ -144,10 +176,7 @@ const AddNewSensor = () => {
                 name="sensor_type"
                 rules={[{ required: true, message: 'Please Select Sensor Type' }]}
               >
-                <Select>
-                  <Option value="Temperature">Sensor Type 1</Option>
-                  <Option value="Pressure">Sensor Type 2</Option>
-                </Select>
+                <Input />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -212,26 +241,36 @@ const AddNewSensor = () => {
                     style={styles.uploadFile}
                     className="uploadFile"
                     type="file"
+                    accept='image/*'
                     multiple
                     onChange={handleFileSelect}
                   />
                 </div>
                 <div className="mt-4">
-                  {selectedFiles.length > 0 && (
-                    <ul className="p-0" style={{ width: '100%' }}>
-                      {selectedFiles.map((file, i) => (
-                        <li key={file.name} className="my-3" style={styles.files}>
-                          <div className="d-flex align-items-center">
-                            <UploadFileIcon /> <span className="ml-2">{file.name}</span>
-                          </div>
-                          <span style={{ cursor: 'pointer' }} onClick={() => delUplFile(i)}>
-                            <CloseCircleOutlined />
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+                            {selectedFiles.length > 0 && (
+                                <ul className="p-0" style={{ width: "100%" }}>
+                                    {selectedFiles.map((file, i) => (
+                                        <li key={file.name} className="my-3" style={styles.files}>
+                                            {" "}
+                                            <div className="d-flex align-items-center">
+                                                <UploadFileIcon />{" "}
+                                                <span className="ml-2">{file.name} </span>{" "}
+                                                <span className="ml-5">
+                                                    {file.url ? (  <EyeOutlined style={{ cursor: "pointer" }} onClick={() => window.open(file.url)} />) : null}
+                                                </span>
+                                            </div>
+                                            <span
+                                                style={{ cursor: "pointer" }}
+                                                onClick={() => delUplFile(i)}
+                                            >
+                                                {" "}
+                                                <CloseCircleOutlined />{" "}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
               </div>
             </Col>
           </Row>

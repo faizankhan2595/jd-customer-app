@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
-import { Form, Input, Select, Radio, Row, Col, Button, Switch } from 'antd';
-import { MachineIcon } from 'assets/svg/icon';
-import { CloseCircleOutlined, ToolOutlined } from '@ant-design/icons';
+import React, { useEffect, useState } from 'react';
+import { Form, Input, Select, Radio, Row, Col, Button, Switch, message, DatePicker } from 'antd';
+import { MachineIcon, UploadFileIcon } from 'assets/svg/icon';
+import { CloseCircleOutlined, EyeOutlined, ToolOutlined } from '@ant-design/icons';
 import { useHistory } from 'react-router-dom';
 import { axiosInstance } from 'App';
+import { useParams } from 'react-router-dom/cjs/react-router-dom.min';
+import moment from 'moment';
+import { UploadImage } from 'utils/Upload';
+import { get } from 'lodash';
 
 const { Option } = Select;
 
@@ -12,7 +16,9 @@ const AddNewMachine = () => {
   const [form] = Form.useForm();
   const [machineStatus, setMachineStatus] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
-
+  const [customerData, setCustomerData] = useState([]);
+  const [jobSiteData, setJobSiteData] = useState([]);
+  const { id } = useParams();
   const handleFileSelect = (event) => {
     const fileList = event.target.files;
     const newSelectedFiles = [];
@@ -32,48 +38,77 @@ const AddNewMachine = () => {
   };
 
   const onFinish = async (values) => {
-    console.log('Form values:', values);
+    let file = [];
+    const temp = selectedFiles.filter((item) => {
+      return item.url === undefined;
+    })
+    const temp2 = selectedFiles.filter((item) => {
+      return item.url !== undefined;
+    })
+    if (temp.length !== 0) {
+      const uploadPromise = temp.map(async (item) => {
+        if (item.url === undefined) {
+          const url = await UploadImage(item);
+          return url;
+        } else {
+          return item.url;
+        }
+      })
+      file = await Promise.all(uploadPromise);
+      console.log(file);
+    }
+    file = [...file, ...temp2.map((item) => {
+      return item.url
+    })];
+
 
     const postData = {
-      user_id: 1,
-      name: values.machineName,
-      model: values.machineModal,
-      serial_no: values.serialNo,
-      kw_hp: values.kwHp,
-      manufacturer: values.manufacture,
-      rpm: values.rpm,
-      frequency: values.frequency,
-      nde_bearing: values.ndeBearing,
-      de_bearing: values.deBearing,
-      tag_no: values.tagNo,
-      vft: values.vft === 'yes' ? 1 : 0,
-      year: values.year,
-      equipment: values.equipment,
-      ampere: values.amper,
-      color: values.color,
-      ins: values.ins,
-      phase: values.phase,
-      ex_type: values.exType,
-      ip: values.ip,
-      operator: values.operator,
-      ex_cert: values.exCert,
-      date: values.date,
-      machine_detail: values.machineDetails,
-      machine_status: machineStatus,
-      is_deleted: false,
+        ...form.getFieldsValue(),
+        pictures:file,
+        machine_status:machineStatus
     };
 
-    try {
-      const response = await axiosInstance.post('/api/admin/machine', postData);
-      console.log('Machine added successfully:', response.data);
+    if(!id){
+      try {
+        const response = await axiosInstance.post('/api/web/machines', postData);
+        // console.log('Machine added successfully:', response.data);
+        message.success("Machine Added Successfuly");
+        if (response.status === 200 || response.status === 201) {
+          history.push(`/app/machine-and-sensors`);
+        }
+      } catch (error) {
+        console.error('Error adding machine:', error);
+        // Handle error, e.g., show notification
+      }
+    }else{
+      const response = await axiosInstance.put("/api/web/machines/"+id,postData);
+      message.success("Machine Updated Successfully");
       if (response.status === 200 || response.status === 201) {
         history.push(`/app/machine-and-sensors`);
       }
-    } catch (error) {
-      console.error('Error adding machine:', error);
-      // Handle error, e.g., show notification
     }
   };
+
+    const getData = async () => {
+      // ?search=${search}&status=${status!='all'?status:''}&area=${workshop!='all'?workshop:''}
+      // let url = `?search=${search}`
+      // //for 0 it is not handling
+      // if((status !== '' && status != 'all')) {
+      //   url += `&status=${status}`
+      // }
+      let url = `?customer_id=${localStorage.getItem("user_id")}&status=1`
+      try {
+        const resp = await axiosInstance.get(`/api/web/jobsites${url}`);
+        setJobSiteData(resp.data.items);
+        if (id) {
+          fetchData();
+        }
+      } catch (err) {
+        console.log(err)
+        message.error('Something went wrong')
+      }
+    }
+  
 
   const styles = {
     files: {
@@ -109,6 +144,36 @@ const AddNewMachine = () => {
     },
   };
 
+  const fetchData = async () => {
+    const response = await axiosInstance.get(`api/web/machines/${id}`);
+    const data = response.data.item
+    setMachineStatus(data.machine_status == 1 ? true : false)
+    form.setFieldsValue({
+      ...data,
+      date: data.date ? moment(data.date) : null
+    })
+    setSelectedFiles(data?.pictures.map((item,index) => {
+      return {
+          url: item?.file_url,
+          name: `Picture ${index+1}`
+      }
+  }))
+    // setMachineStatus(data.machine_status == 1 ? true : false)
+
+  }
+
+  // const getCustomerData = async () => {
+  //   const response = await axiosInstance.get('api/web/all-customers/list');
+  //   const data = response.data;
+  //   setCustomerData(data);
+   
+  //   // console.log(data);
+  // }
+  useEffect(() => {
+    // getCustomerData();
+    getData();
+  }, [])
+
   return (
     <div>
       <h4>
@@ -126,26 +191,12 @@ const AddNewMachine = () => {
           <h4 className="d-flex align-items-center" style={{ color: '#3CA6C1', gap: '4px' }}>
             <MachineIcon /> Add New Machine
           </h4>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label="Select Customer"
-                name="customer"
-                rules={[{ required: true, message: 'Please Select Customer' }]}
-              >
-                <Select>
-                  <Option value="customer1">Customer 1</Option>
-                  <Option value="customer2">Customer 2</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-
+         
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 label="Machine Name"
-                name="machineName"
+                name="name"
                 rules={[{ required: true, message: 'Please enter Machine Name' }]}
               >
                 <Input />
@@ -154,13 +205,21 @@ const AddNewMachine = () => {
             <Col span={12}>
               <Form.Item
                 label="Select Job Site"
-                name="jobSite"
+                name="job_site_id"
                 rules={[{ required: true, message: 'Please Select Job Site' }]}
               >
                 <Select>
+                {
+                  jobSiteData.map((item)=>{
+                    return <Option value={item.id}>{item.jobsite_name}</Option>
+                  })
+                }
+                </Select>
+                {/* <Select>
                   <Option value="site1">Job Site 1</Option>
                   <Option value="site2">Job Site 2</Option>
-                </Select>
+                </Select> */}
+                {/* <Input /> */}
               </Form.Item>
             </Col>
           </Row>
@@ -169,7 +228,7 @@ const AddNewMachine = () => {
             <Col span={12}>
               <Form.Item
                 label="Machine Modal"
-                name="machineModal"
+                name="model"
                 rules={[{ required: true, message: 'Please enter Machine Modal' }]}
               >
                 <Input />
@@ -178,7 +237,7 @@ const AddNewMachine = () => {
             <Col span={12}>
               <Form.Item
                 label="Serial No"
-                name="serialNo"
+                name="serial_no"
                 rules={[{ required: true, message: 'Please enter Serial No' }]}
               >
                 <Input />
@@ -190,7 +249,7 @@ const AddNewMachine = () => {
             <Col span={12}>
               <Form.Item
                 label="kw/Hp"
-                name="kwHp"
+                name="kw_hp"
                 rules={[{ required: true, message: 'Please enter kw/Hp' }]}
               >
                 <Input type="number" />
@@ -199,7 +258,7 @@ const AddNewMachine = () => {
             <Col span={12}>
               <Form.Item
                 label="Manufacture"
-                name="manufacture"
+                name="manufacturer"
                 rules={[{ required: true, message: 'Please enter Manufacture' }]}
               >
                 <Input />
@@ -232,7 +291,7 @@ const AddNewMachine = () => {
             <Col span={12}>
               <Form.Item
                 label="NDE Bearing"
-                name="ndeBearing"
+                name="nde_bearing"
                 rules={[{ required: true, message: 'Please enter NDE Bearing' }]}
               >
                 <Input />
@@ -241,7 +300,7 @@ const AddNewMachine = () => {
             <Col span={12}>
               <Form.Item
                 label="DE Bearing"
-                name="deBearing"
+                name="de_bearing"
                 rules={[{ required: true, message: 'Please enter DE Bearing' }]}
               >
                 <Input />
@@ -253,7 +312,7 @@ const AddNewMachine = () => {
             <Col span={12}>
               <Form.Item
                 label="Tag No"
-                name="tagNo"
+                name="tag_no"
                 rules={[{ required: true, message: 'Please enter Tag No' }]}
               >
                 <Input />
@@ -266,8 +325,8 @@ const AddNewMachine = () => {
                 rules={[{ required: true, message: 'Please Select VFT' }]}
               >
                 <Radio.Group>
-                  <Radio value="yes">Yes</Radio>
-                  <Radio value="no">No</Radio>
+                  <Radio value={1}>Yes</Radio>
+                  <Radio value={0}>No</Radio>
                 </Radio.Group>
               </Form.Item>
             </Col>
@@ -298,7 +357,7 @@ const AddNewMachine = () => {
             <Col span={12}>
               <Form.Item
                 label="Ampere"
-                name="amper"
+                name="ampere"
                 rules={[{ required: true, message: 'Please enter Ampere' }]}
               >
                 <Input type="number" />
@@ -331,7 +390,7 @@ const AddNewMachine = () => {
                 name="phase"
                 rules={[{ required: true, message: 'Please enter Phase' }]}
               >
-                <Input type="number" />
+                <Input  />
               </Form.Item>
             </Col>
           </Row>
@@ -340,7 +399,7 @@ const AddNewMachine = () => {
             <Col span={12}>
               <Form.Item
                 label="EX Type"
-                name="exType"
+                name="ex_type"
                 rules={[{ required: true, message: 'Please enter EX Type' }]}
               >
                 <Input />
@@ -370,7 +429,7 @@ const AddNewMachine = () => {
             <Col span={12}>
               <Form.Item
                 label="EX Cert"
-                name="exCert"
+                name="ex_cert"
                 rules={[{ required: true, message: 'Please enter EX Cert' }]}
               >
                 <Input />
@@ -385,7 +444,7 @@ const AddNewMachine = () => {
                 name="date"
                 rules={[{ required: true, message: 'Please Select Date' }]}
               >
-                <Input type="date" />
+                <DatePicker />
               </Form.Item>
             </Col>
           </Row>
@@ -394,7 +453,7 @@ const AddNewMachine = () => {
             <Col span={24}>
               <Form.Item
                 label="Machine Details"
-                name="machineDetails"
+                name="machine_detail"
                 rules={[{ required: true, message: 'Please enter Machine Details' }]}
               >
                 <Input.TextArea />
@@ -403,28 +462,58 @@ const AddNewMachine = () => {
           </Row>
 
           <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label="Upload File"
-                name="uploadFile"
-              >
-                <input type="file" style={styles.uploadFile} onChange={handleFileSelect} />
-                <ul style={styles.files}>
-                  {selectedFiles.map((file, index) => (
-                    <li key={index}>
-                      {file.name}
-                      <CloseCircleOutlined onClick={() => delUplFile(index)} />
-                    </li>
-                  ))}
-                </ul>
-              </Form.Item>
+          <Col span={12}>
+              <h5 className="m-0 mt-2">Upload Pictures</h5>
+              <div className="p-3">
+                <div className="d-flex flex-column justify-content-center align-items-center position-relative uploaddoc">
+                  <UploadFileIcon />
+                  <h5 className="mb-0 mt-2">Drag & Drop Files Here</h5>
+                  <h5 className="mb-0">Or</h5>
+                  <h5 className="mb-0" style={{ color: '#3CA6C1' }}>
+                    Click here to upload
+                  </h5>
+                  <input
+                    style={styles.uploadFile}
+                    className="uploadFile"
+                    type="file"
+                    accept='image/*'
+                    multiple
+                    onChange={handleFileSelect}
+                  />
+                </div>
+                <div className="mt-4">
+                            {selectedFiles.length > 0 && (
+                                <ul className="p-0" style={{ width: "100%" }}>
+                                    {selectedFiles.map((file, i) => (
+                                        <li key={file.name} className="my-3" style={styles.files}>
+                                            {" "}
+                                            <div className="d-flex align-items-center">
+                                                <UploadFileIcon />{" "}
+                                                <span className="ml-2">{file.name} </span>{" "}
+                                                <span className="ml-5">
+                                                    {file.url ? (  <EyeOutlined style={{ cursor: "pointer" }} onClick={() => window.open(file.url)} />) : null}
+                                                </span>
+                                            </div>
+                                            <span
+                                                style={{ cursor: "pointer" }}
+                                                onClick={() => delUplFile(i)}
+                                            >
+                                                {" "}
+                                                <CloseCircleOutlined />{" "}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+              </div>
             </Col>
             <Col span={12}>
               <Form.Item
                 label="Machine Status"
-                name="machineStatus"
+
               >
-                <Switch onChange={(checked) => setMachineStatus(checked)} />
+                <Switch checked={machineStatus} onChange={(checked) => setMachineStatus(checked)} />
               </Form.Item>
             </Col>
           </Row>

@@ -1,4 +1,4 @@
-import { Button, Menu, Modal, Select, Rate, Switch, Divider, message, Dropdown, Table, Checkbox } from "antd";
+import { Button, Menu, Modal, Select, Rate, Switch, Divider, message, Dropdown, Table, Checkbox, Empty, Card } from "antd";
 import { Space, Tag } from 'antd';
 import { BellOutlined, EditOutlined, EyeOutlined, MoreOutlined, SearchOutlined, SettingOutlined } from '@ant-design/icons';
 import Icon from '@ant-design/icons';
@@ -16,35 +16,84 @@ import { axiosInstance } from "App";
 import CalendarIcon from "assets/calendar.png"
 import moment from "moment";
 import CardOrder from "./Card/CardOrder";
+import SubMenu from "antd/lib/menu/SubMenu";
 
 function Index() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const history = useHistory();
   const [data, setData] = useState([])
-  const onSearch = (value) => console.log(value);
+  const [selectedFilter, setSelectedFilter] = useState('all');
+  const [searchText, setSearchText] = useState('');
+  var timeout = ""
+  const onSearch = (value) => {
+    setSearchText(value.target.value)
+    clearTimeout(timeout)
+    timeout = setTimeout(() => {
+      getData(value.target.value)
+    }, 500)
+  }
+
+  const getData = async (Search="",filter="all") => {
+    let url = `?customer_id=${localStorage.getItem("user_id")}&search=${Search}`
+    //for 0 it is not handling
+    if((filter !== '' && filter != 'all')) {
+      url += `&status=${filter}`
+    }
+    try {
+      const response = await axiosInstance.get('api/web/inquiries' + url);
+      if (response.status === 200) {
+        setData(response.data.items);
+        // console.log(response.data.items)
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    getData();
+  }, [])
+
   const FilterMenu = (
-    <Menu mode="horizontal">
-      <Menu.SubMenu key="item1" title="Service Type">
-        <Menu.Item key="subitem1">
-          <Checkbox>All</Checkbox>
+    <Menu mode="horizontal" onChange={(e) => {
+      console.log(e)
+    }}>
+      <SubMenu key="item1" title="Status">
+        <Menu.Item key="subitem1"
+
+        >
+          <Checkbox onChange={() => {
+            getData(searchText);
+            setSelectedFilter('all')
+          }} checked={
+            selectedFilter === 'all'
+          }>All</Checkbox>
         </Menu.Item>{" "}
-        <Menu.Item key="subitem3">
-          <Checkbox>workshop</Checkbox>
-        </Menu.Item>{" "}
-        <Menu.Item key="subitem2">
-          <Checkbox>Onsite</Checkbox>
+        <Menu.Item key="subitem2"
+
+        >
+          <Checkbox
+            onChange={() => {
+              getData(searchText, 1);
+              setSelectedFilter(1)
+            }}
+            checked={selectedFilter == 1}
+
+          >Open</Checkbox>
         </Menu.Item>
-      </Menu.SubMenu>
+        <Menu.Item key="subitem3"
 
-      <Menu.SubMenu key="item2" title="Status">
-        <Menu.Item key="subitem5">
-          <Checkbox>All</Checkbox>
-        </Menu.Item>{" "}
+        >
+          <Checkbox onChange={() => {
+            getData(searchText, 0);
+            setSelectedFilter(0)
+          }}
 
-      </Menu.SubMenu>
+            checked={selectedFilter === 0}>Closed</Checkbox>
+        </Menu.Item>
+      </SubMenu>
     </Menu>
   );
-
 
   return (
     <div>
@@ -56,6 +105,7 @@ function Index() {
             <Input
               placeholder="Search"
               allowClear
+              value={searchText}
               onChange={onSearch}
               style={{
                 width: 200,
@@ -71,8 +121,16 @@ function Index() {
               Filters
             </Button>
           </Filter>
-          <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" >Export</Button>
-      
+          {/* <Filter filters={FilterMenu}>
+            <Button
+              icon={<Icon component={FilterIcon} />}
+              className="d-flex align-items-center ml-2"
+            >
+              Filters
+            </Button>
+          </Filter>
+          <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" >Export</Button> */}
+
         </div>
         <div className="mb-2 d-flex align-items-center">
           <Button
@@ -84,19 +142,24 @@ function Index() {
           </Button>
         </div>
       </div>
-      <div style={{
-        display:'flex',
-        flexWrap:'wrap',
-        justifyContent:"space-between",
-        gap:"20px",
-      }}>
-          <CardOrder />
-          <CardOrder />
-          <CardOrder />
-          <CardOrder />
-          <CardOrder />
-          <CardOrder />
-      </div>
+      {
+        data.length!==0?
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          // justifyContent: "space-between",
+          gap: "20px",
+        }}>
+          {
+            data.map((item, index) => (
+              <CardOrder key={index} data={item} />
+            ))}
+        </div>:
+       <Card>
+         <Empty />
+       </Card>
+
+      }
 
     </div>
   )

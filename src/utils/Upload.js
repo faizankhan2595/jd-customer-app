@@ -6,7 +6,7 @@ export const UploadImage = async (file) => {
         const formData = new FormData();
         formData.append('file', file);
         const resp = await axiosInstance.post('/upload', formData);
-        return resp.data;
+        return resp.data.item.filePath;
     } catch (e) {
         console.log(e)
         message.error('Failed to upload file');

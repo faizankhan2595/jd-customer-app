@@ -14,6 +14,7 @@ const themes = {
   light: `${process.env.PUBLIC_URL}/css/light-theme.css`,
 };
 
+
 export const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -37,16 +38,20 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-axios.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
-    console.error("Request failed:", error);
+    // console.log(error.response);
+    if (error.response.status===401 || error.response.data.message === "Unauthorized") {
+      localStorage.removeItem("token");
+      window.location.href = "/auth/login";
+    }
+
     return Promise.reject(error);
   }
 );
-
 function App() {
   return (
     <div className="App">
