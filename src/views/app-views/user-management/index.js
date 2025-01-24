@@ -55,7 +55,7 @@ const StaffManagement = () => {
   const [data, setData] = useState([]);
 
   const getData = async (search="",status="") => {
-    let url = `?search=${search}`
+    let url = `?customer_id=${localStorage.getItem("user_id")}&search=${search}`
     //for 0 it is not handling
     if((status !== '' && status != 'all')) {
       url += `&status=${status}`

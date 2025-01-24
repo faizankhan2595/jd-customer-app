@@ -10,6 +10,8 @@ import {
   Popconfirm,
   message,
   Select,
+  Card,
+  Empty,
 } from "antd";
 import {
   DeleteOutlined,
@@ -34,7 +36,7 @@ const MachineAndSensor = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axiosInstance.get("api/web/machines");
+        const response = await axiosInstance.get("api/web/machines?customer_id="+localStorage.getItem("user_id"));
         if (response.status === 200) {
           const responseData = response.data.items;
           if (Array.isArray(responseData)) {
@@ -141,25 +143,25 @@ const MachineAndSensor = () => {
           </Button>
         </div>
       </div>
-      <div style={{
-        display:'flex',
-        flexWrap:'wrap',
-        // justifyContent:"space-between",
-        gap:"5px",
-      }}>
-          {/* <CardMachine />
-          <CardMachine />
-          <CardMachine />
-          <CardMachine />
-          <CardMachine />
-          <CardMachine /> */}
-          {
-            data.map((item) => (
+      {
+        data.length > 0 ? (
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "20px",
+            }}
+          >
+            {data.map((item) => (
               <CardMachine key={item.id} data={item} />
-            ))
-          }
-
-      </div>
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <Empty />
+          </Card>
+        )
+      }
 
     </div>
   );

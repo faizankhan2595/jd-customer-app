@@ -58,7 +58,9 @@ const Jobsites = () => {
 
   const getData = async (search="",status = '', workshop = '') => {
     // ?search=${search}&status=${status!='all'?status:''}&area=${workshop!='all'?workshop:''}
-    let url = `?search=${search}`
+    // let url = `?search=${search}`
+    let url = `?customer_id=${localStorage.getItem("user_id")}&search=${search}`
+
     //for 0 it is not handling
     if((status !== '' && status != 'all')) {
       url += `&status=${status}`

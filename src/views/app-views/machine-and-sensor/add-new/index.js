@@ -96,7 +96,7 @@ const AddNewMachine = () => {
       // if((status !== '' && status != 'all')) {
       //   url += `&status=${status}`
       // }
-      let url = '?status=1'
+      let url = `?customer_id=${localStorage.getItem("user_id")}&status=1`
       try {
         const resp = await axiosInstance.get(`/api/web/jobsites${url}`);
         setJobSiteData(resp.data.items);
