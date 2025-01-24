@@ -177,6 +177,7 @@ export default function AddNewTechnician() {
                 dob: form1.getFieldValue('dob').format('YYYY-MM-DD'),
                 phone_code : countryCode,
                 profile_pic,
+                parent_id: localStorage.getItem("parent_id"),
                 documents: file,
 
 
@@ -202,6 +203,7 @@ export default function AddNewTechnician() {
                 phone_code : countryCode,
                 profile_pic,
                 documents: file,
+                parent_id: localStorage.getItem("parent_id"),
 
 
             })

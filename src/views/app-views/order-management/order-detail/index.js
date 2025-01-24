@@ -1,6 +1,6 @@
 import { SettingOutlined } from '@ant-design/icons'
 import { Button, Card, Empty, Input, Tag, Timeline } from 'antd'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Icon1 from "assets/OrderDetail/question (4) 1.png"
 import Icon2 from "assets/OrderDetail/precision_manufacturing_black_24dp 1 (1).png"
 import Icon3 from "assets/OrderDetail/question (4) 1.png"
@@ -8,10 +8,26 @@ import Icon4 from "assets/OrderDetail/perm_media_black_24dp 1.png"
 import SampleImage from "assets/OrderDetail/360_F_185851253_EmJWmKOrReArl27PN6bVVV5fOanRiCCm 1.png"
 import Icon5 from "assets/OrderDetail/task_black_24dp (4) 1.png"
 import Icon6 from "assets/OrderDetail/analytics-icon 1.png"
-import { useHistory } from 'react-router-dom/cjs/react-router-dom'
+import { useHistory, useParams } from 'react-router-dom/cjs/react-router-dom'
+import { axiosInstance } from 'App'
+import moment from 'moment'
 
 function Index() {
   const history = useHistory()
+  const {id} = useParams();
+  const [order, setOrder] = useState({});
+  const getData = async () => {
+    try{
+      const data = await axiosInstance.get("/api/admin/orders?customer_id="+localStorage.getItem("user_id"));
+      const order = data.data.items.find((item)=>item.id == id);
+      setOrder(order);
+    }catch(e){
+
+    }
+  }
+  useEffect(()=>{
+    getData();
+  },[])
   return (
     <div>
       <h4> <SettingOutlined /><span
@@ -34,13 +50,18 @@ function Index() {
         <Button onClick={()=>{
           history.goBack()
         }}>Back</Button>
-        <Button onClick={()=>{
+        {/* <Button onClick={()=>{
           history.push("/app/order-management/view-quotation")
-        }} type="primary">View Quotation</Button>
+        }} type="primary">View Quotation</Button> */}
         <div>
-          <Tag color='green' style={{
-            padding: "3px 30px",
-          }}>Active</Tag>
+            {
+              order.status === 0 ? (
+                <Tag color="gold">Order Created</Tag>
+              ):
+              (
+                <Tag color="yellow">Survey Scheduled</Tag>
+              )
+            }
           <div style={{
             color: "#72849A",
             fontSize: "12px",
@@ -93,7 +114,7 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Company Name</div>
-                <div>Acme co</div>
+                <div>{order.company_name}</div>
               </div>
               <div style={{
                 width: "45%",
@@ -103,7 +124,7 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Job Site</div>
-                <div>Pumping Station  1</div>
+                <div>{order.job_site?.jobsite_name}</div>
               </div>
               <div style={{
                 width: "100%",
@@ -123,7 +144,7 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Postal Code</div>
-                <div>123456</div>
+                <div>{order.postal_code}</div>
               </div>
               <div style={{
                 width: "45%",
@@ -133,7 +154,7 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Block Number</div>
-                <div>012</div>
+                <div>{order.block_number}</div>
               </div>
               <div style={{
                 width: "45%",
@@ -143,7 +164,7 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Street Number</div>
-                <div>123</div>
+                <div>{order.street_number}</div>
               </div>
               <div style={{
                 width: "45%",
@@ -153,7 +174,7 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Unit Number</div>
-                <div>12355</div>
+                <div>{order.unit_number}</div>
               </div>
               <div style={{
                 width: "45%",
@@ -163,9 +184,9 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Level Number</div>
-                <div>456</div>
+                <div>{order.level_number}</div>
               </div>
-              <div style={{
+              {/* <div style={{
                 width: "45%",
                 color: "#000"
               }}>
@@ -174,7 +195,7 @@ function Index() {
                   marginBottom: "10px"
                 }}>Country</div>
                 <div>Singapore</div>
-              </div>
+              </div> */}
               <div style={{
                 width: "45%",
                 color: "#000"
@@ -183,7 +204,7 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Maintenance Service Type </div>
-                <div>Onsite</div>
+                <div>{order.maintenance_service_type}</div>
               </div>
               <div style={{
                 width: "45%",
@@ -193,9 +214,9 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Machine Name</div>
-                <div>Centrifugal Pump</div>
+                <div>{order.machine?.name}</div>
               </div>
-              <div style={{
+              {/* <div style={{
                 width: "45%",
                 color: "#000"
               }}>
@@ -203,8 +224,9 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Machine Make</div>
-                <div>Johnson Electric</div>
-              </div>
+                <div>{
+                  }</div>
+              </div> */}
               <div style={{
                 width: "45%",
                 color: "#000"
@@ -213,9 +235,9 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Machine Model </div>
-                <div>CF1245g6</div>
+                <div>{order.model}</div>
               </div>
-              <div style={{
+              {/* <div style={{
                 width: "45%",
                 color: "#000"
               }}>
@@ -234,7 +256,7 @@ function Index() {
                   marginBottom: "10px"
                 }}>Sensor Location</div>
                 <div>Rotor</div>
-              </div>
+              </div> */}
             </div>
 
           </Card>
@@ -262,29 +284,21 @@ function Index() {
               flexWrap: "wrap",
               gap: "40px"
             }}>
-              <div style={{
-                width: "80%",
-                color: "#000"
-              }}>
-                <div style={{
-                  fontWeight: "bold",
-                  marginBottom: "10px"
-                }}>Machine Fault</div>
-                <div>Pump Vibrations</div>
-              </div>
-              <div style={{
-                width: "80%",
-                color: "#000"
-              }}>
-                <div style={{
-                  fontWeight: "bold",
-                  marginBottom: "10px"
-                }}>Fault Details</div>
-                <div>loreum ipsum is dummy text. loreum ipsum is dummy text.loreum ipsum is dummy text.
-                  loreum ipsum is dummy text.loreum ipsum is dummy text.loreum ipsum is dummy text.
-                  loreum ipsum is dummy text.</div>
-              </div>
-
+              {
+                order.machine_faults?.map((item,i)=>{
+                 return <div style={{
+                    width: "80%",
+                    color: "#000"
+                  }}>
+                    {/* <div style={{
+                      fontWeight: "bold",
+                      marginBottom: "10px"
+                    }}>Machine Fault</div> */}
+                    <div>{item.fault}</div>
+                  </div>
+                 
+                })
+              }
             </div>
 
           </Card>
@@ -343,7 +357,7 @@ function Index() {
                 }}>Technician Assigned</div>
                 <div>Robert Fox</div>
               </div>
-              <div style={{
+              {/* <div style={{
                 width: "80%",
                 color: "#000"
               }}>
@@ -357,7 +371,7 @@ function Index() {
                 <Button style={{
                   marginTop: "10px"
                 }} type="primary">Save</Button>
-              </div>
+              </div> */}
 
             </div>
 
@@ -383,21 +397,25 @@ function Index() {
           }>
 
             <div>
-              <div style={{
-                // outline-style: dashed;
-                // outline-color: #E6EBF1;
-                // border-radius: 12px;
-                outlineStyle: "dashed",
-                outlineColor: "#E6EBF1",
-                borderRadius: "12px",
-                padding: "20px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-
-              }}>
-                <img src={SampleImage} />
-              </div>
+              {
+              order.files?.length>0?  order.files?.map((item,i)=>{
+                  <div style={{
+                    // outline-style: dashed;
+                    // outline-color: #E6EBF1;
+                    // border-radius: 12px;
+                    outlineStyle: "dashed",
+                    outlineColor: "#E6EBF1",
+                    borderRadius: "12px",
+                    padding: "20px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+    
+                  }}>
+                    <img src={item.file_path} />
+                  </div>
+                }):<Empty/>
+              }
             </div>
 
           </Card>
@@ -420,7 +438,21 @@ function Index() {
 
             <div>
               <Timeline>
-                <Timeline.Item>
+                {
+                  order.timeline?.map((item,i)=>{
+                    return (
+                      <Timeline.Item>
+                        <div>Timeline{i+1}</div>
+                        <div>{moment(item.created_at).format("DD-MM-YYYY hh:mmA")}</div>
+                      </Timeline.Item>
+                    )
+                  })
+                }
+                {/* <Timeline.Item>
+                  <div>Order Generated.</div>
+                  <div>16 Jan 2022, 10:02 AM</div>
+                </Timeline.Item> */}
+                {/* <Timeline.Item>
                   <div>Order Generated.</div>
                   <div>16 Jan 2022, 10:02 AM</div>
                 </Timeline.Item>
@@ -431,18 +463,14 @@ function Index() {
                 <Timeline.Item>
                   <div>Order Generated.</div>
                   <div>16 Jan 2022, 10:02 AM</div>
-                </Timeline.Item>
-                <Timeline.Item>
-                  <div>Order Generated.</div>
-                  <div>16 Jan 2022, 10:02 AM</div>
-                </Timeline.Item>
+                </Timeline.Item> */}
 
               </Timeline>
             </div>
 
           </Card>
 
-          <Card title={
+          {/* <Card title={
             <div style={{
               display: "flex",
               gap: "10px",
@@ -462,7 +490,7 @@ function Index() {
               <Empty />
             </div>
 
-          </Card>
+          </Card> */}
         </div>
       </div>
     </div>

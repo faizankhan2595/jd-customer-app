@@ -21,7 +21,7 @@ function CardOrder({ data }) {
           cursor: "pointer",
         }}
         onClick={() => {
-          history.push("/app/order-management/order-detail");
+          history.push("/app/order-management/order-detail"+"/"+data.id);
         }}
       >
         <div
@@ -45,7 +45,7 @@ function CardOrder({ data }) {
                 color: "#000",
               }}
             >
-              Vibration Analysis
+              {/* Vibration Analysis */}
             </div>
             <div>#{data.id}</div>
             <div>
