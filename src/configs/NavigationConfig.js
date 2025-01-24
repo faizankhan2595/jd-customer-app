@@ -69,7 +69,7 @@ else{
     breadcrumb: false,
     submenu: []
   },
-  ...(localStorage.getItem("parent_id")==null ? [] : [ // Only add if role is not 5
+  ...(localStorage.getItem("parent_id")==="null" ? [] : [ // Only add if role is not 5
     {
       key: "user-management",
       path: `${APP_PREFIX_PATH}/user-management`,

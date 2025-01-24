@@ -52,6 +52,10 @@ const SideNavContent = (props) => {
       const data = await axiosInstance.get("/api/admin/getUserByToken");
       console.log(data.data.item);
       // setData(data.data.item);
+      localStorage.setItem("name", data.data.item.name);
+      localStorage.setItem("parent_id", data.data.item.parent_id);
+      localStorage.setItem("company_name", data.data.item.company_name);
+      localStorage.setItem('user_id', data.data.item.id);
       localStorage.setItem("role", data.data.item.role_id);
       
     } catch (err) {
