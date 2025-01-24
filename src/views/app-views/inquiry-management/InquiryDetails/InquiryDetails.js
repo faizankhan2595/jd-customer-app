@@ -51,9 +51,10 @@ function InquiryDetails() {
 
   const getData = async (Search = "") => {
     try {
-      const response = await axiosInstance.get("api/web/inquiries");
+      const response = await axiosInstance.get(`api/web/inquiries/${id}`);
       if (response.status === 200) {
-        setData(...response.data.items.filter((item) => item.id == id));
+        setData(response.data.item);
+        // setData(...response.data.items.filter((item) => item.id == id));
         // console.log(response.data.items)
       }
     } catch (error) {

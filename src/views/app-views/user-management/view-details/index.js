@@ -13,6 +13,7 @@ import {
 import {
   BasicDetail,
   LocationIcon,
+  LocationIcon2,
   SuccessTickIcon,
   UploadDocument,
   UploadFileIcon,
@@ -23,6 +24,7 @@ import { useState } from "react";
 import { Tabs } from "antd";
 import {
   CloseCircleOutlined,
+  DeleteOutlined,
   EnvironmentOutlined,
   EyeOutlined,
   PlusOutlined,
@@ -81,6 +83,9 @@ export default function AddNewAdminAccount() {
   const [countryCode, setCountryCode] = useState("+91");
   const queryParams = new URLSearchParams(location.search);
   const [fileList, setFileList] = useState([]);
+  const [jobsite, setJobSite] = useState(null);
+  const [assignedJobSite, setAssignedJobSite] = useState([]);
+  const [unassignedJobSite, setUnassignedJobSite] = useState([]);
   const [imageUrl, setImageUrl] = useState();
   // const id = queryParams.get("id");
   const { id } = useParams();
@@ -538,6 +543,31 @@ export default function AddNewAdminAccount() {
     setAlertModal(false);
   };
 
+  const getAssignedJobSites = async () => {
+    try {
+      const response = await axiosInstance.post(`/api/admin/customer-users/getAssignedJobSites`,{
+        user_id:id,
+        customer_id:localStorage.getItem("user_id")
+      });
+      // setData1(response.data.items);
+      setAssignedJobSite(response.data.items);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const getUnassignedJobSites = async () => {
+    try {
+      const response = await axiosInstance.post(`/api/admin/customer-users/getUnassignedJobSites`,{
+        user_id:id,
+        customer_id:localStorage.getItem("user_id")
+      });
+      // setData1(response.data.items);
+      setUnassignedJobSite(response.data.items);
+    } catch (error) {
+      console.error(error);
+    }
+  }
   // Fetch Country
   useEffect(() => {
     const fetchCountry = async () => {
@@ -550,6 +580,8 @@ export default function AddNewAdminAccount() {
     };
     fetchCountry();
     if (id) {
+      getAssignedJobSites();
+      getUnassignedJobSites();
       getData();
     }
   }, []);
@@ -600,6 +632,76 @@ export default function AddNewAdminAccount() {
     }
   }
 
+  const onFinishSubmit = async () => {
+    // console.log("Submit");
+    try{
+      const response = await axiosInstance.post(`/api/admin/customer-users/assignJobSite`,{
+        user_id:id,
+        // customer_id:localStorage.getItem("user_id"),
+        job_site_id:jobsite
+      });
+      message.success(response.data.message);
+      getAssignedJobSites();
+      getUnassignedJobSites();
+      setJobSite(null);
+    }catch(err){
+      message.error(err.response.data.message);
+    }
+  }
+
+  const unassignedJobSiteFunction = async (job) => {
+    try {
+      const response = await axiosInstance.post(`/api/admin/customer-users/unassignJobSite`,{
+        user_id:id,
+        // customer_id:localStorage.getItem("user_id"),
+        job_site_id:job
+      });
+      message.success(response.data.message);
+      getAssignedJobSites();
+      getUnassignedJobSites();
+    } catch (error) {
+      console.error(error);
+      message.error(error.response.data.message);
+    }
+  }
+
+
+  const column = [
+    {
+      title: "Id",
+      dataIndex: "id",
+      key: "id",
+    },
+    {
+      title:"Jobsite Name",
+      dataIndex:"jobsite_name"
+    },
+    {
+      title:"Contact Number",
+      dataIndex:'phone_no',
+      render:(text,record)=>(
+        <>{record.phone_code} - {text}</>
+      )
+    },
+    {
+      title:"Created On",
+      dataIndex:"created_at",
+      render:(text)=>(
+        <>{moment(text).format('DD-MM-YYYY')}</>
+      )
+    },
+    {
+      title:"Action",
+      key:"action",
+      render:(text,record)=>(
+        <div style={{
+          cursor:"pointer"
+        }} type="primary" onClick={()=>{
+            unassignedJobSiteFunction(record.id)
+        }}><DeleteOutlined/></div>
+      )
+    }
+  ]
   return (
     <div className="customTableBackground">
       <Modal
@@ -1281,6 +1383,48 @@ export default function AddNewAdminAccount() {
             </Tabs>
           </div>
         </TabPane>
+        <TabPane 
+          tab={
+            <div className="d-flex justify-content-center">
+            <LocationIcon2 />{" "}
+            <span className="ml-2">Jobsite</span>
+          </div>
+          }>  
+          <Card>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap:"10px"
+            }}>
+              <Select
+                onChange={(val) => {
+                  console.log(val);
+                  setJobSite(val)
+                }}
+                value={jobsite}
+              placeholder="Select Jobsite" style={{
+                flex:1
+              }}>
+                {/* <Option value="1">Select Jobsite</Option> */}
+                {
+                  unassignedJobSite.map((item) => {
+                    return <Option value={item.id}>{item.jobsite_name}</Option>
+                  })
+                }
+              </Select>
+              <Button
+                type="primary"
+                onClick={()=>{
+                  onFinishSubmit()
+                }}
+              >
+                Submit
+              </Button>
+            </div>
+            <Table dataSource={assignedJobSite} columns={column} />
+          </Card>
+
+          </TabPane>
       </Tabs>
       <Form.Item>
         <div

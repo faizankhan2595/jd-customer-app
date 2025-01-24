@@ -549,7 +549,7 @@ const LoginOne = (props) => {
               },
               {
                 type: "email",
-                message: "Please enter a validate email!",
+                message: "Please enter a valid email!",
               },
             ]}
           >
@@ -563,6 +563,10 @@ const LoginOne = (props) => {
                 required: true,
                 message: "Please input your NRIC/FIN number!",
               },
+              {
+                pattern: /^[STFG]\d{7}[A-Z]$/,
+                message: "Please enter a valid NRIC/FIN number!",
+              }
             ]}
           >
             <Input />

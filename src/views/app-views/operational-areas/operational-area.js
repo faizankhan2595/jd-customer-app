@@ -257,7 +257,7 @@ const OperationalAreas = () => {
       <h4> <UserSwitchOutlined /><span style={{
         color: '#6a6a6a',
         fontWeight: '300'
-      }}> Operational Master </span>/ Area  </h4>
+      }}> Operation Master </span>/ Area  </h4>
       <div className="d-flex justify-content-between mb-3">
         <div className="" style={{ display: "flex" }}>
           <Space direction="vertical">

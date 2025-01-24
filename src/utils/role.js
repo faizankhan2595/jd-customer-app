@@ -2,7 +2,7 @@ export const role = (val)=>{
     if(val===1){
         return "Admin"
     }
-    else if(val===2){
+    else if(val==2){
         return "Staff"
     }
     else if(val==3){

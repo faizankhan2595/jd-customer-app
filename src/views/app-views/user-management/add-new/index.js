@@ -181,6 +181,13 @@ export default function AddNewAdminAccount() {
                     documents: file,
                     // documents: file,
                 })
+                if(resp.data.message=="Invalid phone number format. Please provide a valid phone number."){
+                    message.error("Invalid phone number format. Please provide a valid phone number.");
+                    return;
+                }
+                else{
+                    message.success("Admin Account Updated Successfully");
+                }
                 history.goBack();
             } catch (error) {
                 const errorResponse = error.response.data.data;
@@ -205,7 +212,12 @@ export default function AddNewAdminAccount() {
                     dob: form1.getFieldValue('dob').format('YYYY-MM-DD'),
 
                 })
+                if(resp.data.message=="Invalid phone number format. Please provide a valid phone number."){
+                    message.error("Invalid phone number format. Please provide a valid phone number.");
+                    return;
+                }
                 handleCloseAlert()
+                message.success("Admin Account Created Successfully");
                 setTimeout(() => {
                     history.goBack()
                 }, 1000)
