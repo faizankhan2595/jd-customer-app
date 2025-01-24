@@ -8,7 +8,7 @@ import { InboxOutlined, UploadOutlined } from '@ant-design/icons'
 import Dragger from 'antd/lib/upload/Dragger'
 
 function TravelerRemarks({ id, remarksArray, getRemarks, remarksModal, setRemarksModal, remarksReply, setRemarksReply, remarksReplying, setRemarksReplying,imageUrl,setImageUrl }) {
-
+    const BASE_URL = '';
     const [remarks, setRemarks] = useState('')
 
 
