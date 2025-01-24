@@ -1,13 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Menu, Grid } from "antd";
+import { Menu, Grid, Dropdown } from "antd";
 import IntlMessage from "../util-components/IntlMessage";
 import Icon from "../util-components/Icon";
 import navigationConfig from "configs/NavigationConfig";
 import { connect } from "react-redux";
 import { SIDE_NAV_LIGHT, NAV_TYPE_SIDE } from "constants/ThemeConstant";
-import utils from 'utils'
+import utils from "utils";
 import { onMobileNavToggle } from "redux/actions/Theme";
+import { axiosInstance } from "App";
+import { role } from "utils/role";
+import { LogoutOutlined } from "@ant-design/icons";
 
 const { SubMenu } = Menu;
 const { useBreakpoint } = Grid;
@@ -30,13 +33,34 @@ const setDefaultOpen = (key) => {
 };
 
 const SideNavContent = (props) => {
-	const { sideNavTheme, routeInfo, hideGroupTitle, localization, onMobileNavToggle } = props;
-	const isMobile = !utils.getBreakPoint(useBreakpoint()).includes('lg')
-	const closeMobileNav = () => {
-		if (isMobile) {
-			onMobileNavToggle(false)
-		}
-	}
+  const {
+    sideNavTheme,
+    routeInfo,
+    hideGroupTitle,
+    localization,
+    onMobileNavToggle,
+  } = props;
+  const isMobile = !utils.getBreakPoint(useBreakpoint()).includes("lg");
+  const closeMobileNav = () => {
+    if (isMobile) {
+      onMobileNavToggle(false);
+    }
+  };
+  // const [data, setData] = React.useState([]);
+  const getData = async () => {
+    try {
+      const data = await axiosInstance.get("/api/admin/getUserByToken");
+      console.log(data.data.item);
+      // setData(data.data.item);
+      localStorage.setItem("role", data.data.item.role_id);
+      
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  useEffect(() => {
+    getData();
+  }, []);
   return (
     <Menu
       theme={sideNavTheme === SIDE_NAV_LIGHT ? "light" : "dark"}
@@ -44,13 +68,47 @@ const SideNavContent = (props) => {
       style={{ height: "100%", borderRight: 0 }}
       defaultSelectedKeys={[routeInfo?.key]}
       defaultOpenKeys={setDefaultOpen(routeInfo?.key)}
-      className={hideGroupTitle ? "hide-group-title customSideNav" : "customSideNav"}
+      className={
+        hideGroupTitle ? "hide-group-title customSideNav" : "customSideNav"
+      }
     >
-    <div className="profileCard" style={{width:'100%'}}>
-      <img className="sideNavUserImage" src="https://images.pexels.com/photos/428364/pexels-photo-428364.jpeg" alt="..."/>
-      <h4 className="text-center mt-3 mb-1 text-white">John Smith</h4>
-      <p style={{fontSize:'12px',color:'#65b0f8'}} className="text-center mt-0">System Admin</p>
-    </div>
+
+       
+      <div className="profileCard" style={{ width: "100%" }}>
+      <Dropdown
+  overlay={
+    <Menu>
+      <Menu.Item
+        key="profile"
+        onClick={() => {
+          localStorage.clear(); // Clear localStorage
+          window.location.href = "/"; // Redirect to home
+        }}
+      >
+        <LogoutOutlined />
+        <span>Logout</span>
+      </Menu.Item>
+    </Menu>
+  }
+  placement="bottomCenter"
+>
+
+        <img
+          className="sideNavUserImage"
+          src={`https://api.dicebear.com/9.x/initials/svg?seed=${localStorage.getItem("name")}`}
+          alt="..."
+        />
+        </Dropdown>
+        <h4 className="text-center mt-3 mb-1 text-white">{
+          localStorage.getItem("name")
+          }</h4>
+        <p
+          style={{ fontSize: "12px", color: "#65b0f8" }}
+          className="text-center mt-0"
+        >
+          {role(localStorage.getItem("role"))}
+        </p>
+      </div>
       {navigationConfig.map((menu) =>
         menu.submenu.length > 0 ? (
           <Menu.ItemGroup
@@ -76,7 +134,10 @@ const SideNavContent = (props) => {
                       <span>
                         {setLocale(localization, subMenuSecond.title)}
                       </span>
-                      <Link onClick={() => closeMobileNav()} to={subMenuSecond.path} />
+                      <Link
+                        onClick={() => closeMobileNav()}
+                        to={subMenuSecond.path}
+                      />
                     </Menu.Item>
                   ))}
                 </SubMenu>
@@ -84,7 +145,10 @@ const SideNavContent = (props) => {
                 <Menu.Item key={subMenuFirst.key}>
                   {subMenuFirst.icon ? <Icon type={subMenuFirst.icon} /> : null}
                   <span>{setLocale(localization, subMenuFirst.title)}</span>
-                  <Link onClick={() => closeMobileNav()} to={subMenuFirst.path} />
+                  <Link
+                    onClick={() => closeMobileNav()}
+                    to={subMenuFirst.path}
+                  />
                 </Menu.Item>
               )
             )}
@@ -93,7 +157,9 @@ const SideNavContent = (props) => {
           <Menu.Item key={menu.key}>
             {menu.icon ? <Icon type={menu?.icon} /> : null}
             <span>{setLocale(localization, menu?.title)}</span>
-            {menu.path ? <Link onClick={() => closeMobileNav()} to={menu.path} /> : null}
+            {menu.path ? (
+              <Link onClick={() => closeMobileNav()} to={menu.path} />
+            ) : null}
           </Menu.Item>
         )
       )}

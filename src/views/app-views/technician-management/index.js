@@ -231,7 +231,7 @@ function TechnicianManagement() {
       url += `&status=${filter}`
     }
 
-    const res1 = await axiosInstance.get(`api/web/technician/list?${url}`);
+    const res1 = await axiosInstance.get(`api/web/technician/list${url}`);
     console.log('res1', res1);
     setData(res1.data.items);
     // setData(res1.data.items.map((elm) => {

@@ -131,7 +131,7 @@ function AddOrder() {
   };
 
   const getTechnicianList = async () => {
-    const res1 = await axiosInstance.get(`api/web/technician/list?status=1`);
+    const res1 = await axiosInstance.get(`api/web/technician/list?customer_id=${localStorage.getItem("user_id")}&status=1`);
     console.log("res1", res1);
     setTechnician(res1.data.items);
   };

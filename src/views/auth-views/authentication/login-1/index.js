@@ -206,6 +206,8 @@ const LoginOne = (props) => {
         localStorage.setItem("company_name", res.data.item.user?.company_name);
         localStorage.setItem("parent_id", res.data.item.user?.parent_id);
         localStorage.setItem("token", res.data.item.token?.token);
+        localStorage.setItem("role", res.data.item.user?.role_id);
+        localStorage.setItem("name", res.data.item.user?.name); 
 		localStorage.setItem("user_id", res.data.item.user?.id);
         window.location.reload();
       } else {

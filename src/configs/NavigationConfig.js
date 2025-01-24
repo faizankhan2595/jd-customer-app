@@ -69,31 +69,32 @@ else{
     breadcrumb: false,
     submenu: []
   },
-  {
-    key: "user-management",
-    path: `${APP_PREFIX_PATH}/user-management`,
-    title: "User Management",
-    icon: UserSwitchOutlined,
-    breadcrumb: false,
-    submenu: [
-      {
-        key: 'user-accounts',
-        path: `${APP_PREFIX_PATH}/user-management/user-accounts`,
-        title: 'User Accounts',
-        // icon: Masters,
-        breadcrumb: false,
-        submenu: []
-      },
-      // {
-      //   key: 'free-user',
-      //   path: `${APP_PREFIX_PATH}/user-management/free-user`,
-      //   title: 'Free Users',
-      //   // icon: Masters,
-      //   breadcrumb: false,
-      //   submenu: []
-      // }
-    ],
-  },
+  ...(localStorage.getItem("parent_id")==null ? [] : [ // Only add if role is not 5
+    {
+      key: "user-management",
+      path: `${APP_PREFIX_PATH}/user-management`,
+      title: "User Management",
+      icon: UserSwitchOutlined,
+      breadcrumb: false,
+      submenu: [
+        {
+          key: 'user-accounts',
+          path: `${APP_PREFIX_PATH}/user-management/user-accounts`,
+          title: 'User Accounts',
+          breadcrumb: false,
+          submenu: []
+        },
+        // {
+        //   key: 'free-user',
+        //   path: `${APP_PREFIX_PATH}/user-management/free-user`,
+        //   title: 'Free Users',
+        //   breadcrumb: false,
+        //   submenu: []
+        // }
+      ],
+    },
+  ]),
+
   {
     key: 'order-management',
     path: `${APP_PREFIX_PATH}/order-management`,

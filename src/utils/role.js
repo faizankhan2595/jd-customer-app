@@ -9,19 +9,19 @@ export const role = (val)=>{
         return "Customer"
     } 
     else if(val==4){
-        return "Workshop Users"
+        return "Workshop User"
     }
     else if(val==5){
-        return "Free Users"
+        return "Free User"
     }
     else if(val==6){
         return "Technician"
     }else if(val==7){
         return "Customer Admin"
     }else if(val==8){
-        return "Customer Managers"
+        return "Customer Manager"
     }else if(val==9){
-        return "Customer Users"
+        return "Customer User"
     }else{
         return "No Role"
     }
