@@ -182,6 +182,10 @@ export default function AddNewTechnician() {
 
 
             })
+            if(resp.data.message=="Invalid phone number format. Please provide a valid phone number."){
+                message.error("Invalid phone number format. Please provide a valid phone number.");
+                return;
+              }
             handleCloseAlert()
             setTimeout(() => {
                 history.goBack()
@@ -207,6 +211,10 @@ export default function AddNewTechnician() {
 
 
             })
+            if(resp.data.message=="Invalid phone number format. Please provide a valid phone number."){
+                message.error("Invalid phone number format. Please provide a valid phone number.");
+                return;
+              }
             handleCloseAlert()
             setTimeout(() => {
                 history.goBack()
