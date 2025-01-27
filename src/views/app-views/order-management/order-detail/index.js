@@ -19,6 +19,7 @@ function Index() {
   const getData = async () => {
     try{
       const data = await axiosInstance.get("/api/admin/orders?customer_id="+localStorage.getItem("user_id"));
+      // orders/${id}
       const order = data.data.items.find((item)=>item.id == id);
       setOrder(order);
     }catch(e){
