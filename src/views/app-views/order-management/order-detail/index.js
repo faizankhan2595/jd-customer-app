@@ -36,10 +36,12 @@ function Index() {
 });
   const getData = async () => {
     try{
-      const data = await axiosInstance.get("/api/admin/orders?customer_id="+localStorage.getItem("user_id"));
+      const data = await axiosInstance.get(`/api/admin/orders/${id}`);
       // orders/${id}
-      const order = data.data.items.find((item)=>item.id == id);
+      const order = data.data.item;
       setOrder(order);
+      // const order = data.data.items.find((item)=>item.id == id);
+      // setOrder(order);
       if(order.survey[0]) setSurveyData(order.survey[0])
     }catch(e){
 
@@ -75,11 +77,14 @@ function Index() {
         }} type="primary">View Quotation</Button> */}
         <div>
             {
-              order.status === 0 ? (
+              order.status === 1 ? (
                 <Tag color="gold">Order Created</Tag>
               ):
-              (
-                <Tag color="yellow">Survey Scheduled</Tag>
+              order.status === 2 ? (
+                <Tag color="green">Survery Scheduled</Tag>
+              ):
+              order.status === 0 && (
+                <Tag color="cyan">Survey Completed</Tag>
               )
             }
           <div style={{
@@ -88,7 +93,7 @@ function Index() {
             fontWeight: "400",
             marginTop: "5px"
           }}>
-            Since 16 Jan 2022, 10:02 AM
+            Since {moment(order.created_at).format("DD-MM-YYYY hh:mmA")}
           </div>
         </div>
       </div>
@@ -365,7 +370,7 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Survey Time Slot</div>
-                <div>{surveyData.survey_date}</div>
+                <div>{surveyData.timeslot}</div>
               </div>
               <div style={{
                 width: "45%",
@@ -378,7 +383,7 @@ function Index() {
                 <div>{surveyData.technician_id || 'Robert Fox'}</div>
               </div>
 
-              <div style={{
+              {/* <div style={{
                 width: "45%",
                 color: "#000"
               }}>
@@ -431,7 +436,7 @@ function Index() {
                   marginBottom: "10px"
                 }}>Level Number</div>
                 <div>{surveyData.level_number}</div>
-              </div>
+              </div> */}
 
               <div style={{
                 width: "95%",

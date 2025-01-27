@@ -154,7 +154,7 @@ function InquiryDetails() {
                 padding: "3px 30px",
               }}
             >
-              Active
+              Open
             </Tag>
           ) : (
             <Tag
@@ -163,7 +163,7 @@ function InquiryDetails() {
                 padding: "3px 30px",
               }}
             >
-              InActive
+              Close
             </Tag>
           )}
           <div

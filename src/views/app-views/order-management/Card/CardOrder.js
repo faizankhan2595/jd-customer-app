@@ -49,11 +49,17 @@ function CardOrder({ data }) {
             </div>
             <div>#{data.id}</div>
             <div>
-              {data.status === 0 ? (
+              {data.status === 1 ? (
                 <Tag color="gold">Order Created</Tag>
-              ) : (
-                <Tag color="green">Completed</Tag>
-              )}
+              ) : 
+              
+              data.status === 2 ? (
+                <Tag color="green">Survery Scheduled</Tag>
+              ) :
+              data.status === 0 && (
+                <Tag color="cyan">Survey Completed</Tag>
+              ) 
+              }
             </div>
           </div>
           <div>

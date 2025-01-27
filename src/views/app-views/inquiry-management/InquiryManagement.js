@@ -34,7 +34,7 @@ function Index() {
   }
 
   const getData = async (Search="",filter="all") => {
-    let url = `?customer_id=${localStorage.getItem("user_id")}&search=${Search}`
+    let url = `?customer_id=${localStorage.getItem("parent_id")||localStorage.getItem("user_id")}&search=${Search}`
     //for 0 it is not handling
     if((filter !== '' && filter != 'all')) {
       url += `&status=${filter}`

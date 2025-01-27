@@ -216,7 +216,7 @@ function OrderManagement() {
   
   
   const getOrderList = async (search="",filter="",service="") => {
-    let url = `?customer_id=${localStorage.getItem("user_id")}&search=${search}`
+    let url = `?customer_id=${localStorage.getItem("parent_id")||localStorage.getItem("user_id")}&search=${search}`
     //for 0 it is not handling
     if((filter !== '' && filter != 'all')) {
       url += `&status=${filter}`

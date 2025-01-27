@@ -150,7 +150,7 @@ const CustomerDetails = () => {
   const getMenuOrders = (_id) => (
     <Menu>
       <Menu.Item key="edit">
-        <Link className='d-flex align-items-center' to={`${id}/order-details/${_id}`}>
+        <Link className='d-flex align-items-center' to={`/app/order-management/order-detail/${_id}`}>
         <EyeOutlined /><span className='d-block ml-2'>View Detail</span></Link>
       </Menu.Item>
     </Menu>

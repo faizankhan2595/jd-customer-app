@@ -36,7 +36,7 @@ const MachineAndSensor = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axiosInstance.get("api/web/machines?customer_id="+localStorage.getItem("user_id"));
+        const response = await axiosInstance.get("api/web/machines?customer_id="+localStorage.getItem("parent_id")||localStorage.getItem("user_id"));
         if (response.status === 200) {
           const responseData = response.data.items;
           if (Array.isArray(responseData)) {
