@@ -16,12 +16,31 @@ function Index() {
   const history = useHistory()
   const {id} = useParams();
   const [order, setOrder] = useState({});
+  const [surveyData, setSurveyData] = useState({
+    "id": 0,
+    "user_id": 0,
+    "order_id": 0,
+    "survey_date": null,
+    "timeslot": null,
+    "technician_id": 0,
+    "instructions": null,
+    "postal_code": "",
+    "block_number": "",
+    "street_number": "",
+    "level_number": "",
+    "unit_number": "",
+    "country": "",
+    "customer_remarks": "",
+    "status": 0,
+    "is_deleted": 0,
+});
   const getData = async () => {
     try{
       const data = await axiosInstance.get("/api/admin/orders?customer_id="+localStorage.getItem("user_id"));
       // orders/${id}
       const order = data.data.items.find((item)=>item.id == id);
       setOrder(order);
+      if(order.survey[0]) setSurveyData(order.survey[0])
     }catch(e){
 
     }
@@ -336,7 +355,7 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Date of Survey</div>
-                <div>16 Jan 2022</div>
+                <div>{surveyData.survey_date}</div>
               </div>
               <div style={{
                 width: "45%",
@@ -345,8 +364,8 @@ function Index() {
                 <div style={{
                   fontWeight: "bold",
                   marginBottom: "10px"
-                }}>Time Slot</div>
-                <div>10:00 AM-12:00 PM</div>
+                }}>Survey Time Slot</div>
+                <div>{surveyData.survey_date}</div>
               </div>
               <div style={{
                 width: "45%",
@@ -356,8 +375,75 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Technician Assigned</div>
-                <div>Robert Fox</div>
+                <div>{surveyData.technician_id || 'Robert Fox'}</div>
               </div>
+
+              <div style={{
+                width: "45%",
+                color: "#000"
+              }}>
+                <div style={{
+                  fontWeight: "bold",
+                  marginBottom: "10px"
+                }}>Postal Code</div>
+                <div>{surveyData.postal_code}</div>
+              </div>
+
+              <div style={{
+                width: "45%",
+                color: "#000"
+              }}>
+                <div style={{
+                  fontWeight: "bold",
+                  marginBottom: "10px"
+                }}>Block Number</div>
+                <div>{surveyData.block_number}</div>
+              </div>
+
+              <div style={{
+                width: "45%",
+                color: "#000"
+              }}>
+                <div style={{
+                  fontWeight: "bold",
+                  marginBottom: "10px"
+                }}>Street Name</div>
+                <div>{surveyData.street_number}</div>
+              </div>
+
+              <div style={{
+                width: "45%",
+                color: "#000"
+              }}>
+                <div style={{
+                  fontWeight: "bold",
+                  marginBottom: "10px"
+                }}>Unit Number</div>
+                <div>{surveyData.unit_number}</div>
+              </div>
+
+              <div style={{
+                width: "45%",
+                color: "#000"
+              }}>
+                <div style={{
+                  fontWeight: "bold",
+                  marginBottom: "10px"
+                }}>Level Number</div>
+                <div>{surveyData.level_number}</div>
+              </div>
+
+              <div style={{
+                width: "95%",
+                color: "#000"
+              }}>
+                <div style={{
+                  fontWeight: "bold",
+                  marginBottom: "10px"
+                }}>Customer Remarks</div>
+                <div>{surveyData.customer_remarks}</div>
+              </div>
+              
               {/* <div style={{
                 width: "80%",
                 color: "#000"

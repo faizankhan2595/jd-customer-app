@@ -9,7 +9,7 @@ import Dragger from 'antd/lib/upload/Dragger'
 import { axiosInstance } from 'App'
 
 function TravelerRemarks({ id, remarksArray, getRemarks, remarksModal, setRemarksModal, remarksReply, setRemarksReply, remarksReplying, setRemarksReplying,imageUrl,setImageUrl }) {
-
+    const BASE_URL = '';
     const [remarks, setRemarks] = useState('')
     // console.log()
 
