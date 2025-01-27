@@ -118,7 +118,7 @@ function AddNew() {
 
     const getOperationArea = async () => {
         try {
-            const response = await axiosInstance.get(`api/web/operational-area?customer_id=${localStorage.getItem("parent_id")||localStorage.getItem("user_id")}&status=1`);
+            const response = await axiosInstance.get(`api/web/operational-area?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}&status=1`);
             if (response.status === 200) {
                 setData(response.data.items);
                 if (id) {
@@ -135,7 +135,9 @@ function AddNew() {
             <h4> <UserSwitchOutlined /><span style={{
                 color: '#6a6a6a',
                 fontWeight: '300'
-            }}> Operational Mastrer / Area</span> / Add New </h4>
+            }}> Operation Mastrer / Jobsite</span> / {id ? 
+            "Edit" : "Add New"
+            } </h4>
             <Card>
                 <Tabs defaultActiveKey="1">
                     <Tabs.TabPane tab="Job Site Details" key="1">
@@ -161,6 +163,10 @@ function AddNew() {
                                     label="Phone Number"
                                     rules={[
                                         { required: true, message: "Please enter Phone Number" },
+                                        {
+                                            pattern: new RegExp(/^[0-9\b]+$/),
+                                            message: "Please enter valid phone number",
+                                        },
                                     ]}
                                 >
                                     <Input
@@ -246,7 +252,12 @@ function AddNew() {
                                 }}
                                     label={'Street Number'}
                                     name="street_number"
-                                    rules={[{ required: true, message: 'Please enter the street number!' }]}
+                                    rules={[{ required: true, message: 'Please enter the street number!' }
+                                    , {
+                                        pattern: new RegExp(/^[0-9\b]+$/),
+                                        message: "Please enter valid street number",
+                                    }
+                                    ]}
                                 >
                                     <Input placeholder="Street Number" style={{ width: '100%' }} />
                                 </Form.Item>
@@ -273,7 +284,12 @@ function AddNew() {
                                 }}
                                     label={'Level Number'}
                                     name="level_number"
-                                    rules={[{ required: true, message: 'Please enter the level number!' }]}
+                                    rules={[{ required: true, message: 'Please enter the level number!' },
+                                        {
+                                            pattern: new RegExp(/^[0-9\b]+$/),
+                                            message: "Please enter valid level number",
+                                        }
+                                    ]}
                                 >
                                     <Input placeholder="Level Number" style={{ width: '100%' }} />
                                 </Form.Item>

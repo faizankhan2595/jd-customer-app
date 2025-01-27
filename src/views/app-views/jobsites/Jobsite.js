@@ -59,7 +59,7 @@ const Jobsites = () => {
   const getData = async (search="",status = '', workshop = '') => {
     // ?search=${search}&status=${status!='all'?status:''}&area=${workshop!='all'?workshop:''}
     // let url = `?search=${search}`
-    let url = `?customer_id=${localStorage.getItem("parent_id")||localStorage.getItem("user_id")}&search=${search}`
+    let url = `?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}&search=${search}`
 
     //for 0 it is not handling
     if((status !== '' && status != 'all')) {
@@ -119,7 +119,7 @@ const Jobsites = () => {
       title: 'Created On',
       dataIndex: 'created_at',
       key: 'created_at',
-        render: (text) => moment(text).format('DD-MM-YYYY')
+        render: (text) => moment(text).format('DD-MM-YYYY hh:mm A')
     },
     {
       title: 'Status',
@@ -176,7 +176,7 @@ const Jobsites = () => {
         `api/web/jobsites/${id}`
       );
       if (response.status === 200) {
-        message.success("Area deleted successfully");
+        message.success("Jobsite deleted successfully");
         // setData((prevData) => prevData.filter((item) => item.id !== id));
         getData()
       }

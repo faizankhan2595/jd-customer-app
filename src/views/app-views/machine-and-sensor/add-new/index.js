@@ -66,7 +66,8 @@ const AddNewMachine = () => {
     const postData = {
         ...form.getFieldsValue(),
         pictures:file,
-        machine_status:machineStatus
+        machine_status:machineStatus,
+        year: values.year ? moment(values.year).format('YYYY') : null,
     };
 
     if(!id){
@@ -97,7 +98,7 @@ const AddNewMachine = () => {
       // if((status !== '' && status != 'all')) {
       //   url += `&status=${status}`
       // }
-      let url = `?customer_id=${localStorage.getItem("parent_id")||localStorage.getItem("user_id")}&status=1`
+      let url = `?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}&status=1`
       try {
         const resp = await axiosInstance.get(`/api/web/jobsites${url}`);
         setJobSiteData(resp.data.items);
@@ -151,7 +152,8 @@ const AddNewMachine = () => {
     setMachineStatus(data.machine_status == 1 ? true : false)
     form.setFieldsValue({
       ...data,
-      date: data.date ? moment(data.date) : null
+      date: data.date ? moment(data.date) : null,
+      year: data.year ? moment(data.year) : null,
     })
     setSelectedFiles(data?.pictures.map((item,index) => {
       return {
@@ -375,7 +377,8 @@ const AddNewMachine = () => {
                 name="year"
                 rules={[{ required: true, message: 'Please enter Year' }]}
               >
-                <Input type="number" />
+                {/* <Input type="number" /> */}
+                <DatePicker picker="year" format={"YYYY"} />
               </Form.Item>
             </Col>
             <Col span={12}>

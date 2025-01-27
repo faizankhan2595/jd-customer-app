@@ -224,7 +224,7 @@ function TechnicianManagement() {
 
   const getOrderList = async (search = "", filter = 'all') => {
     // let url = `?search=${search}`
-    let url = `?customer_id=${localStorage.getItem("parent_id")||localStorage.getItem("user_id")}&search=${search}`
+    let url = `?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}&search=${search}`
 
     //for 0 it is not handling
     if((filter !== '' && filter != 'all')) {

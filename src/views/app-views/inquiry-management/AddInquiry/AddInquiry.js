@@ -48,9 +48,7 @@ function AddInquiry() {
   const getJobsites = async () => {
     try {
       const resp = await axiosInstance.get(
-        `/api/web/jobsites?customer_id=${
-          localStorage.getItem("parent_id") || localStorage.getItem("user_id")
-        }`
+        `/api/web/jobsites?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}`
       );
       setData(resp.data.items);
     } catch (err) {

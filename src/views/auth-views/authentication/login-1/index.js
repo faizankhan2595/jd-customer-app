@@ -517,7 +517,9 @@ const LoginOne = (props) => {
           <Form.Item
             label="Name"
             name="name"
-            rules={[{ required: true, message: "Please input your name!" }]}
+            rules={[{ required: true, message: "Please input your name!" },
+              { pattern: /^[a-zA-Z\s]*$/, message: "Please enter a valid name!" }
+            ]}
           >
             <Input />
           </Form.Item>
