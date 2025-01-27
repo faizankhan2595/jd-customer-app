@@ -202,7 +202,14 @@ function AddOrder() {
             </Select>
           </Form.Item>
           <Form.Item
-            rules={[{ required: true, message: "Please input Postal Code!" }]}
+            rules={[{ required: true, message: "Please input Postal Code!"
+              
+
+             },
+            {
+              pattern: new RegExp(/^[0-9\b]+$/),
+              message: "Please enter valid postal code",
+            }]}
             style={{
               width: "45%",
             }}
@@ -247,7 +254,10 @@ function AddOrder() {
             }}
             label="Unit Number"
             name={"unit_number"}
-            rules={[{ required: true, message: "Please input Unit Number!" }]}
+            rules={[{ required: true, message: "Please input Unit Number!" }, {
+                            pattern: new RegExp(/^[0-9\b]+$/),
+                            message: "Please enter valid unit number",
+                          }]}
           >
             <Input />
           </Form.Item>
@@ -385,9 +395,10 @@ function AddOrder() {
                       <div>{item.fault}</div>
                       <div
                         onClick={() => {
-                          setMachineFault(
-                            machineFault.filter((i) => i !== item.sNo)
-                          );
+                          setMachineFault(machineFault.filter((item2) => item2.sNo !== item.sNo));
+                          // setMachineFault(
+                          //   machineFault.filter((item2,i) => i !== item.sNo)
+                          // );
                         }}
                         style={{
                           color: "red",

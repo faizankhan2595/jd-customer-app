@@ -19,6 +19,7 @@ const AddNewMachine = () => {
   const [customerData, setCustomerData] = useState([]);
   const [jobSiteData, setJobSiteData] = useState([]);
   const { id } = useParams();
+  const [machineType, setMachineType] = useState([]);
   const handleFileSelect = (event) => {
     const fileList = event.target.files;
     const newSelectedFiles = [];
@@ -169,9 +170,28 @@ const AddNewMachine = () => {
    
   //   // console.log(data);
   // }
+
+  const fetchMachineType = async () => {
+    try {
+      const response = await axiosInstance.get("api/admin/machine-types/list");
+      if (response.status === 200) {
+        const responseData = response.data.items;
+        if (Array.isArray(responseData)) {
+          setMachineType(responseData);
+          // getCustomerData();
+          getData();
+       
+        } 
+        // console.log(JSON.stringify(responseData));
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
   useEffect(() => {
     // getCustomerData();
-    getData();
+    // getData();
+    fetchMachineType();
   }, [])
 
   return (
@@ -223,7 +243,23 @@ const AddNewMachine = () => {
               </Form.Item>
             </Col>
           </Row>
-
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Machine Range Type"
+                name="machine_type_id"
+                rules={[{ required: true, message: 'Please enter Machine Range ' }]}
+              >
+                <Select>
+                  {
+                    machineType.map((item)=>{
+                      return <Option value={item.id}>{item.name}</Option>
+                    })
+                  }
+                </Select>
+              </Form.Item>
+            </Col>
+            </Row>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item

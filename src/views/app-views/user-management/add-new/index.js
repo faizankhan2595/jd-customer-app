@@ -586,7 +586,10 @@ export default function AddNewAdminAccount() {
                                     <Form.Item
                                         label={'Postal Code'}
                                         name="postal_code"
-                                        rules={[{ required: true, message: 'Please enter the postal code!' }]}
+                                        rules={[{ required: true, message: 'Please enter the postal code!' },{
+                                                      pattern: new RegExp(/^[0-9\b]+$/),
+                                                      message: "Please enter valid postal code",
+                                                    }]}
                                     >
                                         <Input placeholder="Postal Code" style={{ width: '100%' }} />
                                     </Form.Item>
@@ -613,7 +616,10 @@ export default function AddNewAdminAccount() {
                                     <Form.Item
                                         label={'Unit Number'}
                                         name="unit_number"
-                                        rules={[{ required: true, message: 'Please enter the unit number!' }]}
+                                        rules={[{ required: true, message: 'Please enter the unit number!' }, {
+                                                        pattern: new RegExp(/^[0-9\b]+$/),
+                                                        message: "Please enter valid unit number",
+                                                      }]}
                                     >
                                         <Input placeholder='Unit Number' style={{ width: '100%' }} />
                                     </Form.Item>

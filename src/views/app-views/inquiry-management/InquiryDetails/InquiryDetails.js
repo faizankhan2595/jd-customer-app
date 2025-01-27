@@ -560,22 +560,20 @@ function InquiryDetails() {
           >
             <div>
               <Timeline>
-                <Timeline.Item>
-                  <div>Inquiry Generated.</div>
-                  <div>16 Jan 2022, 10:02 AM</div>
-                </Timeline.Item>
-                <Timeline.Item>
-                  <div>Inquiry Generated.</div>
-                  <div>16 Jan 2022, 10:02 AM</div>
-                </Timeline.Item>
-                <Timeline.Item>
-                  <div>Inquiry Generated.</div>
-                  <div>16 Jan 2022, 10:02 AM</div>
-                </Timeline.Item>
-                <Timeline.Item>
-                  <div>Inquiry Generated.</div>
-                  <div>16 Jan 2022, 10:02 AM</div>
-                </Timeline.Item>
+                  {
+                    data.timeline?.map((item)=>{
+                      return <Timeline.Item>
+                        <div style={{
+                          display:"flex",
+                          flexDirection:"column",
+                          gap:"5px"
+                        }}>
+                          <div style={{fontWeight:"bold"}}>{item.text}</div>
+                          <div>{moment(item.created_at).format("DD-MM-YYYY hh:mm a")}</div>
+                        </div>
+                      </Timeline.Item>
+                    })
+                  }
               </Timeline>
             </div>
           </Card>

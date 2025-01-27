@@ -122,7 +122,7 @@ function OrderManagement() {
     setSearchText(value.target.value)
     clearTimeout(timeout)
     timeout = setTimeout(() => {
-      getOrderList(value.target.value, selectedStatus=='active'?1:selectedStatus=='inactive'?0:'all'
+      getOrderList(value.target.value, selectedStatus=='active'?1:selectedStatus=='inactive'?2:'all'
 
         , 
         selectedWorkshop=='Onsite'?'Onsite':selectedWorkshop=='Workshop'?'Workshop':'all'
@@ -132,7 +132,7 @@ function OrderManagement() {
 
   const handleStatusChange = (filter) => {
     setSelectedStatus(filter);
-    getOrderList(searchText,filter=='active'?1:filter=='inactive'?0:'all',
+    getOrderList(searchText,filter=='active'?1:filter=='inactive'?2:'all',
     selectedWorkshop=='Onsite'?'Onsite':selectedWorkshop=='Workshop'?'Workshop':'all'
 
     );
@@ -142,7 +142,7 @@ function OrderManagement() {
 
   const handleService = (filter) => {
     setSelectedWorkshop(filter);
-    getOrderList(searchText,selectedStatus=='active'?1:selectedStatus=='inactive'?0:'all', 
+    getOrderList(searchText,selectedStatus=='active'?1:selectedStatus=='inactive'?2:'all', 
     filter=='Onsite'?'Onsite':filter=='Workshop'?'Workshop':'all'
 
     );
@@ -168,7 +168,8 @@ function OrderManagement() {
             checked={selectedStatus === 'active'}
             onChange={() => handleStatusChange('active')}
           >
-            Completed
+            {/* Survey Scheduled */}
+            Order Created
           </Checkbox>
         </Menu.Item>
         <Menu.Item key="status-inactive">
@@ -176,13 +177,14 @@ function OrderManagement() {
             checked={selectedStatus === 'inactive'}
             onChange={() => handleStatusChange('inactive')}
           >
-            Order Created
+            {/* Order Created */}
+            Survey Scheduled
           </Checkbox>
         </Menu.Item>
       </SubMenu>
 
       {/* Workshop Filter */}
-      {/* <SubMenu key="serviceType" title="Service Type">
+      <SubMenu key="serviceType" title="Service Type">
         <Menu.Item key="service-all">
           <Checkbox
             checked={selectedWorkshop === 'all'}
@@ -210,7 +212,7 @@ function OrderManagement() {
           </Checkbox>
         </Menu.Item>
 
-      </SubMenu> */}
+      </SubMenu>
     </Menu>
   );
   

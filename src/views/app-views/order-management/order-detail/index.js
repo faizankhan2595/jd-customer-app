@@ -380,7 +380,7 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Technician Assigned</div>
-                <div>{surveyData.technician_id || 'Robert Fox'}</div>
+                <div>{surveyData.technician || 'Robert Fox'}</div>
               </div>
 
               {/* <div style={{

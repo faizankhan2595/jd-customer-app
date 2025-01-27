@@ -980,7 +980,10 @@ export default function AddNewAdminAccount() {
                   <Form.Item
                     label={'Unit Number'}
                     name="unit_number"
-                    rules={[{ required: true, message: 'Please enter the unit number!' }]}
+                    rules={[{ required: true, message: 'Please enter the unit number!' }, {
+                                    pattern: new RegExp(/^[0-9\b]+$/),
+                                    message: "Please enter valid unit number",
+                                  }]}
                   >
                     <Input disabled placeholder='Unit Number' style={{ width: '100%' }} />
                   </Form.Item>
