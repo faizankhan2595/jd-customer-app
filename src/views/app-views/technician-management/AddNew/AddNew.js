@@ -142,7 +142,7 @@ export default function AddNewTechnician() {
         let profile_pic = imageUrl
 
         console.log(fileList);
-      if(profile_pic.includes('base64')){
+      if(profile_pic && profile_pic.includes('base64')){
          profile_pic = await UploadImage(fileList);
      }
         let file= [];
@@ -207,7 +207,7 @@ export default function AddNewTechnician() {
                 phone_code : countryCode,
                 profile_pic,
                 documents: file,
-                parent_id: localStorage.getItem("parent_id"),
+                parent_id: localStorage.getItem("parent_id")!="null"?localStorage.getItem("parent_id"):localStorage.getItem("user_id"),
 
 
             })

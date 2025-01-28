@@ -122,7 +122,7 @@ function AddOrder() {
 
   const getData = async () => {
     try {
-      const resp = await axiosInstance.get(`/api/web/jobsites?status=1`);
+      const resp = await axiosInstance.get(`/api/web/jobsites?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}&status=1`);
       setData(resp.data.items);
     } catch (err) {
       console.log(err);
