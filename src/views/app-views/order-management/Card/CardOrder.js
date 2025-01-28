@@ -1,4 +1,4 @@
-import { Card, Divider, Tag } from "antd";
+import { Card, Divider, Popover, Tag } from "antd";
 import React from "react";
 import VibrationIcon from "assets/Frame 1171275235.png";
 import QuotationIcon from "assets/quotation.png";
@@ -58,29 +58,32 @@ function CardOrder({ data }) {
             </div>
           </div>
           <div>
-            <img
+            {
+              data.is_quotation_generated==1?
+             <Popover title="Quotation Generated"><img
               style={{
                 cursor: "pointer",
               }}
               src={QuotationIcon}
-            />
+            /></Popover> :null
+            }
           </div>
           <div>
             {/* data.maintenance_service_type!=="Onsite"?Onsite:LocationForIcon */}
             {data.maintenance_service_type == "Onsite" ? (
-              <img style={{}} src={Onsite} />
+              <Popover  content="Onsite"><img style={{}} src={Onsite} /></Popover>
             ) : (
-              <img style={{}} src={InHouse} />
+              <Popover content="Workshop"><img style={{}} src={InHouse} /></Popover> 
             )}
           </div>
-          <div>
+          {/* <div>
             <img
               style={{
                 cursor: "pointer",
               }}
               src={ProfileForCard}
             />
-          </div>
+          </div> */}
         </div>
         <Divider
           variant="dashed"

@@ -105,7 +105,7 @@ function AddOrder() {
 
   const fetchData = async () => {
     try {
-      const response = await axiosInstance.get("api/web/machines");
+      const response = await axiosInstance.get(`api/web/machines?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}&status=1`);
       if (response.status === 200) {
         const responseData = response.data.items;
         if (Array.isArray(responseData)) {
@@ -514,9 +514,15 @@ function AddOrder() {
               </div>
             </div>
           </div>
+          <div style={{ display:"flex",
+                  justifyContent:"flex-end",
+                  width:"100%",
+                  marginTop:"10px"
+                 }}>
                 <Form.Item>
                     <Button type="primary" htmlType="submit">Submit</Button>
                 </Form.Item>
+                </div>
         </Form>
       </Card>
     </div>

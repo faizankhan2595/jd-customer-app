@@ -251,7 +251,7 @@ function OrderManagement() {
       </h4>
       <div className="d-flex justify-content-between mb-3">
         <div className="" style={{ display: "flex" }}>
-          <Space direction="vertical">
+          {/* <Space direction="vertical">
             <Input
               placeholder="Search"
               allowClear
@@ -262,7 +262,7 @@ function OrderManagement() {
               }}
               prefix={<SearchOutlined style={{ marginRight: 8 }} />}
             />
-          </Space>
+          </Space> */}
           <Filter filters={FilterMenu}>
             <Button
               icon={<Icon component={FilterIcon} />}

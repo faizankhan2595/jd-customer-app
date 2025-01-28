@@ -4,7 +4,7 @@ import { BasicDetail, LocationIcon, SuccessTickIcon, UploadDocument, UploadFileI
 import React from "react";
 import { useState } from "react";
 import { Tabs } from "antd";
-import { CloseCircleOutlined, EnvironmentOutlined, LaptopOutlined, PlusOutlined, TeamOutlined, UserSwitchOutlined } from "@ant-design/icons";
+import { CloseCircleOutlined, EnvironmentOutlined, EyeOutlined, LaptopOutlined, PlusOutlined, TeamOutlined, UserSwitchOutlined } from "@ant-design/icons";
 import { Option } from "antd/lib/mentions";
 // import axios from "../../../../axios";
 import moment from "moment";
@@ -241,9 +241,9 @@ export default function AddNewTechnician() {
             setSuccessModal(true);
             setSuccesmodaltext({
                 title: "Technician Status Change Successfully!",
-                text: "Technician status changed to terminated.",
+                text: "Technician status changed to " + (statu === "1" ? "Active" : "Inactive"),
             });
-            history.goBack();
+            // history.goBack();
         } catch (error) {
             console.error(error);
             message.error(error.response.data.message);
@@ -376,7 +376,7 @@ export default function AddNewTechnician() {
             } </h4>
 
             <Tabs activeKey={activeTab} onTabClick={handleTabClick} tabBarExtraContent={
-                <Button onClick={() => {
+                 id && <Button onClick={() => {
                     setIsChangeStudModalOpen(true)
                 }}>
                     Change Technician Status
@@ -529,6 +529,9 @@ export default function AddNewTechnician() {
                                         rules={[{ required: true, message: "Please enter DOB" }]}
                                     >
                                         <DatePicker
+                                            disabledDate={(current) => {
+                                                return current && current > moment().endOf("day");  
+                                            }}
                                             placeholder="Date of birth"
                                             style={{ width: "100%" }}
                                         />
@@ -613,7 +616,12 @@ export default function AddNewTechnician() {
                                     <Form.Item
                                         label={'Street Number'}
                                         name="street_number"
-                                        rules={[{ required: true, message: 'Please enter the street number!' }]}
+                                        rules={[{ required: true, message: 'Please enter the street number!' },
+                                            {
+                                            pattern: new RegExp(/^[0-9\b]+$/),
+                                            message: "Please enter valid street number",
+                                            }
+                                        ]}
                                     >
                                         <Input placeholder="Street Number" style={{ width: '100%' }} />
                                     </Form.Item>
@@ -725,7 +733,16 @@ export default function AddNewTechnician() {
                                             <div className="d-flex align-items-center">
                                                 <UploadFileIcon />{" "}
                                                 <span className="ml-2">{file.name} </span>{" "}
+                                                <span className="ml-5 " style={{
+                                                    cursor: "pointer"
+                                                }} onClick={()=>{
+                                                    window.open(file.url, '_blank')  
+                                                }}>
+                                                    <EyeOutlined />
+                                                </span>
                                             </div>
+                                            
+
                                             <span
                                                 style={{ cursor: "pointer" }}
                                                 onClick={() => delUplFile(i)}
@@ -811,7 +828,7 @@ export default function AddNewTechnician() {
                             //     message.error(`Please select status first !`)
                             //     return
                             // }
-                            if(remark == ''){
+                            if(remark == '' || remark == null){
                                 message.error(`Please enter remarks !`)
                                 return
                             }
