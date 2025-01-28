@@ -53,6 +53,8 @@ import {
 } from "antd";
 import { MoreOutlined, SearchOutlined } from "@ant-design/icons";
 import { UploadImage } from "utils/Upload";
+import CountrySelector from "utils/CountrySelector";
+import PhoneCode from "utils/PhoneCode";
 
 const { Search } = Input;
 const { Title, Text } = Typography;
@@ -850,19 +852,10 @@ export default function AddNewAdminAccount() {
                   >
                     <Input disabled
                       addonBefore={
-                        <Select
-                          // defaultValue={"In"}
-                          style={{
-                            width: 80,
-                          }}
-                          value={countryCode}
-                          onChange={(e) => {
-                            setCountryCode(e)
-                          }}
-                        >
-                          <Option value="+91">+91</Option>
-                          <Option value="+65">+65</Option>
-                        </Select>
+                        <PhoneCode value={countryCode} onChange={(e) => {
+                          setCountryCode(e)
+                      }
+                      } />
                       }
                       style={{ width: "100%" }}
                       placeholder="Phone number"
@@ -1005,11 +998,7 @@ export default function AddNewAdminAccount() {
                     name="country"
                     rules={[{ required: true, message: 'Please select a country!' }]}
                   >
-                    <Select disabled placeholder='Country' style={{ width: '100%' }}>
-                      <Option value={155}>Singapore</Option>
-                      <Option value={75}>India</Option>
-                      {/* Add more countries as needed */}
-                    </Select>
+                    <CountrySelector/>
                   </Form.Item>
                 </div>
               </div>

@@ -22,6 +22,8 @@ import { UploadFileIcon } from "assets/svg/icon";
 import { UploadImage } from "utils/Upload";
 import React, { useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router-dom/cjs/react-router-dom";
+import CountrySelector from "utils/CountrySelector";
+import PhoneCode from "utils/PhoneCode";
 
 function AddInquiry() {
   const [form] = Form.useForm();
@@ -173,19 +175,25 @@ function AddInquiry() {
           >
             <Input
               addonBefore={
-                <Select
-                  // defaultValue={"In"}
-                  style={{
-                    width: 80,
-                  }}
+                // <Select
+                //   // defaultValue={"In"}
+                //   style={{
+                //     width: 80,
+                //   }}
+                //   value={countryCode}
+                //   onChange={(e) => {
+                //     setCountryCode(e);
+                //   }}
+                // >
+                //   <Option value="+91">+91</Option>
+                //   <Option value="+65">+65</Option>
+                // </Select>
+                <PhoneCode 
                   value={countryCode}
                   onChange={(e) => {
                     setCountryCode(e);
-                  }}
-                >
-                  <Option value="+91">+91</Option>
-                  <Option value="+65">+65</Option>
-                </Select>
+                  }}/>
+
               }
               style={{ width: "100%" }}
               placeholder="Phone number"
@@ -313,11 +321,7 @@ function AddInquiry() {
             name="country"
             rules={[{ required: true, message: "Please select a country!" }]}
           >
-            <Select placeholder="Country" style={{ width: "100%" }}>
-              <Option value="155">Singapore</Option>
-              <Option value="75">India</Option>
-              {/* Add more countries as needed */}
-            </Select>
+              <CountrySelector/>
           </Form.Item>
 
           <Divider />

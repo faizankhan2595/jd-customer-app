@@ -15,6 +15,7 @@ import { UploadFileIcon } from "assets/svg/icon";
 import UploadImage from "assets/uploadDocument.svg";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom/cjs/react-router-dom";
+import CountrySelector from "utils/CountrySelector";
 
 function AddOrder() {
   const [form] = Form.useForm();
@@ -269,10 +270,7 @@ function AddOrder() {
             name={"country"}
             rules={[{ required: true, message: "Please input Country!" }]}
           >
-            <Select>
-              <Option value="155">Singapore</Option>
-              <Option value="75">India</Option>
-            </Select>
+           <CountrySelector/>
           </Form.Item>
           <Form.Item
             style={{
