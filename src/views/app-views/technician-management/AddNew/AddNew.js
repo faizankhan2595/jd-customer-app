@@ -4,7 +4,7 @@ import { BasicDetail, LocationIcon, SuccessTickIcon, UploadDocument, UploadFileI
 import React from "react";
 import { useState } from "react";
 import { Tabs } from "antd";
-import { CloseCircleOutlined, EnvironmentOutlined, PlusOutlined, TeamOutlined, UserSwitchOutlined } from "@ant-design/icons";
+import { CloseCircleOutlined, EnvironmentOutlined, LaptopOutlined, PlusOutlined, TeamOutlined, UserSwitchOutlined } from "@ant-design/icons";
 import { Option } from "antd/lib/mentions";
 // import axios from "../../../../axios";
 import moment from "moment";
@@ -140,7 +140,10 @@ export default function AddNewTechnician() {
         console.log(selectedFiles);
         // const image = await uploadImage(fileList);
         let profile_pic = imageUrl
-
+        if(!profile_pic){
+            message.error("Please upload profile picture");
+            return;
+        }
         console.log(fileList);
       if(profile_pic && profile_pic.includes('base64')){
          profile_pic = await UploadImage(fileList);
@@ -365,10 +368,12 @@ export default function AddNewTechnician() {
                     </Button>
                 </div>
             </Modal>
-            <h4> <UserSwitchOutlined /><span style={{
+            <h4> <LaptopOutlined /><span style={{
                 color: '#6a6a6a',
                 fontWeight: '300'
-            }}> Staff Management / Admin Accounts</span> / Add New Accounts </h4>
+            }}> Technician Management / </span> {
+                id ? "Edit Technician" : "Add New Technician"
+            } </h4>
 
             <Tabs activeKey={activeTab} onTabClick={handleTabClick} tabBarExtraContent={
                 <Button onClick={() => {
@@ -806,7 +811,7 @@ export default function AddNewTechnician() {
                             //     message.error(`Please select status first !`)
                             //     return
                             // }
-                            if(remark === ''){
+                            if(remark == ''){
                                 message.error(`Please enter remarks !`)
                                 return
                             }

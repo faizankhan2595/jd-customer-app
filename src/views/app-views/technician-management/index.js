@@ -62,7 +62,7 @@ function TechnicianManagement() {
         `api/web/technician/${id}/delete`
       );
       if (response.status === 200) {
-        message.success("Technicial deleted successfully");
+        message.success("Technician deleted successfully");
         setData((prevData) => prevData.filter((item) => item.id !== id));
       }
     } catch (error) {

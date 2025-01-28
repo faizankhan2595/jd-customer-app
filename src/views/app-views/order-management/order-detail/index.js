@@ -33,6 +33,7 @@ function Index() {
     "customer_remarks": "",
     "status": 0,
     "is_deleted": 0,
+    "technician": ""
 });
   const getData = async () => {
     try{
@@ -77,14 +78,12 @@ function Index() {
         }} type="primary">View Quotation</Button> */}
         <div>
             {
-              order.status === 1 ? (
-                <Tag color="gold">Order Created</Tag>
-              ):
+              
               order.status === 2 ? (
                 <Tag color="green">Survery Scheduled</Tag>
               ):
-              order.status === 0 && (
-                <Tag color="cyan">Survey Completed</Tag>
+              (
+                <Tag color="gold">Order Created</Tag>
               )
             }
           <div style={{

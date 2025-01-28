@@ -52,20 +52,24 @@ const SideNavContent = (props) => {
       const data = await axiosInstance.get("/api/admin/getUserByToken");
       console.log(data.data.item);
       // setData(data.data.item);
-      const name = localStorage.getItem("name")!=null ? localStorage.getItem("name") : null;
-      const parent_id = localStorage.getItem("parent_id") != null ? localStorage.getItem("parent_id") : null;
-      const company_name = localStorage.getItem("company_name") != null ? localStorage.getItem("company_name") : null;
-      const user_id = localStorage.getItem('user_id') != null ? localStorage.getItem('user_id') : null;
-      const role = localStorage.getItem("role") != null ? localStorage.getItem("role") : null;
+      const getLocalStorageItem = (key) => {
+        const value = localStorage.getItem(key);
+        return value === "null" || value === null ? null : value;
+      };
+      const name = getLocalStorageItem("name");
+const parent_id = getLocalStorageItem("parent_id");
+const company_name = getLocalStorageItem("company_name");
+const user_id = getLocalStorageItem("user_id");
+const role = getLocalStorageItem("role");
 
+     
 
       localStorage.setItem("name", data.data.item.name);
       localStorage.setItem("parent_id", data.data.item.parent_id);
       localStorage.setItem("company_name", data.data.item.company_name);
       localStorage.setItem('user_id', data.data.item.id);
       localStorage.setItem("role", data.data.item.role_id);
-      
-      if(name!=data.data.item.name || parent_id!=data.data.item.parent_id || company_name!=data.data.item.company_name || user_id!=data.data.item.id || role!=data.data.item.role_id){
+      if(name!=data.data.item.name || parent_id!=data.data.item.parent_id || company_name!=data.data.item.company_name ||  company_name!=data.data.item.company_name || user_id!=data.data.item.id || role!=data.data.item.role_id){
         window.location.reload();
       }
 
