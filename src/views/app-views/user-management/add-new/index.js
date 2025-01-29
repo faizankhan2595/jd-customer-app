@@ -31,6 +31,7 @@ export default function AddNewAdminAccount() {
     const location = useLocation();
     const [countryCode, setCountryCode] = useState('+91')
     const queryParams = new URLSearchParams(location.search);
+    const [loading, setLoading] = useState(false);
     const [fileList, setFileList] = useState([]);
     const [imageUrl, setImageUrl] = useState();
     // const id = queryParams.get('id')
@@ -173,6 +174,7 @@ export default function AddNewAdminAccount() {
 
         if (id) {
             try {
+                setLoading(true);
                 const resp = await axiosInstance.post(`/api/admin/customer-users/${id}/update`, {
                     ...form1.getFieldsValue(),
                     ...form2.getFieldsValue(),
@@ -190,8 +192,10 @@ export default function AddNewAdminAccount() {
                 else{
                     message.success("Admin Account Updated Successfully");
                 }
+                setLoading(false);
                 history.goBack();
             } catch (error) {
+                setLoading(false);
                 const errorResponse = error.response.data.data;
                 if (errorResponse && errorResponse.error) {
                     const errorMessage = errorResponse.error[0];
@@ -204,7 +208,7 @@ export default function AddNewAdminAccount() {
 
             try {
                 // handleOpenAlert()
-
+                setLoading(true);
                 const resp = await axiosInstance.post(`/api/admin/customer-users/store`, {
                     ...form1.getFieldsValue(),
                     ...form2.getFieldsValue(),
@@ -220,12 +224,14 @@ export default function AddNewAdminAccount() {
                 }
                 handleCloseAlert()
                 message.success("Admin Account Created Successfully");
+                setLoading(false);
                 setTimeout(() => {
                     history.goBack()
                 }, 1000)
                 // history.goBack();
 
             } catch (error) {
+                setLoading(false);
                 const errorResponse = error.response.data.data;
 
                 if (errorResponse && errorResponse.error) {
@@ -746,6 +752,7 @@ export default function AddNewAdminAccount() {
                     <Button
                         className="px-4 bg-primary font-weight-semibold text-white bg-info"
                         htmlType="submit"
+                        loading={loading}
                         onClick={() => {
                             handleNext(activeTab)
                         }}
