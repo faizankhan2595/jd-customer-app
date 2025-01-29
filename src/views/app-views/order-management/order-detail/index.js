@@ -314,11 +314,32 @@ function Index() {
                     width: "80%",
                     color: "#000"
                   }}>
-                    {/* <div style={{
-                      fontWeight: "bold",
-                      marginBottom: "10px"
-                    }}>Machine Fault</div> */}
-                    <div>{item.fault}</div>
+                   <Card>
+                        <div>
+                          <div
+                            style={{
+                              fontWeight: "bold",
+
+                              // color:"black"
+                            }}
+                          >
+                            Fault{" "}
+                          </div>
+                          {item.fault}
+                        </div>
+                        <div>
+                          <div
+                            style={{
+                              fontWeight: "bold",
+                              marginTop: "10px",
+                              // color:"black"
+                            }}
+                          >
+                            Fault Detail
+                          </div>
+                          {item.faultDetails}
+                        </div>
+                      </Card>
                   </div>
                  
                 })
