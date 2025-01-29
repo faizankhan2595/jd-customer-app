@@ -83,7 +83,7 @@ function AddOrder() {
         machine_faults: machineFault,
         files: file,
         model: machineData.find((item) => item.id === values.machine_id).model,
-        status: 0,
+        status: 1,
         //    0 -> Order Created
       });
       if (response.status === 200) {
@@ -524,13 +524,7 @@ function AddOrder() {
                 );
               })
             ) : (
-              <Card
-                style={{
-                  marginTop: "10px",
-                }}
-              >
-                <Empty />
-              </Card>
+              <></>
             )}
           </Form.Item>
           {/* <Form.Item
