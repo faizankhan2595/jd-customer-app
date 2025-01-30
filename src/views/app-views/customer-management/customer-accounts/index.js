@@ -137,9 +137,9 @@ const CustomerAccount = () => {
       <Menu.Item key="edit" onClick={() => handleView(id)}>
         <EyeOutlined />View Detail
       </Menu.Item>
-      <Menu.Item key="delete" onClick={() => AssignDashboardfun(id)}>
+      {/* <Menu.Item key="delete" onClick={() => AssignDashboardfun(id)}>
         <DashboardOutlined />Assign Dashboard
-      </Menu.Item>
+      </Menu.Item> */}
     </Menu>
   );
 

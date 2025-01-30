@@ -119,7 +119,10 @@ export default function AddNewTechnician() {
 
     const handleNext = (active) => {
         if (active === "1") {
-
+            if(!imageUrl){
+                message.error("Please upload profile picture");
+                return;
+            }
             form1.validateFields().then(() => {
                 setActiveTab("2");
             })
@@ -142,10 +145,7 @@ export default function AddNewTechnician() {
         console.log(selectedFiles);
         // const image = await uploadImage(fileList);
         let profile_pic = imageUrl
-        if(!profile_pic){
-            message.error("Please upload profile picture");
-            return;
-        }
+        
         console.log(fileList);
       if(profile_pic && profile_pic.includes('base64')){
          profile_pic = await UploadImage(fileList);
@@ -243,7 +243,7 @@ export default function AddNewTechnician() {
             setSuccessModal(true);
             setSuccesmodaltext({
                 title: "Technician Status Change Successfully!",
-                text: "Technician status changed to " + (statu === "1" ? "Active" : "Inactive"),
+                text: "Technician status changed to " + (statu === 1 ? "Active" : "Inactive"),
             });
             // history.goBack();
         } catch (error) {
@@ -718,13 +718,15 @@ export default function AddNewTechnician() {
                                             <div className="d-flex align-items-center">
                                                 <UploadFileIcon />{" "}
                                                 <span className="ml-2">{file.name} </span>{" "}
-                                                <span className="ml-5 " style={{
-                                                    cursor: "pointer"
-                                                }} onClick={()=>{
-                                                    window.open(file.url, '_blank')  
-                                                }}>
-                                                    <EyeOutlined />
-                                                </span>
+                                                {
+                                                    file.url && <span className="ml-5 " style={{
+                                                        cursor: "pointer"
+                                                    }} onClick={()=>{
+                                                        window.open(file.url, '_blank')  
+                                                    }}>
+                                                        <EyeOutlined />
+                                                    </span>
+                                                }
                                             </div>
                                             
 
