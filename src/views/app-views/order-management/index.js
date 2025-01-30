@@ -38,6 +38,8 @@ import CalendarIcon from "assets/calendar.png";
 import moment from "moment";
 import CardOrder from "./Card/CardOrder";
 import SubMenu from "antd/lib/menu/SubMenu";
+import Csv from "utils/Csv";
+import { OrderList, OrderManagementCSV } from "constants/Headers";
 
 function OrderManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,6 +49,7 @@ function OrderManagement() {
   // const [selectedFilter, setSelectedFilter] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedWorkshop, setSelectedWorkshop] = useState('all');
+  const [csvData, setCSVData] = useState([]);
   const getMenu = (record) => (
     <Menu>
       <Menu.Item key="edit" onClick={() => handleView(record.id)}>
@@ -227,6 +230,15 @@ function OrderManagement() {
     const res1 = await axiosInstance.get("api/web/orders"+url);
     console.log("res1", res1);
     setData(res1.data.items);
+    setCSVData(res1.data.items.map((item)=>{
+      return {
+        ...item,
+        status:item.status===1?"Survey Scheduled": item.status==1?"Order Created":"Completed",
+        created_at:moment(item.created_at).format('DD-MM-YYYY'),
+        jobsite: item.job_site?.jobsite_name,
+        machine: item.machine?.name,
+      }
+    }))
   };
   useEffect(() => {
     getOrderList();
@@ -269,12 +281,17 @@ function OrderManagement() {
               Filters
             </Button>
           </Filter>
-          <Button
+          {/* <Button
             icon={<Icon component={CsvIcon} />}
             className="d-flex align-items-center ml-2"
           >
             Export
-          </Button>
+          </Button> */}
+          {/* <Csv
+            data={csvData}
+            filename="Order-Management"
+            header={OrderManagementCSV}
+          /> */}
           <Button className="d-flex align-items-center ml-2">
             <img src={CalendarIcon} alt="Calendar Icon" />
           </Button>

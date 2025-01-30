@@ -16,6 +16,8 @@ import { axiosInstance } from "App";
 import CalendarIcon from "assets/calendar.png"
 import moment from "moment";
 import SubMenu from "antd/lib/menu/SubMenu";
+import Csv from "utils/Csv";
+import { TechnicianMangementCsv } from "constants/Headers";
 
 
 function TechnicianManagement() {
@@ -23,6 +25,7 @@ function TechnicianManagement() {
   const history = useHistory();
   const [searchText, setSearchText] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [csvData, setCSVData] = useState([]);
 
   const [data, setData] = useState([
     
@@ -234,6 +237,17 @@ function TechnicianManagement() {
     const res1 = await axiosInstance.get(`api/web/technician/list${url}`);
     console.log('res1', res1);
     setData(res1.data.items);
+    setCSVData(res1.data.items.map((item)=>{
+          return {
+            ...item,
+            name: item.name,
+            created_at: moment(item.created_at).format('DD-MM-YYYY'),
+            gender: item.gender,
+            phone_no: item.phone_code + ' ' + item.phone_no,
+            email: item?.email,
+            status: item.status===1?"Active":"Inactive",
+          }
+    }))
     // setData(res1.data.items.map((elm) => {
     //   return {
     //     id: elm.id,
@@ -288,6 +302,11 @@ function TechnicianManagement() {
           {/* <Button className="d-flex align-items-center ml-2">
             <img src={CalendarIcon} className="mr-2" alt="Calendar Icon" /> Schedule
           </Button> */}
+          <Csv
+            data={csvData}
+            filename="Technician-Management"
+            header={TechnicianMangementCsv}
+          />
         </div>
         <div className="mb-2 d-flex align-items-center">
           <Button

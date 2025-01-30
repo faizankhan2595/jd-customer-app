@@ -1,5 +1,5 @@
 import { SettingOutlined } from '@ant-design/icons'
-import { Button, Card, Empty, Input, Tag, Timeline } from 'antd'
+import { Button, Card, Empty, Input, Tag, Timeline, message } from 'antd'
 import React, { useEffect, useState } from 'react'
 import Icon1 from "assets/OrderDetail/question (4) 1.png"
 import Icon2 from "assets/OrderDetail/precision_manufacturing_black_24dp 1 (1).png"
@@ -16,6 +16,7 @@ function Index() {
   const history = useHistory()
   const {id} = useParams();
   const [order, setOrder] = useState({});
+  const [techniciansData, setTechniciansData] = useState([])
   const [surveyData, setSurveyData] = useState({
     "id": 0,
     "user_id": 0,
@@ -39,11 +40,34 @@ function Index() {
       const data = await axiosInstance.get("/api/admin/orders?customer_id="+localStorage.getItem("user_id"));
       const order = data.data.items.find((item)=>item.id == id);
       setOrder(order);
-      if(order.survey[0]) setSurveyData(order.survey[0])
+      if(order.survey[0]) setSurveyData(order.survey[0]);
+      if(data) {
+        if(data.maintenance_service_type == 'Onsite') {
+            getTechnicians(data.user_id)
+        } else {
+            getTechnicians(data.workshop_id)
+        }
+      }
     }catch(e){
 
     }
   }
+
+  const getTechnicians = async (id) => {
+    try {
+      let url = `?customer_id=${id}&search=${''}`
+  
+      const res1 = await axiosInstance.get(`api/web/technician/list${url}`);
+      setTechniciansData(res1.data.items);
+    } catch (error) {
+        const errorResponse = error.response.data.data;
+          if (errorResponse && errorResponse.error) {
+            const errorMessage = errorResponse.error[0]; 
+            message.warn(errorMessage);
+          }
+    }
+  }
+
   useEffect(()=>{
     getData();
   },[])
