@@ -2,7 +2,7 @@ import { Button, Menu, Modal, Select, Rate, Switch, Divider, message, Dropdown, 
 import { Space, Tag } from 'antd';
 import { BellOutlined, EditOutlined, EyeOutlined, MoreOutlined, SearchOutlined, SettingOutlined } from '@ant-design/icons';
 import Icon from '@ant-design/icons';
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { DeleteOutlined } from "@ant-design/icons";
 import { useState } from "react";
@@ -16,6 +16,7 @@ import { axiosInstance } from "App";
 import CalendarIcon from "assets/calendar.png"
 import moment from "moment";
 import SubMenu from "antd/lib/menu/SubMenu";
+import { CountryContext } from "CountryContext";
 
 
 function TechnicianManagement() {
@@ -23,7 +24,7 @@ function TechnicianManagement() {
   const history = useHistory();
   const [searchText, setSearchText] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
-
+  const { countryList } = useContext(CountryContext);
   const [data, setData] = useState([
     
     
@@ -115,6 +116,13 @@ function TechnicianManagement() {
           </>
         ) 
     },
+    {
+      title:"Nationality",
+      dataIndex:"nationality",
+      render:(text, record) => (
+        countryList.find((country) => country.id === text)?.name
+      )
+    },
     // {
     //     title:"Nationality",
     //     dataIndex:"nationality",
@@ -132,14 +140,14 @@ function TechnicianManagement() {
         title:"Email ID",
         dataIndex:"email",
     },
-    // {
-    //   title:"Job Assigned",
-    //   dataIndex:"jobAssigned"
-    // },
-    // {
-    //   title:"Active Jobs",
-    //   dataIndex:"activeJobs"
-    // },
+    {
+      title:"Job Assigned",
+      dataIndex:"order_counts"
+    },
+    {
+      title:"Active Jobs",
+      dataIndex:"active_order_counts"
+    },
     {
         title:"Status",
         dataIndex:"status",

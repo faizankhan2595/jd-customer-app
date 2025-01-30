@@ -146,7 +146,7 @@ const AddNewSensor = () => {
               <Form.Item
                 label="Sensor Type"
                 name="sensor_type"
-                rules={[{ required: true, message: 'Please Select Sensor Type' }]}
+                rules={[{ required: true, message: 'Please Enter Sensor Type' }]}
               >
                 <Input />
               </Form.Item>
@@ -196,7 +196,7 @@ const AddNewSensor = () => {
                   onChange={(value) => setMachineStatus(value)}
                   style={{ backgroundColor: machineStatus ? '#3CA6C1' : '#d0d4d7' }}
                 />{' '}
-                {machineStatus ? 'Active' : 'Inactive'}
+                {/* {machineStatus ? 'Active' : 'Inactive'} */}
               </Form.Item>
             </Col>
             <Col span={12}>

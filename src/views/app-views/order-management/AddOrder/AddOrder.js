@@ -408,7 +408,7 @@ function AddOrder() {
                       // color:"black"
                     }}
                   >
-                    Fault Detail
+                    Fault Title
                   </div>
                   <Input
                     value={machineFaultInput}
@@ -424,7 +424,7 @@ function AddOrder() {
                       // color:"black"
                     }}
                   >
-                    Machine Fault Detail
+                     Fault Detail
                   </div>
                   <Input.TextArea
                     value={faultDetails}
