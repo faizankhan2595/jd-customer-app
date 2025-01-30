@@ -14,13 +14,13 @@ import { axiosInstance } from 'App'
 
 const Dashboard = () => {
 	const [cardData, setCardData] = useState([
-		{
-			color: "#459ED8",
-			image: Image1,
-			backgroundImage: bg1,
-			value: "0",
-			heading: "Total Customers"
-		},
+		// {
+		// 	color: "#459ED8",
+		// 	image: Image1,
+		// 	backgroundImage: bg1,
+		// 	value: "0",
+		// 	heading: "Total Customers"
+		// },
 		{
 			color: "#F05179",
 			image: Image2,

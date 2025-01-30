@@ -100,10 +100,10 @@ function AddNew() {
                     ...data,
                 })
                 setStatus(data.status);
-                setSelectedFiles(data?.pictures.map((item,index) => {
+                setSelectedFiles(data?.pictures.map((item, index) => {
                     return {
                         url: item?.file_url,
-                        name: `Picture ${index+1}`
+                        name: `Picture ${index + 1}`
                     }
                 }))
                 setCountryCode(data.phone_code);
@@ -114,13 +114,13 @@ function AddNew() {
         }
     }
     useEffect(() => {
-   
+
         getOperationArea();
     }, [])
 
     const getOperationArea = async () => {
         try {
-            const response = await axiosInstance.get(`api/web/operational-area?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}&status=1`);
+            const response = await axiosInstance.get(`api/web/operational-area?customer_id=${localStorage.getItem("parent_id") != "null" ? localStorage.getItem("parent_id") : localStorage.getItem("user_id")}&status=1`);
             if (response.status === 200) {
                 setData(response.data.items);
                 if (id) {
@@ -137,9 +137,9 @@ function AddNew() {
             <h4> <UserSwitchOutlined /><span style={{
                 color: '#6a6a6a',
                 fontWeight: '300'
-            }}> Operation Mastrer / Jobsite</span> / {id ? 
-            "Edit" : "Add New"
-            } </h4>
+            }}> Operation Mastrer / Jobsite</span> / {id ?
+                "Edit" : "Add New"
+                } </h4>
             <Card>
                 <Tabs defaultActiveKey="1">
                     <Tabs.TabPane tab="Job Site Details" key="1">
@@ -229,10 +229,10 @@ function AddNew() {
                                     label={'Postal Code'}
                                     name="postal_code"
                                     rules={[{ required: true, message: 'Please input postal Code!' },
-                                        {
-                                                      pattern: new RegExp(/^[0-9\b]+$/),
-                                                      message: "Please enter valid postal code",
-                                                    }
+                                    {
+                                        pattern: new RegExp(/^[0-9\b]+$/),
+                                        message: "Please enter valid postal code",
+                                    }
                                     ]}
                                 >
                                     <Input placeholder="Postal Code" style={{ width: '100%' }} />
@@ -259,7 +259,7 @@ function AddNew() {
                                     label={'Street Number'}
                                     name="street_number"
                                     rules={[{ required: true, message: 'Please enter the street number!' }
-                                    , {
+                                        , {
                                         pattern: new RegExp(/^[0-9\b]+$/),
                                         message: "Please enter valid street number",
                                     }
@@ -273,9 +273,9 @@ function AddNew() {
                                     label={'Unit Number'}
                                     name="unit_number"
                                     rules={[{ required: true, message: 'Please enter the unit number!' }, {
-                                                    pattern: new RegExp(/^[0-9\b]+$/),
-                                                    message: "Please enter valid unit number",
-                                                  }]}
+                                        pattern: new RegExp(/^[0-9\b]+$/),
+                                        message: "Please enter valid unit number",
+                                    }]}
                                 >
                                     <Input placeholder='Unit Number' style={{ width: '100%' }} />
                                 </Form.Item>
@@ -291,10 +291,10 @@ function AddNew() {
                                     label={'Level Number'}
                                     name="level_number"
                                     rules={[{ required: true, message: 'Please enter the level number!' },
-                                        {
-                                            pattern: new RegExp(/^[0-9\b]+$/),
-                                            message: "Please enter valid level number",
-                                        }
+                                    {
+                                        pattern: new RegExp(/^[0-9\b]+$/),
+                                        message: "Please enter valid level number",
+                                    }
                                     ]}
                                 >
                                     <Input placeholder="Level Number" style={{ width: '100%' }} />
@@ -306,7 +306,7 @@ function AddNew() {
                                     name="country"
                                     rules={[{ required: true, message: 'Please select a country!' }]}
                                 >
-                                    <CountrySelector/>
+                                    <CountrySelector />
                                 </Form.Item>
                             </div >
 
@@ -361,17 +361,28 @@ function AddNew() {
                                                                 <div className="d-flex align-items-center">
                                                                     <UploadFileIcon />{" "}
                                                                     <span className="ml-2">{file.name} </span>{" "}
-                                                                    <span className="ml-5">
+                                                                    {/* <span className="ml-5">
                                                                         {file.url ? (<EyeOutlined style={{ cursor: "pointer" }} onClick={() => window.open(file.url)} />) : null}
+                                                                    </span> */}
+                                                                </div>
+                                                                <div>
+                                                                    {
+                                                                        file.url && <span className="ml-3 " style={{
+                                                                            cursor: "pointer"
+                                                                        }} onClick={() => {
+                                                                            window.open(file.url, '_blank')
+                                                                        }}>
+                                                                            <EyeOutlined />
+                                                                        </span>
+                                                                    }
+                                                                    <span
+                                                                        style={{ cursor: "pointer" }}
+                                                                        onClick={() => delUplFile(i)}
+                                                                    >
+                                                                        {" "}
+                                                                        <CloseCircleOutlined />{" "}
                                                                     </span>
                                                                 </div>
-                                                                <span
-                                                                    style={{ cursor: "pointer" }}
-                                                                    onClick={() => delUplFile(i)}
-                                                                >
-                                                                    {" "}
-                                                                    <CloseCircleOutlined />{" "}
-                                                                </span>
                                                             </li>
                                                         ))}
                                                     </ul>

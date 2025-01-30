@@ -1073,9 +1073,27 @@ export default function AddNewAdminAccount() {
                       <div className="d-flex align-items-center">
                         <UploadFileIcon />{" "}
                         <span className="ml-2">{file.name} </span>{" "}
-                        <span className="ml-5">
+                        {/* <span className="ml-5">
                           {file.url ? (<EyeOutlined style={{ cursor: "pointer" }} onClick={() => window.open(file.url)} />) : null}
-                        </span>
+                        </span> */}
+                      </div>
+                      <div>
+                        {
+                          file.url && <span className="ml-3 " style={{
+                            cursor: "pointer"
+                          }} onClick={() => {
+                            window.open(file.url, '_blank')
+                          }}>
+                            <EyeOutlined />
+                          </span>
+                        }
+                        {/* <span
+                          style={{ cursor: "pointer" }}
+                          onClick={() => delUplFile(i)}
+                        >
+                          {" "}
+                          <CloseCircleOutlined />{" "}
+                        </span> */}
                       </div>
                       {/* <span
                         style={{ cursor: "pointer" }}

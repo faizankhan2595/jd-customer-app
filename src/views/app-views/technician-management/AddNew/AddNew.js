@@ -718,7 +718,7 @@ export default function AddNewTechnician() {
                                             <div className="d-flex align-items-center">
                                                 <UploadFileIcon />{" "}
                                                 <span className="ml-2">{file.name} </span>{" "}
-                                                {
+                                                {/* {
                                                     file.url && <span className="ml-5 " style={{
                                                         cursor: "pointer"
                                                     }} onClick={()=>{
@@ -726,17 +726,28 @@ export default function AddNewTechnician() {
                                                     }}>
                                                         <EyeOutlined />
                                                     </span>
-                                                }
+                                                } */}
                                             </div>
                                             
 
-                                            <span
-                                                style={{ cursor: "pointer" }}
-                                                onClick={() => delUplFile(i)}
-                                            >
-                                                {" "}
-                                                <CloseCircleOutlined />{" "}
-                                            </span>
+                                            <div>
+                        {
+                          file.url && <span className="ml-3 " style={{
+                            cursor: "pointer"
+                          }} onClick={() => {
+                            window.open(file.url, '_blank')
+                          }}>
+                            <EyeOutlined />
+                          </span>
+                        }
+                        <span
+                          style={{ cursor: "pointer" }}
+                          onClick={() => delUplFile(i)}
+                        >
+                          {" "}
+                          <CloseCircleOutlined />{" "}
+                        </span>
+                      </div>
                                         </li>
                                     ))}
                                 </ul>
