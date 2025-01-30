@@ -160,14 +160,14 @@ else{
       }
     ],
   },
-  {
-    key: 'reports',
-    path: `${APP_PREFIX_PATH}/reports`,
-    title: 'Reports',
-    icon: FileOutlined,
-    breadcrumb: false,
-    submenu: []
-  },
+  // {
+  //   key: 'reports',
+  //   path: `${APP_PREFIX_PATH}/reports`,
+  //   title: 'Reports',
+  //   icon: FileOutlined,
+  //   breadcrumb: false,
+  //   submenu: []
+  // },
   // {
   //   key: 'notifications',
   //   path: `${APP_PREFIX_PATH}/notifications`,

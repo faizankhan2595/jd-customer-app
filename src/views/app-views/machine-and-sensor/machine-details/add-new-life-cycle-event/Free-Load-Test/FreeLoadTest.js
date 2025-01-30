@@ -11,14 +11,45 @@ import TextArea from "antd/lib/input/TextArea";
 import { ViewDetailsIcon } from 'assets/svg/icon';
 
 
-
-
 const { Panel } = Collapse;
 
 const FreeLoadTest = ({
-    setInitialcondUploaModa, setInitialeditModal, receiveAndDelData, data, handleRadioChnge, handleRadio1Chnge, statorWindingGlobaldata, statorWindingGlobalRadioChange, setInitialcondUploaModal, selectedImages1,
+    setInitialeditModal, 
+    initialModalFormdata, 
+    setInitialModalFormdata, 
+    initialModalForm, 
+    setInitialModalForm, 
+    freeLoadData, 
+    setFreeLoadData, 
+    setInitialcondUploaModal, 
+    selectedImages2, 
+    returnClass,
+    setSelectedImageTemp,
+    setImageMarkings,
+    UploadImageMarkingKonva,
+    setEditImageId,
+    delUplFile2,
+    setUploadModal,
+    setUploadImageType
+    }) => {
+        const convertImageToBase64 = async (imageUrl, markings) => {
+            try {
+                const response = await fetch(imageUrl, { mode: "cors" }); // Ensure CORS is allowed
+                const blob = await response.blob(); // Convert response to Blob
+                const reader = new FileReader();
+                
+                reader.readAsDataURL(blob);
+                reader.onloadend = () => {
+                    let base64 = reader.result;
+                    if(base64) {
+                        UploadImageMarkingKonva(base64, markings);
+                    }
+                };
+            } catch (error) {
+              console.error("Error fetching image:", error);
+            }
+        };
 
-    setSRUploadForm, setSREditModal, setModalName, auxileryChecksHeater, auxilleryHeaterRadioChange }) => {
     return (
         <>
 
@@ -45,7 +76,11 @@ const FreeLoadTest = ({
                             </span>{" "}
                         </h4>
                         <div>
-                            <Button onClick={() => setInitialcondUploaModal(true)}>
+                            <Button onClick={() => {
+                                    // setInitialcondUploaModal(true);
+                                    setUploadModal(true);
+                                    setUploadImageType('Free-Load');
+                                }}>
                                 {" "}
                                 Upload Photos
                             </Button>
@@ -53,7 +88,43 @@ const FreeLoadTest = ({
                                 className="bg-primary text-white ml-2"
                                 onClick={() => {
                                     setInitialeditModal(true);
-                                    setModalName("FreeLoadTest");
+                                    setInitialModalFormdata((prev)=>{
+                                        return{
+                                            ...prev,
+                                            stator_volt:freeLoadData?.stator_volt?.value,
+                                            frequency:freeLoadData?.frequency?.value,
+                                            current_l1:freeLoadData?.current_l1?.value,
+                                            current_l2:freeLoadData?.current_l2?.value,
+                                            current_l3:freeLoadData?.current_l3?.value,
+                                            connection:freeLoadData?.connection?.value,
+                                            speed:freeLoadData?.speed?.value,
+                                            rotation:freeLoadData?.rotation?.value,
+                                            de_temp:freeLoadData?.de_temp?.value,
+                                            nde_temp:freeLoadData?.nde_temp?.value,
+                                            position:freeLoadData?.position?.value,
+                                            time:freeLoadData?.time?.value,
+                                        }
+                                    })
+
+                                    setInitialModalForm((prev)=>{
+                                        return{
+                                            ...prev,
+                                            stator_volt:freeLoadData?.stator_volt?.check,
+                                            frequency:freeLoadData?.frequency?.check,
+                                            current_l1:freeLoadData?.current_l1?.check,
+                                            current_l2:freeLoadData?.current_l2?.check,
+                                            current_l3:freeLoadData?.current_l3?.check,
+                                            connection:freeLoadData?.connection?.check,
+                                            speed:freeLoadData?.speed?.check,
+                                            rotation:freeLoadData?.rotation?.check,
+                                            de_temp:freeLoadData?.de_temp?.check,
+                                            nde_temp:freeLoadData?.nde_temp?.check,
+                                            position:freeLoadData?.position?.check,
+                                            time:freeLoadData?.time?.check,
+                                        }
+                                    })
+
+                                    // setModalName("FreeLoadTest");
                                 }}
 
 
@@ -67,183 +138,275 @@ const FreeLoadTest = ({
                         <div className="mb-4 d-flex justify-content-between">
                             <Radio
                                 style={{ width: "30%" }}
-                                checked={receiveAndDelData?.completed_unit}
+                                disabled
+                                checked={freeLoadData?.stator_volt?.check}
+                                className={returnClass(freeLoadData?.stator_volt?.check)}
                             >
                                 Stator Volt
                             </Radio>
                             <Input
                                 style={{ width: "70%" }}
                                 placeholder="Type here..."
-                                value={data?.completed_unit}
-                                onChange={(e) => handleRadio1Chnge("completed_unit", e)}
+                                value={freeLoadData?.stator_volt?.value}
+                                disabled
                             />
                         </div>
                         <div className="mb-4 d-flex justify-content-between">
                             <Radio
                                 style={{ width: "30%" }}
-                                checked={receiveAndDelData?.stator}
+                                disabled
+                                checked={freeLoadData?.frequency?.check}
+                                className={returnClass(freeLoadData?.frequency?.check)}
                             >
                                 Frequency
                             </Radio>
                             <Input
                                 style={{ width: "70%" }}
                                 placeholder="Type here..."
-                                value={data?.stator}
-                                onChange={(e) => handleRadio1Chnge("stator", e)}
+                                disabled
+                                value={freeLoadData?.frequency?.value}
                             />
                         </div>
                         <div className="mb-4 d-flex justify-content-between">
                             <Radio
                                 style={{ width: "30%" }}
-                                checked={receiveAndDelData?.rotor}
+                                disabled
+                                checked={freeLoadData?.current_l1?.check}
+                                className={returnClass(freeLoadData?.current_l1?.check)}
                             >
                                 Current L1
                             </Radio>
                             <Input
                                 style={{ width: "70%" }}
                                 placeholder="Type here..."
-                                value={data?.rotor}
-                                onChange={(e) => handleRadio1Chnge("rotor", e)}
+                                disabled
+                                value={freeLoadData?.current_l1?.value}
                             />
                         </div>
                         <div className="mb-4 d-flex justify-content-between">
                             <Radio
                                 style={{ width: "30%" }}
-                                checked={receiveAndDelData?.coupling}
+                                disabled
+                                checked={freeLoadData?.current_l2?.check}
+                                className={returnClass(freeLoadData?.current_l2?.check)}
                             >
                                 Current L2
                             </Radio>
                             <Input
                                 style={{ width: "70%" }}
                                 placeholder="Type here..."
-                                value={data?.coupling}
-                                onChange={(e) => handleRadio1Chnge("coupling", e)}
+                                value={freeLoadData?.current_l2?.value}
+                                disabled
                             />
                         </div>
                         <div className="mb-4 d-flex justify-content-between">
                             <Radio
                                 style={{ width: "30%" }}
-                                checked={receiveAndDelData?.pulley}
+                                disabled
+                                checked={freeLoadData?.current_l3?.check}
+                                className={returnClass(freeLoadData?.current_l3?.check)}
                             >
                                 Current L3
                             </Radio>
                             <Input
                                 style={{ width: "70%" }}
                                 placeholder="Type here..."
-                                value={data?.pulley}
-                                onChange={(e) => handleRadio1Chnge("pulley", e)}
+                                value={freeLoadData?.current_l3?.value}
+                                disabled
                             />
                         </div>
                         <div className="mb-4 d-flex justify-content-between">
                             <Radio
                                 style={{ width: "30%" }}
-                                checked={receiveAndDelData?.impller}
+                                disabled
+                                checked={freeLoadData?.connection?.check}
+                                className={returnClass(freeLoadData?.connection?.check)}
                             >
                                 Connection
                             </Radio>
                             <Input
                                 style={{ width: "70%" }}
                                 placeholder="Type here..."
-                                value={data?.impller}
-                                onChange={(e) => handleRadio1Chnge("impller", e)}
+                                value={freeLoadData?.connection?.value}
+                                disabled
                             />
                         </div>
                         <div className="mb-4 d-flex justify-content-between">
                             <Radio
                                 style={{ width: "30%" }}
-                                checked={receiveAndDelData?.t_box}
+                                disabled
+                                checked={freeLoadData?.speed?.check}
+                                className={returnClass(freeLoadData?.speed?.check)}
                             >
                                 Speed
                             </Radio>
                             <Input
                                 style={{ width: "70%" }}
                                 placeholder="Type here..."
-                                value={data?.t_box}
-                                onChange={(e) => handleRadio1Chnge("t_box", e)}
+                                disabled
+                                value={freeLoadData?.speed?.value}
                             />
                         </div>
                         <div className="mb-4 d-flex justify-content-between">
                             <Radio
                                 style={{ width: "30%" }}
-                                checked={receiveAndDelData?.t_box_cover}
+                                disabled
+                                checked={freeLoadData?.rotation?.check}
+                                className={returnClass(freeLoadData?.rotation?.check)}
                             >
                                 Rotation
                             </Radio>
                             <Input
                                 style={{ width: "70%" }}
                                 placeholder="Type here..."
-                                value={data?.t_box_cover}
-                                onChange={(e) => handleRadio1Chnge("t_box_cover", e)}
+                                disabled
+                                value={freeLoadData?.rotation?.value}
                             />
                         </div>
                         <div className="mb-4 d-flex justify-content-between">
                             <Radio
                                 style={{ width: "30%" }}
-                                checked={receiveAndDelData?.power_cable}
+                                disabled
+                                checked={freeLoadData?.de_temp?.check}
+                                className={returnClass(freeLoadData?.de_temp?.check)}
                             >
                                 DE Temp
                             </Radio>
                             <Input
                                 style={{ width: "70%" }}
                                 placeholder="Type here..."
-                                value={data?.power_cable}
-                                onChange={(e) => handleRadio1Chnge("power_cable", e)}
+                                disabled
+                                value={freeLoadData?.de_temp?.value}
+
                             />
                         </div>
                         <div className="mb-4 d-flex justify-content-between">
                             <Radio
                                 style={{ width: "30%" }}
-                                checked={receiveAndDelData?.terminal_board}
+                                disabled
+                                checked={freeLoadData?.nde_temp?.check}
+                                className={returnClass(freeLoadData?.nde_temp?.check)}
                             >
                                 NDE Temp
                             </Radio>
                             <Input
                                 style={{ width: "70%" }}
                                 placeholder="Type here..."
-                                value={data?.terminal_board}
-                                onChange={(e) => handleRadio1Chnge("terminal_board", e)}
+                                disabled
+                                value={freeLoadData?.nde_temp?.value}
                             />
                         </div>
                         <div className="mb-4 d-flex justify-content-between">
                             <Radio
                                 style={{ width: "30%" }}
-                                checked={receiveAndDelData?.connector}
+                                disabled
+                                checked={freeLoadData?.position?.check}
                             >
                                 Position
                             </Radio>
                             <Input
                                 style={{ width: "70%" }}
                                 placeholder="Type here..."
-                                value={data?.connector}
-                                onChange={(e) => handleRadio1Chnge("connector", e)}
+                                disabled
+                                value={freeLoadData?.position?.value}
                             />
                         </div>
                         <div className="mb-4 d-flex justify-content-between">
                             <Radio
                                 style={{ width: "30%" }}
-                                checked={receiveAndDelData?.cooling_fan_cover}
+                                disabled
+                                checked={freeLoadData?.time?.check}
                             >
                                 Time
                             </Radio>
                             <Input
                                 style={{ width: "70%" }}
                                 placeholder="Type here..."
-                                value={data?.cooling_fan_cover}
-                                onChange={(e) => handleRadio1Chnge("cooling_fan_cover", e)}
+                                disabled
+                                value={freeLoadData?.time?.value}
                             />
                         </div>
-
-
-
-
-
-
-
-
-
                         <div className="mt-5">
                             <h5>Remarks</h5>
-                            <TextArea rows={5} cols={16} placeholder="Type Here..." />
+                            <TextArea rows={5}
+                                value={freeLoadData?.remarks?.value}
+                                onChange={(e) => {
+                                    setFreeLoadData((prev) => ({
+                                        ...prev,
+                                        remarks: e.target.value
+                                    }));
+                                }}
+                                cols={16} placeholder="Type Here..." />
+                        </div>
+                        <div className="mt-5">
+                            <h5>Upload Photos</h5>
+                            <div className="dashed-border p-2">
+                                {false && selectedImages2.map((image, index) => (
+                                <img
+                                    key={index}
+                                    src={image}
+                                    alt={`Image ${index}`}
+                                    style={{
+                                    width: "200px",
+                                    height: "200px",
+                                    marginRight: "10px",
+                                        
+                                    }}
+                                />
+                                ))}
+                                {selectedImages2.map((image, index) => (
+                                    <div className='mb-2 w-100 d-flex justify-content-start' key={index}>
+                                        <div className='w-75 d-flex flex-column align-items-start'>
+                                            <img
+                                                src={image.url}
+                                                alt={`Image ${index}`}
+                                                style={{
+                                                    height: "200px",
+                                                    marginRight: "10px",
+                                                }}
+                                            />
+                                            <div className='diflex justify-content-start'>
+                                                <Button type='primary' className='mt-2' onClick={() => {
+                                                        setEditImageId(image.id);
+                                                        // setInitialcondUploaModal(true);
+                                                        setUploadModal(true);
+                                                        setUploadImageType('Free-Load');
+                                                        setSelectedImageTemp(image.url_unmodified);
+                                                        setImageMarkings(image.image_markings);
+                                                        if(image.url_unmodified.includes('http')) {
+                                                            convertImageToBase64(image.url_unmodified, image.image_markings);
+                                                        } else {
+                                                            setTimeout(() => {
+                                                                UploadImageMarkingKonva(image.url_unmodified, image.image_markings);
+                                                            }, 500);
+                                                        }
+                                                    }}>
+                                                    {" "}
+                                                    Edit Photo
+                                                </Button>
+
+                                                <Button className='mt-2 ml-2' onClick={() => {
+                                                        delUplFile2(index)
+                                                    }}>
+                                                    {" "}
+                                                    Delete Photo
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h4>Markings</h4>
+                                            {image.image_markings.length > 0 ?
+                                                image.image_markings.map((marking, index) => (
+                                                    <div key={index}>
+                                                        <b>{index+1}. </b>{marking.text}
+                                                    </div>
+                                                ))
+                                                : <div><i>No Markings Added</i></div>
+                                            }
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </Panel>
@@ -254,89 +417,6 @@ const FreeLoadTest = ({
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-{/* <Collapse className="mb-3">
-                <Panel
-                    header={
-                        <>
-                            <img src={ReportSerchIcon} alt="..." />
-                            Free Load tests
-                        </>
-                    }
-                    key="3"
-                >
-                    <div className="normal-header-color">
-                        <Collapse
-                            expandIconPosition={"end"}
-                            onChange={(data) => console.log(data)}
-                            className="mb-3"
-                        >
-                            <Panel
-                                header={
-                                    <>
-                                        <span className="d-flex align-items-center" style={{ gap: "5px" }}>
-                                            <AuxilleryChecksIcon /> View {' '}
-                                            <span style={{ color: "grey", fontSize: "14px" }} className="font-weight-300 ml-2">
-                                                {' '}
-                                                <HistoryOutlined /> Last updated an hour ago{' '}
-                                            </span>
-                                        </span>
-                                        <span className="customEditButton" style={{ gap: "5px" }}>
-                                            <Button className="bg-primary text-white mr-1" onClick={(e) => {
-                                                e.stopPropagation();
-                                                console.log("add");
-                                            }}>
-                                                +
-                                            </Button>
-                                            <Button onClick={(e) => {
-                                                e.stopPropagation();
-                                                setSRUploadForm(true);
-                                            }} className="bg-primary text-white mr-1">
-                                                <WhiteImageIcon />
-                                            </Button>
-                                            <Button onClick={(e) => {
-                                                e.stopPropagation();
-                                                setSREditModal(true);
-                                                setModalName("heater");
-                                            }} className="bg-primary text-white mr-1">
-                                                <EditOutlined />
-                                            </Button>
-                                        </span>
-                                    </>
-                                }
-                                key="1"
-                            >
-                                <div className="green-radio">
-                                    <div className="mb-4 mt-3 d-flex justify-content-between">
-                                        <Radio style={{ width: "30%" }} checked={auxileryChecksHeater?.insulation?.checked}>
-                                            Vibration tests
-                                        </Radio>
-                                        <Input
-                                            style={{ width: "70%" }}
-                                            placeholder="Type here..."
-                                            value={auxileryChecksHeater?.insulation?.value}
-                                            onChange={(e) => auxilleryHeaterRadioChange("insulation", e)}
-                                            suffix="mΩ"
-                                        />
-                                    </div>
-                                    {/* other radio and input groups */}
-{/* </div>
-                            </Panel>
-                        </Collapse>
-                    </div>
-                </Panel>
-            </Collapse> */}
 
 
 export default FreeLoadTest;

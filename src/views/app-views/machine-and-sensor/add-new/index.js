@@ -19,6 +19,7 @@ const AddNewMachine = () => {
   const [customerData, setCustomerData] = useState([]);
   const [jobSiteData, setJobSiteData] = useState([]);
   const { id } = useParams();
+  const [machineType, setMachineType] = useState([]);
   const handleFileSelect = (event) => {
     const fileList = event.target.files;
     const newSelectedFiles = [];
@@ -65,7 +66,8 @@ const AddNewMachine = () => {
     const postData = {
         ...form.getFieldsValue(),
         pictures:file,
-        machine_status:machineStatus
+        machine_status:machineStatus,
+        year: values.year ? moment(values.year).format('YYYY') : null,
     };
 
     if(!id){
@@ -96,7 +98,7 @@ const AddNewMachine = () => {
       // if((status !== '' && status != 'all')) {
       //   url += `&status=${status}`
       // }
-      let url = `?customer_id=${localStorage.getItem("user_id")}&status=1`
+      let url = `?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}&status=1`
       try {
         const resp = await axiosInstance.get(`/api/web/jobsites${url}`);
         setJobSiteData(resp.data.items);
@@ -150,7 +152,8 @@ const AddNewMachine = () => {
     setMachineStatus(data.machine_status == 1 ? true : false)
     form.setFieldsValue({
       ...data,
-      date: data.date ? moment(data.date) : null
+      date: data.date ? moment(data.date) : null,
+      year: data.year ? moment(data.year) : null,
     })
     setSelectedFiles(data?.pictures.map((item,index) => {
       return {
@@ -169,9 +172,28 @@ const AddNewMachine = () => {
    
   //   // console.log(data);
   // }
+
+  const fetchMachineType = async () => {
+    try {
+      const response = await axiosInstance.get("api/admin/machine-types/list");
+      if (response.status === 200) {
+        const responseData = response.data.items;
+        if (Array.isArray(responseData)) {
+          setMachineType(responseData);
+          // getCustomerData();
+          getData();
+       
+        } 
+        // console.log(JSON.stringify(responseData));
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
   useEffect(() => {
     // getCustomerData();
-    getData();
+    // getData();
+    fetchMachineType();
   }, [])
 
   return (
@@ -223,7 +245,23 @@ const AddNewMachine = () => {
               </Form.Item>
             </Col>
           </Row>
-
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Machine Range Type"
+                name="machine_type_id"
+                rules={[{ required: true, message: 'Please enter Machine Range ' }]}
+              >
+                <Select>
+                  {
+                    machineType.map((item)=>{
+                      return <Option value={item.id}>{item.name}</Option>
+                    })
+                  }
+                </Select>
+              </Form.Item>
+            </Col>
+            </Row>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
@@ -339,7 +377,8 @@ const AddNewMachine = () => {
                 name="year"
                 rules={[{ required: true, message: 'Please enter Year' }]}
               >
-                <Input type="number" />
+                {/* <Input type="number" /> */}
+                <DatePicker picker="year" format={"YYYY"} />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -490,17 +529,28 @@ const AddNewMachine = () => {
                                             <div className="d-flex align-items-center">
                                                 <UploadFileIcon />{" "}
                                                 <span className="ml-2">{file.name} </span>{" "}
-                                                <span className="ml-5">
+                                                {/* <span className="ml-5">
                                                     {file.url ? (  <EyeOutlined style={{ cursor: "pointer" }} onClick={() => window.open(file.url)} />) : null}
-                                                </span>
+                                                </span> */}
                                             </div>
-                                            <span
-                                                style={{ cursor: "pointer" }}
-                                                onClick={() => delUplFile(i)}
-                                            >
-                                                {" "}
-                                                <CloseCircleOutlined />{" "}
-                                            </span>
+                                            <div>
+                        {
+                          file.url && <span className="ml-3 " style={{
+                            cursor: "pointer"
+                          }} onClick={() => {
+                            window.open(file.url, '_blank')
+                          }}>
+                            <EyeOutlined />
+                          </span>
+                        }
+                        <span
+                          style={{ cursor: "pointer" }}
+                          onClick={() => delUplFile(i)}
+                        >
+                          {" "}
+                          <CloseCircleOutlined />{" "}
+                        </span>
+                      </div>
                                         </li>
                                     ))}
                                 </ul>

@@ -22,7 +22,7 @@ function TraverlerRemarksReplyContainer({ index, editedLogs, remarksReply, setRe
                                     fontSize: '16px',
                                     fontWeight: 500,
                                     color: 'black'
-                                }}>{item.editedByName}</div>
+                                }}>{item.user?.name}</div>
                                 <div style={{
                                     fontSize: '12px',
                                     color: 'gray'

@@ -35,6 +35,7 @@ import { useHistory } from "react-router-dom";
 // import uploadImage from "middleware/uploadImage";
 import { API_BASE_URL } from "constants/ApiConstant";
 import { axiosInstance } from "App";
+import CountrySelector from "utils/CountrySelector";
 export default function AddNewWorkshopUser() {
   const { TabPane } = Tabs;
   const history = useHistory();
@@ -512,11 +513,7 @@ export default function AddNewWorkshopUser() {
                       { required: true, message: "Please select a country!" },
                     ]}
                   >
-                    <Select placeholder="Country" style={{ width: "100%" }}>
-                      <Option value="singapore">Singapore</Option>
-                      <Option value="india">India</Option>
-                      {/* Add more countries as needed */}
-                    </Select>
+                    <CountrySelector/>
                   </Form.Item>
                 </div>
               </div>

@@ -53,6 +53,8 @@ import {
 } from "antd";
 import { MoreOutlined, SearchOutlined } from "@ant-design/icons";
 import { UploadImage } from "utils/Upload";
+import CountrySelector from "utils/CountrySelector";
+import PhoneCode from "utils/PhoneCode";
 
 const { Search } = Input;
 const { Title, Text } = Typography;
@@ -850,19 +852,10 @@ export default function AddNewAdminAccount() {
                   >
                     <Input disabled
                       addonBefore={
-                        <Select
-                          // defaultValue={"In"}
-                          style={{
-                            width: 80,
-                          }}
-                          value={countryCode}
-                          onChange={(e) => {
-                            setCountryCode(e)
-                          }}
-                        >
-                          <Option value="+91">+91</Option>
-                          <Option value="+65">+65</Option>
-                        </Select>
+                        <PhoneCode value={countryCode} onChange={(e) => {
+                          setCountryCode(e)
+                      }
+                      } />
                       }
                       style={{ width: "100%" }}
                       placeholder="Phone number"
@@ -980,7 +973,10 @@ export default function AddNewAdminAccount() {
                   <Form.Item
                     label={'Unit Number'}
                     name="unit_number"
-                    rules={[{ required: true, message: 'Please enter the unit number!' }]}
+                    rules={[{ required: true, message: 'Please enter the unit number!' }, {
+                                    pattern: new RegExp(/^[0-9\b]+$/),
+                                    message: "Please enter valid unit number",
+                                  }]}
                   >
                     <Input disabled placeholder='Unit Number' style={{ width: '100%' }} />
                   </Form.Item>
@@ -1002,11 +998,7 @@ export default function AddNewAdminAccount() {
                     name="country"
                     rules={[{ required: true, message: 'Please select a country!' }]}
                   >
-                    <Select disabled placeholder='Country' style={{ width: '100%' }}>
-                      <Option value={155}>Singapore</Option>
-                      <Option value={75}>India</Option>
-                      {/* Add more countries as needed */}
-                    </Select>
+                    <CountrySelector/>
                   </Form.Item>
                 </div>
               </div>
@@ -1081,9 +1073,27 @@ export default function AddNewAdminAccount() {
                       <div className="d-flex align-items-center">
                         <UploadFileIcon />{" "}
                         <span className="ml-2">{file.name} </span>{" "}
-                        <span className="ml-5">
+                        {/* <span className="ml-5">
                           {file.url ? (<EyeOutlined style={{ cursor: "pointer" }} onClick={() => window.open(file.url)} />) : null}
-                        </span>
+                        </span> */}
+                      </div>
+                      <div>
+                        {
+                          file.url && <span className="ml-3 " style={{
+                            cursor: "pointer"
+                          }} onClick={() => {
+                            window.open(file.url, '_blank')
+                          }}>
+                            <EyeOutlined />
+                          </span>
+                        }
+                        {/* <span
+                          style={{ cursor: "pointer" }}
+                          onClick={() => delUplFile(i)}
+                        >
+                          {" "}
+                          <CloseCircleOutlined />{" "}
+                        </span> */}
                       </div>
                       {/* <span
                         style={{ cursor: "pointer" }}

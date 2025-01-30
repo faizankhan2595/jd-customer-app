@@ -1,20 +1,39 @@
-import { CloseCircleOutlined, EyeOutlined, FileOutlined, FilterOutlined, InboxOutlined, SettingOutlined } from '@ant-design/icons'
-import { Button, Card, Divider, Form, Input, InputNumber, Select, Upload,message } from 'antd'
-import { axiosInstance } from 'App'
-import { UploadFileIcon } from 'assets/svg/icon'
-import { UploadImage } from 'utils/Upload'
-import React, { useEffect, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom/cjs/react-router-dom'
+import {
+  CloseCircleOutlined,
+  EyeOutlined,
+  FileOutlined,
+  FilterOutlined,
+  InboxOutlined,
+  SettingOutlined,
+} from "@ant-design/icons";
+import {
+  Button,
+  Card,
+  Divider,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  Upload,
+  message,
+} from "antd";
+import { axiosInstance } from "App";
+import { UploadFileIcon } from "assets/svg/icon";
+import { UploadImage } from "utils/Upload";
+import React, { useEffect, useState } from "react";
+import { useHistory, useParams } from "react-router-dom/cjs/react-router-dom";
+import CountrySelector from "utils/CountrySelector";
+import PhoneCode from "utils/PhoneCode";
 
 function AddInquiry() {
-  const [form] = Form.useForm()
+  const [form] = Form.useForm();
 
   const history = useHistory();
   const { Option } = Select;
   const [countryCode, setCountryCode] = useState("+91");
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [data, setData] = useState([])
-  const [machineData, setMachineData] = useState([])
+  const [data, setData] = useState([]);
+  const [machineData, setMachineData] = useState([]);
   const { id } = useParams();
   const handleFileSelect = (event) => {
     const fileList = event.target.files;
@@ -29,36 +48,36 @@ function AddInquiry() {
     setSelectedFiles(AfterDeleteFile);
   };
   const getJobsites = async () => {
-
-
     try {
-      const resp = await axiosInstance.get(`/api/web/jobsites`);
+      const resp = await axiosInstance.get(
+        `/api/web/jobsites?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}`
+      );
       setData(resp.data.items);
     } catch (err) {
-      console.log(err)
-      message.error('Something went wrong')
+      console.log(err);
+      message.error("Something went wrong");
     }
-  }
+  };
 
   const getMachineData = async () => {
     try {
-      const response = await axiosInstance.get('api/web/machines');
+      const response = await axiosInstance.get("api/web/machines");
       if (response.status === 200) {
         setMachineData(response.data.items);
       }
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 
   const onFinish = async (values) => {
     let file = [];
     const temp = selectedFiles.filter((item) => {
       return item.url === undefined;
-    })
+    });
     const temp2 = selectedFiles.filter((item) => {
       return item.url !== undefined;
-    })
+    });
     if (temp.length !== 0) {
       const uploadPromise = temp.map(async (item) => {
         if (item.url === undefined) {
@@ -67,26 +86,29 @@ function AddInquiry() {
         } else {
           return item.url;
         }
-      })
+      });
       file = await Promise.all(uploadPromise);
       console.log(file);
     }
-    file = [...file, ...temp2.map((item) => {
-      return item.url
-    })];
+    file = [
+      ...file,
+      ...temp2.map((item) => {
+        return item.url;
+      }),
+    ];
     if (id) {
       try {
         const response = await axiosInstance.put(`api/web/inquiry/${id}`, {
           ...values,
           phone_no: values.phone_no,
           phone_code: countryCode,
-          files: file
+          files: file,
         });
         if (response.status === 200) {
           message.success("Inquiry updated successfully");
           form.resetFields();
           setSelectedFiles([]);
-          history.push('/app/inquiry-management') 
+          history.push("/app/inquiry-management");
         }
       } catch (error) {
         console.log(error);
@@ -97,43 +119,45 @@ function AddInquiry() {
           ...values,
           phone_no: values.phone_no,
           phone_code: countryCode,
-          files: file
+          files: file,
         });
         if (response.status === 200) {
           message.success("Inquiry created successfully");
           form.resetFields();
-          history.push('/app/inquiry-management')
+          history.push("/app/inquiry-management");
           setSelectedFiles([]);
         }
       } catch (error) {
         console.log(error);
       }
     }
-  }
+  };
 
   useEffect(() => {
-    getJobsites()
-    getMachineData()
-  }, [])
+    getJobsites();
+    getMachineData();
+  }, []);
   return (
     <div>
-
-      <h4> <SettingOutlined /><span
-        style={{
-          color: "#6a6a6a",
-          fontWeight: "300",
-        }}
-      >
+      <h4>
         {" "}
-        Order Management
-      </span>{" "}
-        / Create New Inquiry{" "}</h4>
-
+        <SettingOutlined />
+        <span
+          style={{
+            color: "#6a6a6a",
+            fontWeight: "300",
+          }}
+        >
+          {" "}
+          Order Management
+        </span>{" "}
+        / Create New Inquiry{" "}
+      </h4>
 
       <Card>
         <Form
           form={form}
-          layout='vertical'
+          layout="vertical"
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -143,29 +167,33 @@ function AddInquiry() {
         >
           <Form.Item
             style={{
-              width: "45%"
+              width: "45%",
             }}
             name="phone_no"
             label="Phone Number"
-            rules={[
-              { required: true, message: "Please enter Full Name" },
-            ]}
+            rules={[{ required: true, message: "Please enter Full Name" }]}
           >
             <Input
               addonBefore={
-                <Select
-                  // defaultValue={"In"}
-                  style={{
-                    width: 80,
-                  }}
+                // <Select
+                //   // defaultValue={"In"}
+                //   style={{
+                //     width: 80,
+                //   }}
+                //   value={countryCode}
+                //   onChange={(e) => {
+                //     setCountryCode(e);
+                //   }}
+                // >
+                //   <Option value="+91">+91</Option>
+                //   <Option value="+65">+65</Option>
+                // </Select>
+                <PhoneCode 
                   value={countryCode}
                   onChange={(e) => {
-                    setCountryCode(e)
-                  }}
-                >
-                  <Option value="+91">+91</Option>
-                  <Option value="+65">+65</Option>
-                </Select>
+                    setCountryCode(e);
+                  }}/>
+
               }
               style={{ width: "100%" }}
               placeholder="Phone number"
@@ -175,11 +203,9 @@ function AddInquiry() {
             name="email"
             label="Email Id"
             style={{
-              width: "45%"
+              width: "45%",
             }}
-            rules={[
-              { required: true, message: "Please enter Email Id" },
-            ]}
+            rules={[{ required: true, message: "Please enter Email Id" }]}
           >
             <Input style={{ width: "100%" }} placeholder="Email Id" />
           </Form.Item>
@@ -187,166 +213,189 @@ function AddInquiry() {
             name="jobsite_id"
             label="Jobsite"
             style={{
-              width: "45%"
+              width: "45%",
             }}
-            rules={[
-              { required: true, message: "Please Select Jobsite" },
-            ]}
+            rules={[{ required: true, message: "Please Select Jobsite" }]}
           >
             <Select>
-              {
-                data.map((item, index) => (
-                  <Option key={index} value={item.id}>{item.jobsite_name}</Option>
-                ))
-              }
+              {data.map((item, index) => (
+                <Option key={index} value={item.id}>
+                  {item.jobsite_name}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
           <Form.Item
             name="company_name"
             label="Company Name"
             style={{
-              width: "45%"
+              width: "45%",
             }}
-            rules={[
-              { required: true, message: "Please Enter Company Name" },
-            ]}
+            rules={[{ required: true, message: "Please Enter Company Name" }]}
           >
             <Input style={{ width: "100%" }} placeholder="Company Name" />
           </Form.Item>
-          <div style={{
-            width: "100%"
-          }}>
+          <div
+            style={{
+              width: "100%",
+            }}
+          >
             <h3>Address</h3>
           </div>
 
-
-
-          <Form.Item style={{
-            width: "45%"
-          }}
-            label={'Postal Code'}
+          <Form.Item
+            style={{
+              width: "45%",
+            }}
+            label={"Postal Code"}
             name="postal_code"
-            rules={[{ required: true, message: 'Please input postal Code!' }]}
+            rules={[
+              { required: true, message: "Please input postal Code!" },
+              {
+                pattern: new RegExp(/^[0-9\b]+$/),
+                message: "Please enter valid postal code",
+              },
+            ]}
           >
-            <Input placeholder="Postal Code" style={{ width: '100%' }} />
+            <Input placeholder="Postal Code" style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item style={{
-            width: "45%"
-          }}
-            label={'Block Number'}
+          <Form.Item
+            style={{
+              width: "45%",
+            }}
+            label={"Block Number"}
             name="block_number"
-            rules={[{ required: true, message: 'Please enter the block number!' }]}
+            rules={[
+              { required: true, message: "Please enter the block number!" },
+            ]}
           >
-            <InputNumber placeholder="Block Number" style={{ width: '100%' }} />
+            <InputNumber placeholder="Block Number" style={{ width: "100%" }} />
           </Form.Item>
 
-          <Form.Item style={{
-            width: "45%"
-          }}
-            label={'Street Number'}
+          <Form.Item
+            style={{
+              width: "45%",
+            }}
+            label={"Street Number"}
             name="street_number"
-            rules={[{ required: true, message: 'Please enter the street number!' }]}
+            rules={[
+              { required: true, message: "Please enter the street number!" },
+            ]}
           >
-            <Input placeholder="Street Number" style={{ width: '100%' }} />
+            <Input placeholder="Street Number" style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item style={{
-            width: "45%"
-          }}
-            label={'Unit Number'}
+          <Form.Item
+            style={{
+              width: "45%",
+            }}
+            label={"Unit Number"}
             name="unit_number"
-            rules={[{ required: true, message: 'Please enter the unit number!' }]}
+            rules={[
+              { required: true, message: "Please enter the unit number!" },
+              {
+                pattern: new RegExp(/^[0-9\b]+$/),
+                message: "Please enter valid unit number",
+              }
+            ]}
           >
-            <Input placeholder='Unit Number' style={{ width: '100%' }} />
+            <Input placeholder="Unit Number" style={{ width: "100%" }} />
           </Form.Item>
 
-          <Form.Item style={{
-            width: "45%"
-          }}
-            label={'Level Number'}
+          <Form.Item
+            style={{
+              width: "45%",
+            }}
+            label={"Level Number"}
             name="level_number"
-            rules={[{ required: true, message: 'Please enter the level number!' }]}
+            rules={[
+              { required: true, message: "Please enter the level number!" },
+            ]}
           >
-            <Input placeholder="Level Number" style={{ width: '100%' }} />
+            <Input placeholder="Level Number" style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item style={{
-            width: "45%"
-          }}
-            label={'Country'}
+          <Form.Item
+            style={{
+              width: "45%",
+            }}
+            label={"Country"}
             name="country"
-            rules={[{ required: true, message: 'Please select a country!' }]}
+            rules={[{ required: true, message: "Please select a country!" }]}
           >
-            <Select placeholder='Country' style={{ width: '100%' }}>
-              <Option value="155">Singapore</Option>
-              <Option value="75">India</Option>
-              {/* Add more countries as needed */}
-            </Select>
+              <CountrySelector/>
           </Form.Item>
-
-
-
 
           <Divider />
-          <Form.Item style={{
-            width: "45%"
-          }} label="Inquiry Type"
+          <Form.Item
+            style={{
+              width: "45%",
+            }}
+            label="Inquiry Type"
             name={"inquiry_type"}
-            rules={[{ required: true, message: 'Please select an inquiry type!' }]}
+            rules={[
+              { required: true, message: "Please select an inquiry type!" },
+            ]}
           >
             <Select>
-              <Select.Option value={"General Inquiry"}>General Inquiry</Select.Option>
-              <Select.Option value={"Machine Inquiry"}>Machine Inquiry</Select.Option>
-
+              <Select.Option value={"General Inquiry"}>
+                General Inquiry
+              </Select.Option>
+              <Select.Option value={"Machine Inquiry"}>
+                Machine Inquiry
+              </Select.Option>
             </Select>
           </Form.Item>
-          <Form.Item style={{
-            width: "45%"
-          }} label="Machine"
+          <Form.Item
+            style={{
+              width: "45%",
+            }}
+            label="Machine"
             name={"machine_id"}
-            rules={[{ required: true, message: 'Please select a machine!' }]}
+            rules={[{ required: true, message: "Please select a machine!" }]}
           >
             <Select>
-              {
-                machineData.map((item, index) => (
-                  <Option key={index} value={item.id}>{item.name}</Option>
-
-                ))
-              }
+              {machineData.map((item, index) => (
+                <Option key={index} value={item.id}>
+                  {item.name}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
 
-          <Form.Item style={{
-            width: "100%"
-          }} label="Inquiry Details"
+          <Form.Item
+            style={{
+              width: "100%",
+            }}
+            label="Inquiry Details"
             name="inquiry_details"
-            rules={[{ required: true, message: 'Please enter inquiry details!' }]}
-
+            rules={[
+              { required: true, message: "Please enter inquiry details!" },
+            ]}
           >
             <Input.TextArea />
           </Form.Item>
-          <div style={{
-            width: "100%"
-          }}>
+          <div
+            style={{
+              width: "100%",
+            }}
+          >
             <Form.Item
               label="Upload Picture"
-            // name="description"
-
+              // name="description"
             >
               {/* <h5 className="m-0 mt-2">Upload Pictures</h5> */}
-              <div className="p-3"
-
-              >
+              <div className="p-3">
                 <div className="d-flex flex-column justify-content-center align-items-center position-relative uploaddoc">
                   <UploadFileIcon />
                   <h5 className="mb-0 mt-2">Drag & Drop Files Here</h5>
                   <h5 className="mb-0">Or</h5>
-                  <h5 className="mb-0" style={{ color: '#3CA6C1' }}>
+                  <h5 className="mb-0" style={{ color: "#3CA6C1" }}>
                     Click here to upload
                   </h5>
                   <input
                     style={styles.uploadFile}
                     className="uploadFile"
                     type="file"
-                    accept='image/*'
+                    accept="image/*"
                     multiple
                     onChange={handleFileSelect}
                   />
@@ -355,22 +404,42 @@ function AddInquiry() {
                   {selectedFiles.length > 0 && (
                     <ul className="p-0" style={{ width: "100%" }}>
                       {selectedFiles.map((file, i) => (
-                        <li key={file.name} className="my-3" style={styles.files}>
+                        <li
+                          key={file.name}
+                          className="my-3"
+                          style={styles.files}
+                        >
                           {" "}
                           <div className="d-flex align-items-center">
                             <UploadFileIcon />{" "}
                             <span className="ml-2">{file.name} </span>{" "}
-                            <span className="ml-5">
-                              {file.url ? (<EyeOutlined style={{ cursor: "pointer" }} onClick={() => window.open(file.url)} />) : null}
-                            </span>
+                            {/* <span className="ml-5">
+                              {file.url ? (
+                                <EyeOutlined
+                                  style={{ cursor: "pointer" }}
+                                  onClick={() => window.open(file.url)}
+                                />
+                              ) : null}
+                            </span> */}
                           </div>
-                          <span
-                            style={{ cursor: "pointer" }}
-                            onClick={() => delUplFile(i)}
-                          >
-                            {" "}
-                            <CloseCircleOutlined />{" "}
+                          <div>
+                        {
+                          file.url && <span className="ml-3 " style={{
+                            cursor: "pointer"
+                          }} onClick={() => {
+                            window.open(file.url, '_blank')
+                          }}>
+                            <EyeOutlined />
                           </span>
+                        }
+                        <span
+                          style={{ cursor: "pointer" }}
+                          onClick={() => delUplFile(i)}
+                        >
+                          {" "}
+                          <CloseCircleOutlined />{" "}
+                        </span>
+                      </div>
                         </li>
                       ))}
                     </ul>
@@ -379,11 +448,13 @@ function AddInquiry() {
               </div>
             </Form.Item>
 
-            <div style={{
-              display: "flex",
-              justifyContent: "flex-end"
-            }}>
-              <Form.Item >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              <Form.Item>
                 <Button
                   style={{ marginRight: 8 }}
                   onClick={() => form.resetFields()}
@@ -391,55 +462,51 @@ function AddInquiry() {
                   Clear
                 </Button>
 
-                <Button
-
-                  type="primary" htmlType="submit">
-                  {/* Submit */}
-                  Save
+                <Button type="primary" htmlType="submit">
+                  Submit
+                  {/* Save */}
                 </Button>
               </Form.Item>
             </div>
           </div>
-
         </Form>
       </Card>
-
     </div>
-  )
+  );
 }
 
-export default AddInquiry
+export default AddInquiry;
 
 const styles = {
   files: {
-    listStyle: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '13px',
-    border: '1px solid lightblue',
-    padding: '10px',
-    borderRadius: '9px',
-    background: '#0093ff0a',
+    listStyle: "none",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "13px",
+    border: "1px solid lightblue",
+    padding: "10px",
+    borderRadius: "9px",
+    background: "#0093ff0a",
   },
   uploadFile: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
+    position: "absolute",
+    width: "100%",
+    height: "100%",
     opacity: 0,
   },
-  '.uploadFile::-webkit-file-upload-button': {
-    visibility: 'hidden',
+  ".uploadFile::-webkit-file-upload-button": {
+    visibility: "hidden",
   },
-  '.uploadFile::before': {
+  ".uploadFile::before": {
     content: "'Drag & Drop'",
-    display: 'inline-block',
-    padding: '10px',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    cursor: 'pointer',
+    display: "inline-block",
+    padding: "10px",
+    border: "1px solid #ccc",
+    borderRadius: "4px",
+    cursor: "pointer",
   },
-  '.uploadFile:hover::before': {
-    backgroundColor: '#ccc',
+  ".uploadFile:hover::before": {
+    backgroundColor: "#ccc",
   },
 };

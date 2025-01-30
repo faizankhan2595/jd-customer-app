@@ -174,7 +174,7 @@ const AddNewSensor = () => {
               <Form.Item
                 label="Sensor Type"
                 name="sensor_type"
-                rules={[{ required: true, message: 'Please Select Sensor Type' }]}
+                rules={[{ required: true, message: 'Please Enter Sensor Type' }]}
               >
                 <Input />
               </Form.Item>
@@ -224,7 +224,7 @@ const AddNewSensor = () => {
                   onChange={(value) => setMachineStatus(value)}
                   style={{ backgroundColor: machineStatus ? '#3CA6C1' : '#d0d4d7' }}
                 />{' '}
-                {machineStatus ? 'Active' : 'Inactive'}
+                {/* {machineStatus ? 'Active' : 'Inactive'} */}
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -255,17 +255,28 @@ const AddNewSensor = () => {
                                             <div className="d-flex align-items-center">
                                                 <UploadFileIcon />{" "}
                                                 <span className="ml-2">{file.name} </span>{" "}
-                                                <span className="ml-5">
+                                                {/* <span className="ml-5">
                                                     {file.url ? (  <EyeOutlined style={{ cursor: "pointer" }} onClick={() => window.open(file.url)} />) : null}
-                                                </span>
+                                                </span> */}
                                             </div>
-                                            <span
-                                                style={{ cursor: "pointer" }}
-                                                onClick={() => delUplFile(i)}
-                                            >
-                                                {" "}
-                                                <CloseCircleOutlined />{" "}
-                                            </span>
+                                            <div>
+                        {
+                          file.url && <span className="ml-3 " style={{
+                            cursor: "pointer"
+                          }} onClick={() => {
+                            window.open(file.url, '_blank')
+                          }}>
+                            <EyeOutlined />
+                          </span>
+                        }
+                        <span
+                          style={{ cursor: "pointer" }}
+                          onClick={() => delUplFile(i)}
+                        >
+                          {" "}
+                          <CloseCircleOutlined />{" "}
+                        </span>
+                      </div>
                                         </li>
                                     ))}
                                 </ul>

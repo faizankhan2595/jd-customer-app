@@ -30,6 +30,7 @@ import { axiosInstance } from "App";
 import { auth } from "auth/FirebaseOtp";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import { MailOutlined } from "@ant-design/icons";
+import PhoneCode from "utils/PhoneCode";
 const backgroundStyle = {
   backgroundImage: "url(/img/others/wave.svg)",
   backgroundRepeat: "no-repeat",
@@ -101,19 +102,10 @@ const LoginOne = (props) => {
   };
 
   const selectBefore = (
-    <Select
-      onChange={(e) => {
-        setCountryCode(e);
-      }}
-      value={countryCode}
-      // defaultValue="in"
-      style={{
-        width: 80,
-      }}
-    >
-      <Option value="+91">IND</Option>
-      <Option value="+65">SG</Option>
-    </Select>
+    <PhoneCode value={countryCode} onChange={(e) => {
+      setCountryCode(e)
+  }
+  } />
   );
 
   function onCaptchVerify() {
@@ -517,7 +509,9 @@ const LoginOne = (props) => {
           <Form.Item
             label="Name"
             name="name"
-            rules={[{ required: true, message: "Please input your name!" }]}
+            rules={[{ required: true, message: "Please input your name!" },
+              { pattern: /^[a-zA-Z\s]*$/, message: "Please enter a valid name!" }
+            ]}
           >
             <Input />
           </Form.Item>

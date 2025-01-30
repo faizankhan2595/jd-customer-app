@@ -70,7 +70,9 @@ function AddNew() {
             <h4> <UserSwitchOutlined /><span style={{
                 color: '#6a6a6a',
                 fontWeight: '300'
-            }}> Operational Mastrer / Area</span> / Add New </h4>
+            }}> Operational Mastrer / Area</span> / {
+                id ? "Edit" : "Add New"
+            } </h4>
             <Card>
                 <Form form={form} layout="vertical" name="userForm" onFinish={onFinish} >
 

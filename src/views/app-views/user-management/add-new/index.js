@@ -15,6 +15,8 @@ import { useHistory } from 'react-router-dom';
 import { API_BASE_URL } from "constants/ApiConstant";
 import { axiosInstance } from "App";
 import { UploadFile, UploadImage } from "utils/Upload";
+import CountrySelector from "utils/CountrySelector";
+import PhoneCode from "utils/PhoneCode";
 export default function AddNewAdminAccount() {
     const { TabPane } = Tabs;
     const {id } = useParams();
@@ -29,6 +31,7 @@ export default function AddNewAdminAccount() {
     const location = useLocation();
     const [countryCode, setCountryCode] = useState('+91')
     const queryParams = new URLSearchParams(location.search);
+    const [loading, setLoading] = useState(false);
     const [fileList, setFileList] = useState([]);
     const [imageUrl, setImageUrl] = useState();
     // const id = queryParams.get('id')
@@ -171,6 +174,7 @@ export default function AddNewAdminAccount() {
 
         if (id) {
             try {
+                setLoading(true);
                 const resp = await axiosInstance.post(`/api/admin/customer-users/${id}/update`, {
                     ...form1.getFieldsValue(),
                     ...form2.getFieldsValue(),
@@ -188,8 +192,10 @@ export default function AddNewAdminAccount() {
                 else{
                     message.success("Admin Account Updated Successfully");
                 }
+                setLoading(false);
                 history.goBack();
             } catch (error) {
+                setLoading(false);
                 const errorResponse = error.response.data.data;
                 if (errorResponse && errorResponse.error) {
                     const errorMessage = errorResponse.error[0];
@@ -202,7 +208,7 @@ export default function AddNewAdminAccount() {
 
             try {
                 // handleOpenAlert()
-
+                setLoading(true);
                 const resp = await axiosInstance.post(`/api/admin/customer-users/store`, {
                     ...form1.getFieldsValue(),
                     ...form2.getFieldsValue(),
@@ -218,12 +224,14 @@ export default function AddNewAdminAccount() {
                 }
                 handleCloseAlert()
                 message.success("Admin Account Created Successfully");
+                setLoading(false);
                 setTimeout(() => {
                     history.goBack()
                 }, 1000)
                 // history.goBack();
 
             } catch (error) {
+                setLoading(false);
                 const errorResponse = error.response.data.data;
 
                 if (errorResponse && errorResponse.error) {
@@ -483,19 +491,10 @@ export default function AddNewAdminAccount() {
                                     >
                                         <Input
                                             addonBefore={
-                                                <Select
-                                                    // defaultValue={"In"}
-                                                    style={{
-                                                        width: 80,
-                                                    }}
-                                                    value={countryCode}
-                                                    onChange={(e) => {
-                                                        setCountryCode(e)
-                                                    }}
-                                                >
-                                                    <Option value="+91">+91</Option>
-                                                    <Option value="+65">+65</Option>
-                                                </Select>
+                                                <PhoneCode value={countryCode} onChange={(e) => {
+                                                    setCountryCode(e)
+                                                }
+                                                } />
                                             }
                                             style={{ width: "100%" }}
                                             placeholder="Phone number"
@@ -586,7 +585,10 @@ export default function AddNewAdminAccount() {
                                     <Form.Item
                                         label={'Postal Code'}
                                         name="postal_code"
-                                        rules={[{ required: true, message: 'Please enter the postal code!' }]}
+                                        rules={[{ required: true, message: 'Please enter the postal code!' },{
+                                                      pattern: new RegExp(/^[0-9\b]+$/),
+                                                      message: "Please enter valid postal code",
+                                                    }]}
                                     >
                                         <Input placeholder="Postal Code" style={{ width: '100%' }} />
                                     </Form.Item>
@@ -613,7 +615,10 @@ export default function AddNewAdminAccount() {
                                     <Form.Item
                                         label={'Unit Number'}
                                         name="unit_number"
-                                        rules={[{ required: true, message: 'Please enter the unit number!' }]}
+                                        rules={[{ required: true, message: 'Please enter the unit number!' }, {
+                                                        pattern: new RegExp(/^[0-9\b]+$/),
+                                                        message: "Please enter valid unit number",
+                                                      }]}
                                     >
                                         <Input placeholder='Unit Number' style={{ width: '100%' }} />
                                     </Form.Item>
@@ -635,11 +640,7 @@ export default function AddNewAdminAccount() {
                                         name="country"
                                         rules={[{ required: true, message: 'Please select a country!' }]}
                                     >
-                                        <Select placeholder='Country' style={{ width: '100%' }}>
-                                            <Option value={155}>Singapore</Option>
-                                            <Option value={75}>India</Option>
-                                            {/* Add more countries as needed */}
-                                        </Select>
+                                        <CountrySelector/>
                                     </Form.Item>
                                 </div>
                             </div>
@@ -714,17 +715,28 @@ export default function AddNewAdminAccount() {
                                             <div className="d-flex align-items-center">
                                                 <UploadFileIcon />{" "}
                                                 <span className="ml-2">{file.name} </span>{" "}
-                                                <span className="ml-5">
+                                                {/* <span className="ml-5">
                                                     {file.url ? (<EyeOutlined style={{ cursor: "pointer" }} onClick={() => window.open(file.url)} />) : null}
-                                                </span>
+                                                </span> */}
                                             </div>
-                                            <span
-                                                style={{ cursor: "pointer" }}
-                                                onClick={() => delUplFile(i)}
-                                            >
-                                                {" "}
-                                                <CloseCircleOutlined />{" "}
-                                            </span>
+                                            <div>
+                        {
+                          file.url && <span className="ml-3 " style={{
+                            cursor: "pointer"
+                          }} onClick={() => {
+                            window.open(file.url, '_blank')
+                          }}>
+                            <EyeOutlined />
+                          </span>
+                        }
+                        <span
+                          style={{ cursor: "pointer" }}
+                          onClick={() => delUplFile(i)}
+                        >
+                          {" "}
+                          <CloseCircleOutlined />{" "}
+                        </span>
+                      </div>
                                         </li>
                                     ))}
                                 </ul>
@@ -751,6 +763,7 @@ export default function AddNewAdminAccount() {
                     <Button
                         className="px-4 bg-primary font-weight-semibold text-white bg-info"
                         htmlType="submit"
+                        loading={loading}
                         onClick={() => {
                             handleNext(activeTab)
                         }}

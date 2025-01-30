@@ -38,8 +38,6 @@ import CalendarIcon from "assets/calendar.png";
 import moment from "moment";
 import CardOrder from "./Card/CardOrder";
 import SubMenu from "antd/lib/menu/SubMenu";
-import Csv from "utils/Csv";
-import { OrderList, OrderManagementCSV } from "constants/Headers";
 
 function OrderManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,7 +47,6 @@ function OrderManagement() {
   // const [selectedFilter, setSelectedFilter] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedWorkshop, setSelectedWorkshop] = useState('all');
-  const [csvData, setCSVData] = useState([]);
   const getMenu = (record) => (
     <Menu>
       <Menu.Item key="edit" onClick={() => handleView(record.id)}>
@@ -125,7 +122,7 @@ function OrderManagement() {
     setSearchText(value.target.value)
     clearTimeout(timeout)
     timeout = setTimeout(() => {
-      getOrderList(value.target.value, selectedStatus=='active'?1:selectedStatus=='inactive'?0:'all'
+      getOrderList(value.target.value, selectedStatus=='active'?1:selectedStatus=='inactive'?2:'all'
 
         , 
         selectedWorkshop=='Onsite'?'Onsite':selectedWorkshop=='Workshop'?'Workshop':'all'
@@ -135,7 +132,7 @@ function OrderManagement() {
 
   const handleStatusChange = (filter) => {
     setSelectedStatus(filter);
-    getOrderList(searchText,filter=='active'?1:filter=='inactive'?0:'all',
+    getOrderList(searchText,filter=='active'?1:filter=='inactive'?2:'all',
     selectedWorkshop=='Onsite'?'Onsite':selectedWorkshop=='Workshop'?'Workshop':'all'
 
     );
@@ -145,7 +142,7 @@ function OrderManagement() {
 
   const handleService = (filter) => {
     setSelectedWorkshop(filter);
-    getOrderList(searchText,selectedStatus=='active'?1:selectedStatus=='inactive'?0:'all', 
+    getOrderList(searchText,selectedStatus=='active'?1:selectedStatus=='inactive'?2:'all', 
     filter=='Onsite'?'Onsite':filter=='Workshop'?'Workshop':'all'
 
     );
@@ -171,7 +168,8 @@ function OrderManagement() {
             checked={selectedStatus === 'active'}
             onChange={() => handleStatusChange('active')}
           >
-            Completed
+            {/* Survey Scheduled */}
+            Order Created
           </Checkbox>
         </Menu.Item>
         <Menu.Item key="status-inactive">
@@ -179,13 +177,14 @@ function OrderManagement() {
             checked={selectedStatus === 'inactive'}
             onChange={() => handleStatusChange('inactive')}
           >
-            Order Created
+            {/* Order Created */}
+            Survey Scheduled
           </Checkbox>
         </Menu.Item>
       </SubMenu>
 
       {/* Workshop Filter */}
-      {/* <SubMenu key="serviceType" title="Service Type">
+      <SubMenu key="serviceType" title="Service Type">
         <Menu.Item key="service-all">
           <Checkbox
             checked={selectedWorkshop === 'all'}
@@ -213,13 +212,13 @@ function OrderManagement() {
           </Checkbox>
         </Menu.Item>
 
-      </SubMenu> */}
+      </SubMenu>
     </Menu>
   );
   
   
   const getOrderList = async (search="",filter="",service="") => {
-    let url = `?customer_id=${localStorage.getItem("user_id")}&search=${search}`
+    let url = `?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}&search=${search}`
     //for 0 it is not handling
     if((filter !== '' && filter != 'all')) {
       url += `&status=${filter}`
@@ -230,15 +229,6 @@ function OrderManagement() {
     const res1 = await axiosInstance.get("api/web/orders"+url);
     console.log("res1", res1);
     setData(res1.data.items);
-    setCSVData(res1.data.items.map((item)=>{
-      return {
-        ...item,
-        status:item.status===1?"Survey Scheduled": item.status==1?"Order Created":"Completed",
-        created_at:moment(item.created_at).format('DD-MM-YYYY'),
-        jobsite: item.job_site?.jobsite_name,
-        machine: item.machine?.name,
-      }
-    }))
   };
   useEffect(() => {
     getOrderList();
@@ -261,7 +251,7 @@ function OrderManagement() {
       </h4>
       <div className="d-flex justify-content-between mb-3">
         <div className="" style={{ display: "flex" }}>
-          <Space direction="vertical">
+          {/* <Space direction="vertical">
             <Input
               placeholder="Search"
               allowClear
@@ -272,7 +262,7 @@ function OrderManagement() {
               }}
               prefix={<SearchOutlined style={{ marginRight: 8 }} />}
             />
-          </Space>
+          </Space> */}
           <Filter filters={FilterMenu}>
             <Button
               icon={<Icon component={FilterIcon} />}
@@ -281,18 +271,17 @@ function OrderManagement() {
               Filters
             </Button>
           </Filter>
-          {/* <Button
+          <Button
             icon={<Icon component={CsvIcon} />}
             className="d-flex align-items-center ml-2"
           >
             Export
-          </Button> */}
-          {/* <Csv
-            data={csvData}
-            filename="Order-Management"
-            header={OrderManagementCSV}
-          /> */}
-          <Button className="d-flex align-items-center ml-2">
+          </Button>
+          <Button className="d-flex align-items-center ml-2"
+            onClick={()=>{
+              history.push("/app/order-management/orders")
+            }}
+          >
             <img src={CalendarIcon} alt="Calendar Icon" />
           </Button>
         </div>

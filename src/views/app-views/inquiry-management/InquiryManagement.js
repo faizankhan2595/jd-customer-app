@@ -23,6 +23,7 @@ function Index() {
   const history = useHistory();
   const [data, setData] = useState([])
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [selectedWorkshop, setSelectedWorkshop] = useState('all');
   const [searchText, setSearchText] = useState('');
   var timeout = ""
   const onSearch = (value) => {
@@ -33,11 +34,14 @@ function Index() {
     }, 500)
   }
 
-  const getData = async (Search="",filter="all") => {
-    let url = `?customer_id=${localStorage.getItem("user_id")}&search=${Search}`
+  const getData = async (Search="",filter="all",type="all") => {
+    let url = `?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}&search=${Search}`
     //for 0 it is not handling
     if((filter !== '' && filter != 'all')) {
       url += `&status=${filter}`
+    }
+    if((type !== '' && type != 'all')) {
+      url += `&inquiry_type=${type}`
     }
     try {
       const response = await axiosInstance.get('api/web/inquiries' + url);
@@ -53,6 +57,12 @@ function Index() {
   useEffect(() => {
     getData();
   }, [])
+
+  const handleService = (filter) => {
+    setSelectedWorkshop(filter);
+    getData(searchText, selectedFilter, filter);
+
+  };
 
   const FilterMenu = (
     <Menu mode="horizontal" onChange={(e) => {
@@ -74,7 +84,7 @@ function Index() {
         >
           <Checkbox
             onChange={() => {
-              getData(searchText, 1);
+              getData(searchText, 1, selectedWorkshop);
               setSelectedFilter(1)
             }}
             checked={selectedFilter == 1}
@@ -85,12 +95,47 @@ function Index() {
 
         >
           <Checkbox onChange={() => {
-            getData(searchText, 0);
+            getData(searchText, 0, selectedWorkshop);
             setSelectedFilter(0)
           }}
 
             checked={selectedFilter === 0}>Closed</Checkbox>
         </Menu.Item>
+      </SubMenu>
+      <SubMenu key="inquiryType" title="Inquiry Type">
+        <Menu.Item key="inquiry-all">
+          <Checkbox
+            checked={selectedWorkshop === 'all'}
+            onChange={() => {
+              getData(searchText, selectedFilter, 'all');
+              setSelectedWorkshop('all')
+            }}
+          >
+            All
+          </Checkbox>
+        </Menu.Item>
+        <Menu.Item key="service-onsite">
+          <Checkbox
+            checked={selectedWorkshop === 'General Inquiry'}
+            onChange={() =>{
+              handleService('General Inquiry')
+              // setSelectedWorkshop('General Inquiry')
+            }}
+          >
+            General Inquiry
+          </Checkbox>
+         
+
+        </Menu.Item>
+        <Menu.Item key="service-workshop">
+         <Checkbox
+            checked={selectedWorkshop === 'Machine Inquiry'}
+            onChange={() => handleService('Machine Inquiry')}
+          >
+            Machine Inquiry
+          </Checkbox>
+        </Menu.Item>
+
       </SubMenu>
     </Menu>
   );
@@ -101,7 +146,7 @@ function Index() {
       <h4> <SettingOutlined /> Inquiry Management</h4>
       <div className="d-flex justify-content-between mb-3">
         <div className="" style={{ display: "flex" }}>
-          <Space direction="vertical">
+          {/* <Space direction="vertical">
             <Input
               placeholder="Search"
               allowClear
@@ -112,7 +157,7 @@ function Index() {
               }}
               prefix={<SearchOutlined style={{ marginRight: 8 }} />}
             />
-          </Space>
+          </Space> */}
           <Filter filters={FilterMenu}>
             <Button
               icon={<Icon component={FilterIcon} />}

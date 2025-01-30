@@ -8,6 +8,7 @@ import { ThemeSwitcherProvider } from "react-css-theme-switcher";
 import { THEME_CONFIG } from './configs/AppConfig';
 import axios from "axios";
 import { API_BASE_URL } from 'constants/ApiConstant';
+import { CountryProvider } from 'CountryContext';
 
 const themes = {
   dark: `${process.env.PUBLIC_URL}/css/dark-theme.css`,
@@ -57,11 +58,14 @@ function App() {
     <div className="App">
       <Provider store={store}>
         <ThemeSwitcherProvider themeMap={themes} defaultTheme={THEME_CONFIG.currentTheme} insertionPoint="styles-insertion-point">
-          <Router>
-            <Switch>
-              <Route path="/" component={Views} />
-            </Switch>
-          </Router>
+        <CountryProvider> 
+
+<Router>
+  <Switch>
+    <Route path="/" component={Views} />
+  </Switch>
+</Router>
+</CountryProvider>
         </ThemeSwitcherProvider>
       </Provider>
     </div>

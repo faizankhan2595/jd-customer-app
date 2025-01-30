@@ -1,13 +1,15 @@
 import { SettingOutlined } from '@ant-design/icons'
-import { Button, Col, Row, Table } from 'antd'
+import { Button, Col, Popover, Row, Table } from 'antd'
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
-import React from 'react'
+import React, { useEffect } from 'react'
 
 import { useHistory } from 'react-router-dom/cjs/react-router-dom';
 import moment from 'moment';
+import { axiosInstance } from 'App';
+import "./index.css"
 
 
 const ScheduleOrder = () => {
@@ -236,30 +238,74 @@ const ScheduleOrder = () => {
         }
     ])
 
-    function renderEventContent(eventInfo) {
+    const renderEventContent = (eventInfo) => {
         let startTime = moment(eventInfo.event.startStr).format("hh:mm A");
         let endTime = moment(eventInfo.event.endStr).format("hh:mm A");
-
-        if (eventInfo.view.type === "timeGridWeek") {
-            return (
-                <div style={styles}>
-                    {eventInfo.event.title} {startTime} - {endTime}
+    
+        const eventDetails = (
+            <div>
+                <p><strong>Technician:</strong> {eventInfo.event.extendedProps.technician || "N/A"}</p>
+                <p><strong>Job Site:</strong> {eventInfo.event.extendedProps.jobsite || "N/A"}</p>
+                <p><strong>Customer Remarks:</strong> {eventInfo.event.extendedProps.customerRemarks || "N/A"}</p>
+                <p><strong>Instructions:</strong> {eventInfo.event.extendedProps.instructions || "N/A"}</p>
+            </div>
+        );
+    
+        return (
+            <Popover content={eventDetails} title={eventInfo.event.title} trigger="hover">
+                <div style={{
+                    backgroundColor: "#3788D8",  // Blue background
+                    color: "white",               // White text
+                    padding: "4px",
+                    borderRadius: "4px",
+                    // textAlign: "center",
+                    cursor: "pointer",
+                }}>
+                    {eventInfo.event.title} - {startTime} - {endTime}
                 </div>
-            );
-        } else if (eventInfo.view.type === "timeGridDay") {
-            return (
-                <div style={styles}>
-                    {eventInfo.event.title}- {startTime} - {endTime}
-                </div>
-            );
-        } else {
-            return (
-                <div style={styles}>
-                    {eventInfo.event.title}- {startTime} - {endTime}
-                </div>
-            );
+            </Popover>
+        );
+    };
+    const fetchEvents = async (startDate, endDate) => {
+        try {
+          const response = await axiosInstance.get(`/api/admin/getScheduledSurveysByDateRange?customer_id=${localStorage.getItem("parent_id")!='null'?localStorage.getItem("parent_id"):localStorage.getItem("user_id")}`, {
+            params: { from_date: startDate, to_date: endDate },
+          });
+          const formattedEvents = response.data.items.map((item) => {
+            const [startTime, endTime] = item.timeslot.split(" To "); // Split timeslot
+      
+            return {
+              id: item.id,
+              title: `${item.order.company_name} `, // Display company name & timeslot
+              start: `${item.survey_date}T${convertTo24HourFormat(startTime)}`, // Convert time to 24-hour format
+              end: `${item.survey_date}T${convertTo24HourFormat(endTime)}`, // Convert time to 24-hour format
+              extendedProps: {
+                technician: item.technician?.name || "N/A",
+                jobsite: item.job_site?.jobsite_name || "N/A",
+                customerRemarks: item.customer_remarks,
+                instructions: item.instructions,
+              },
+            };
+          });
+      
+          setData(formattedEvents); // Update calendar events
+        } catch (error) {
+          console.error("Error fetching events:", error);
         }
-    }
+      };
+   
+      const convertTo24HourFormat = (time) => {
+        const [timePart, modifier] = time.split(" "); // Separate time and AM/PM
+        let [hours, minutes] = timePart.split(":").map(Number);
+      
+        if (modifier.toLowerCase() === "pm" && hours !== 12) {
+          hours += 12;
+        } else if (modifier.toLowerCase() === "am" && hours === 12) {
+          hours = 0;
+        }
+      
+        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`; // Ensure HH:MM:SS format
+      };
     return (
         <div>
             <div className='d-flex justify-content-between'>
@@ -270,13 +316,19 @@ const ScheduleOrder = () => {
                 }}> Order Management </span>/ Schedule </h4>
             </div>
             <FullCalendar
-                plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}
+                plugins={[dayGridPlugin, timeGridPlugin]}
                 initialView="timeGridWeek"
                 height={"auto"}
                 events={data}
+                datesSet={(info) => {
+                    // Fetch events whenever calendar view changes
+                    const start = moment(info.start).format("YYYY-MM-DD");
+                    const end = moment(info.end).format("YYYY-MM-DD");
+                    fetchEvents(start, end);
+                  }}
                 headerToolbar={{
                     left: "today,prev,next",
-                    center: "timeGridDay,timeGridWeek,dayGridMonth,listWeek",
+                    center: "timeGridDay,timeGridWeek,dayGridMonth",
                     right: "title",
                 }}
                 eventContent={renderEventContent}

@@ -40,7 +40,7 @@ function TravelerRemarksLabel({ id, remarksArray, getRemarks, hide, remarksModal
                                             fontSize: '16px',
                                             fontWeight: 500,
                                             color: 'black'
-                                        }}>{item.addedByName}</div>
+                                        }}>{item.user?.name}</div>
                                         <div style={{
                                             fontSize: '12px',
                                             color: 'gray'

@@ -8,13 +8,24 @@ import {
   PlusOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Empty, Form, Input, message, Select, Upload } from "antd";
+import {
+  Button,
+  Card,
+  Empty,
+  Form,
+  Input,
+  message,
+  Select,
+  Upload,
+} from "antd";
 import { Option } from "antd/lib/mentions";
 import { axiosInstance } from "App";
 import { UploadFileIcon } from "assets/svg/icon";
-import UploadImage from "assets/uploadDocument.svg";
+// import UploadImage from "assets/uploadDocument.svg";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom/cjs/react-router-dom";
+import CountrySelector from "utils/CountrySelector";
+import { UploadImage } from "utils/Upload";
 
 function AddOrder() {
   const [form] = Form.useForm();
@@ -24,51 +35,56 @@ function AddOrder() {
   const [workshop, setWorkshop] = React.useState([]);
   const [serviceType, setServiceType] = React.useState("");
   const [machineFaultInput, setMachineFaultInput] = React.useState("");
+  const [faultDetails, setFaultDetails] = React.useState("");
   const [machineFault, setMachineFault] = React.useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const history = useHistory();
 
   const onFinish = async (values) => {
     // console.log("values", values);
-    if(machineFault.length === 0) {
-        message.error("Please add machine fault");
-        return;
+    if (machineFault.length === 0) {
+      message.error("Please add machine fault");
+      return;
     }
-    let file= [];
+    let file = [];
 
     const temp = selectedFiles.filter((item) => {
-        return item.url === undefined;
-    })
+      return item.url === undefined;
+    });
 
     const temp2 = selectedFiles.filter((item) => {
-        return item.url !== undefined;
-    })
+      return item.url !== undefined;
+    });
 
-    if(temp.length !== 0) {
-        const uploadPromise = temp.map(async (item) => {
-            if (item.url === undefined) {
-                const url = await UploadImage(item);
-                return url;
-            } else {
-                return item.url;
-            }
-        })
+    if (temp.length !== 0) {
+      const uploadPromise = temp.map(async (item) => {
+        if (item.url === undefined) {
+          const url = await UploadImage(item);
+          return url;
+        } else {
+          return item.url;
+        }
+      });
 
-        file = await Promise.all(uploadPromise);
-        console.log(file);
+      file = await Promise.all(uploadPromise);
+      console.log(file);
     }
 
-    file = [ ...file,...temp2.map((item)=>{
-        return item.url
-    })];
+    file = [
+      ...file,
+      ...temp2.map((item) => {
+        return item.url;
+      }),
+    ];
+    // return;
     try {
       const response = await axiosInstance.post("api/web/orders", {
         ...values,
         machine_faults: machineFault,
-        files:file,
+        files: file,
         model: machineData.find((item) => item.id === values.machine_id).model,
-        status:0,
-        //    0 -> Order Created 
+        status: 1,
+        //    0 -> Order Created
       });
       if (response.status === 200) {
         console.log("response", response);
@@ -79,8 +95,6 @@ function AddOrder() {
       console.error("Error fetching data:", error);
     }
   };
-
-  
 
   const getBase64 = (img, callback) => {
     const reader = new FileReader();
@@ -105,7 +119,13 @@ function AddOrder() {
 
   const fetchData = async () => {
     try {
-      const response = await axiosInstance.get("api/web/machines");
+      const response = await axiosInstance.get(
+        `api/web/machines?customer_id=${
+          localStorage.getItem("parent_id") != "null"
+            ? localStorage.getItem("parent_id")
+            : localStorage.getItem("user_id")
+        }&status=1`
+      );
       if (response.status === 200) {
         const responseData = response.data.items;
         if (Array.isArray(responseData)) {
@@ -122,7 +142,13 @@ function AddOrder() {
 
   const getData = async () => {
     try {
-      const resp = await axiosInstance.get(`/api/web/jobsites?status=1`);
+      const resp = await axiosInstance.get(
+        `/api/web/jobsites?customer_id=${
+          localStorage.getItem("parent_id") != "null"
+            ? localStorage.getItem("parent_id")
+            : localStorage.getItem("user_id")
+        }&status=1`
+      );
       setData(resp.data.items);
     } catch (err) {
       console.log(err);
@@ -131,13 +157,21 @@ function AddOrder() {
   };
 
   const getTechnicianList = async () => {
-    const res1 = await axiosInstance.get(`api/web/technician/list?customer_id=${localStorage.getItem("user_id")}&status=1`);
+    const res1 = await axiosInstance.get(
+      `api/web/technician/list?customer_id=${
+        localStorage.getItem("parent_id") != "null"
+          ? localStorage.getItem("parent_id")
+          : localStorage.getItem("user_id")
+      }&status=1`
+    );
     console.log("res1", res1);
     setTechnician(res1.data.items);
   };
 
   const getWorkshop = async () => {
-    const res1 = await axiosInstance.get(`api/admin/workshop-user/list?status=1`);
+    const res1 = await axiosInstance.get(
+      `api/admin/workshop-user/list?status=1`
+    );
     // console.log('res1', res1);
     setWorkshop(res1.data.items);
   };
@@ -202,7 +236,13 @@ function AddOrder() {
             </Select>
           </Form.Item>
           <Form.Item
-            rules={[{ required: true, message: "Please input Postal Code!" }]}
+            rules={[
+              { required: true, message: "Please input Postal Code!" },
+              {
+                pattern: new RegExp(/^[0-9\b]+$/),
+                message: "Please enter valid postal code",
+              },
+            ]}
             style={{
               width: "45%",
             }}
@@ -247,7 +287,13 @@ function AddOrder() {
             }}
             label="Unit Number"
             name={"unit_number"}
-            rules={[{ required: true, message: "Please input Unit Number!" }]}
+            rules={[
+              { required: true, message: "Please input Unit Number!" },
+              {
+                pattern: new RegExp(/^[0-9\b]+$/),
+                message: "Please enter valid unit number",
+              },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -259,10 +305,7 @@ function AddOrder() {
             name={"country"}
             rules={[{ required: true, message: "Please input Country!" }]}
           >
-            <Select>
-              <Option value="155">Singapore</Option>
-              <Option value="75">India</Option>
-            </Select>
+            <CountrySelector />
           </Form.Item>
           <Form.Item
             style={{
@@ -341,28 +384,78 @@ function AddOrder() {
             style={{
               width: "100%",
             }}
-            label="Machine Fault"
           >
             <div
               style={{
                 display: "flex",
                 gap: "5px",
+                alignItems: "flex-end",
               }}
             >
-              <Input
-                value={machineFaultInput}
-                onChange={(e) => {
-                  setMachineFaultInput(e.target.value);
+              <div
+                style={{
+                  // display:"flex"
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
                 }}
-              />
+              >
+                <div>
+                  <div
+                    style={{
+                      fontWeight: "bold",
+                      // color:"black"
+                    }}
+                  >
+                    Fault Title
+                  </div>
+                  <Input
+                    value={machineFaultInput}
+                    onChange={(e) => {
+                      setMachineFaultInput(e.target.value);
+                    }}
+                  />
+                </div>
+                <div>
+                  <div
+                    style={{
+                      fontWeight: "bold",
+                      // color:"black"
+                    }}
+                  >
+                     Fault Detail
+                  </div>
+                  <Input.TextArea
+                    value={faultDetails}
+                    onChange={(e) => {
+                      setFaultDetails(e.target.value);
+                    }}
+                  />
+                </div>
+              </div>
               <Button
                 type="primary"
                 onClick={() => {
+                  if (machineFaultInput === "" || machineFaultInput === null) {
+                    message.error("Please add machine fault");
+                    return;
+                  }
+                  if (faultDetails === "" || faultDetails === null) {
+                    message.error("Please add fault details");
+                    return;
+                  }
+
                   setMachineFault([
                     ...machineFault,
-                    { sNo: machineFault.length + 1, fault: machineFaultInput },
+                    {
+                      sNo: machineFault.length + 1,
+                      fault: machineFaultInput,
+                      faultDetails: faultDetails,
+                    },
                   ]);
                   setMachineFaultInput("");
+                  setFaultDetails("");
                 }}
               >
                 <PlusOutlined />
@@ -382,12 +475,42 @@ function AddOrder() {
                         justifyContent: "space-between",
                       }}
                     >
-                      <div>{item.fault}</div>
+                      <div>
+                        <div>
+                          <div
+                            style={{
+                              fontWeight: "bold",
+
+                              // color:"black"
+                            }}
+                          >
+                            Fault{" "}
+                          </div>
+                          {item.fault}
+                        </div>
+                        <div>
+                          <div
+                            style={{
+                              fontWeight: "bold",
+                              marginTop: "10px",
+                              // color:"black"
+                            }}
+                          >
+                            Fault Detail
+                          </div>
+                          {item.faultDetails}
+                        </div>
+                      </div>
                       <div
                         onClick={() => {
                           setMachineFault(
-                            machineFault.filter((i) => i !== item.sNo)
+                            machineFault.filter(
+                              (item2) => item2.sNo !== item.sNo
+                            )
                           );
+                          // setMachineFault(
+                          //   machineFault.filter((item2,i) => i !== item.sNo)
+                          // );
                         }}
                         style={{
                           color: "red",
@@ -401,16 +524,10 @@ function AddOrder() {
                 );
               })
             ) : (
-              <Card
-                style={{
-                  marginTop: "10px",
-                }}
-              >
-                <Empty />
-              </Card>
+              <></>
             )}
           </Form.Item>
-          <Form.Item
+          {/* <Form.Item
             style={{
               width: "45%",
             }}
@@ -419,7 +536,7 @@ function AddOrder() {
             rules={[{ required: true, message: "Please input Fault Details!" }]}
           >
             <Input.TextArea />
-          </Form.Item>
+          </Form.Item> */}
           <div style={{ width: "100%" }}>
             <h2>Attachment</h2>
             <div className="border bg-white rounded p-3 mt-4">
@@ -480,15 +597,25 @@ function AddOrder() {
                         <div className="d-flex align-items-center">
                           <UploadFileIcon />{" "}
                           <span className="ml-2">{file.name} </span>{" "}
-                          <span className="ml-5">
+                          {/* <span className="ml-5">
                             {file.url ? (
                               <EyeOutlined
                                 style={{ cursor: "pointer" }}
                                 onClick={() => window.open(file.url)}
                               />
                             ) : null}
-                          </span>
+                          </span> */}
                         </div>
+                        <div>
+                        {
+                          file.url && <span className="ml-3 " style={{
+                            cursor: "pointer"
+                          }} onClick={() => {
+                            window.open(file.url, '_blank')
+                          }}>
+                            <EyeOutlined />
+                          </span>
+                        }
                         <span
                           style={{ cursor: "pointer" }}
                           onClick={() => delUplFile(i)}
@@ -496,6 +623,7 @@ function AddOrder() {
                           {" "}
                           <CloseCircleOutlined />{" "}
                         </span>
+                      </div>
                       </li>
                     ))}
                   </ul>
@@ -503,9 +631,20 @@ function AddOrder() {
               </div>
             </div>
           </div>
-                <Form.Item>
-                    <Button type="primary" htmlType="submit">Submit</Button>
-                </Form.Item>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              width: "100%",
+              marginTop: "10px",
+            }}
+          >
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                Submit
+              </Button>
+            </Form.Item>
+          </div>
         </Form>
       </Card>
     </div>

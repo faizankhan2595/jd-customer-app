@@ -19,6 +19,7 @@ const ViewSensor = () => {
   const [fetchData, setData] = useState([]);
   const [csvData, setCSVData] = useState([])
   const [header, setHeader] = useState({})
+  const [jobsite, setJobsite] = useState('')
   const [searchText, setSearchText] = useState('');
   const getData = async (search = "", filter = 'all') => {
     let url = "?"
@@ -28,7 +29,7 @@ const ViewSensor = () => {
     }
     //for 0 it is not handling
     if((filter !== '' && filter != 'all')) {
-      url += `status=${filter}`
+      url += `sensor_status=${filter}`
     }
     const response = await axiosInstance.get(`/api/web/machines/${id}/sensors${url}`);
     // const response = await axiosInstance.get(`/api/web/machines/${id}/sensors?search=${search}` + (filter != 'all' ? `&status=${filter}` : ""));
@@ -47,6 +48,7 @@ const ViewSensor = () => {
       }
     }))
     setHeader(response.data.item)
+    setJobsite(response.data.job_site?.jobsite_name)
   };
   useEffect(() => {
 
@@ -295,9 +297,11 @@ const ViewSensor = () => {
             <div>
               <div>
                 <h5 className="m-0">Jobsite</h5>
-                <p className="m-0">{
-                  header.Jobsite
-                }</p>
+                <p className="m-0">
+                  {
+                    jobsite
+                  }
+                </p>
               </div>
             </div>
             <Divider style={{ height: "60px" }} type="vertical" />

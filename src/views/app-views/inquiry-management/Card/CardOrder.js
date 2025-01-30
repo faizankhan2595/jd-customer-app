@@ -40,7 +40,7 @@ function CardOrder({data}) {
                             fontWeight: "bold",
                             fontSize: "20px",
                             color: "#000"
-                        }}>#IQ-{data.id}</div>
+                        }}>{data.id}</div>
                         {/* <div></div> */}
                         <div>
                             {

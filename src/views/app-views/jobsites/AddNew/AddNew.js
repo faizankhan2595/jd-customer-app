@@ -5,6 +5,8 @@ import { axiosInstance } from 'App';
 import { UploadFileIcon } from 'assets/svg/icon';
 import React, { useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom/cjs/react-router-dom';
+import CountrySelector from 'utils/CountrySelector';
+import PhoneCode from 'utils/PhoneCode';
 import { UploadImage } from 'utils/Upload';
 
 
@@ -98,10 +100,10 @@ function AddNew() {
                     ...data,
                 })
                 setStatus(data.status);
-                setSelectedFiles(data?.pictures.map((item,index) => {
+                setSelectedFiles(data?.pictures.map((item, index) => {
                     return {
                         url: item?.file_url,
-                        name: `Picture ${index+1}`
+                        name: `Picture ${index + 1}`
                     }
                 }))
                 setCountryCode(data.phone_code);
@@ -112,13 +114,13 @@ function AddNew() {
         }
     }
     useEffect(() => {
-   
+
         getOperationArea();
     }, [])
 
     const getOperationArea = async () => {
         try {
-            const response = await axiosInstance.get(`api/web/operational-area?customer_id=${localStorage.getItem("user_id")}&status=1`);
+            const response = await axiosInstance.get(`api/web/operational-area?customer_id=${localStorage.getItem("parent_id") != "null" ? localStorage.getItem("parent_id") : localStorage.getItem("user_id")}&status=1`);
             if (response.status === 200) {
                 setData(response.data.items);
                 if (id) {
@@ -135,7 +137,9 @@ function AddNew() {
             <h4> <UserSwitchOutlined /><span style={{
                 color: '#6a6a6a',
                 fontWeight: '300'
-            }}> Operational Mastrer / Area</span> / Add New </h4>
+            }}> Operation Mastrer / Jobsite</span> / {id ?
+                "Edit" : "Add New"
+                } </h4>
             <Card>
                 <Tabs defaultActiveKey="1">
                     <Tabs.TabPane tab="Job Site Details" key="1">
@@ -161,23 +165,31 @@ function AddNew() {
                                     label="Phone Number"
                                     rules={[
                                         { required: true, message: "Please enter Phone Number" },
+                                        {
+                                            pattern: new RegExp(/^[0-9\b]+$/),
+                                            message: "Please enter valid phone number",
+                                        },
                                     ]}
                                 >
                                     <Input
                                         addonBefore={
-                                            <Select
-                                                // defaultValue={"In"}
-                                                style={{
-                                                    width: 80,
-                                                }}
-                                                value={countryCode}
-                                                onChange={(e) => {
-                                                    setCountryCode(e)
-                                                }}
-                                            >
-                                                <Option value="+91">+91</Option>
-                                                <Option value="+65">+65</Option>
-                                            </Select>
+                                            // <Select
+                                            //     // defaultValue={"In"}
+                                            //     style={{
+                                            //         width: 80,
+                                            //     }}
+                                            //     value={countryCode}
+                                            //     onChange={(e) => {
+                                            //         setCountryCode(e)
+                                            //     }}
+                                            // >
+                                            //     <Option value="+91">+91</Option>
+                                            //     <Option value="+65">+65</Option>
+                                            // </Select>
+                                            <PhoneCode value={countryCode} onChange={(e) => {
+                                                setCountryCode(e)
+                                            }
+                                            } />
                                         }
                                         style={{ width: "100%" }}
                                         placeholder="Phone number"
@@ -216,7 +228,12 @@ function AddNew() {
                                 }}
                                     label={'Postal Code'}
                                     name="postal_code"
-                                    rules={[{ required: true, message: 'Please input postal Code!' }]}
+                                    rules={[{ required: true, message: 'Please input postal Code!' },
+                                    {
+                                        pattern: new RegExp(/^[0-9\b]+$/),
+                                        message: "Please enter valid postal code",
+                                    }
+                                    ]}
                                 >
                                     <Input placeholder="Postal Code" style={{ width: '100%' }} />
                                 </Form.Item>
@@ -241,7 +258,12 @@ function AddNew() {
                                 }}
                                     label={'Street Number'}
                                     name="street_number"
-                                    rules={[{ required: true, message: 'Please enter the street number!' }]}
+                                    rules={[{ required: true, message: 'Please enter the street number!' }
+                                        , {
+                                        pattern: new RegExp(/^[0-9\b]+$/),
+                                        message: "Please enter valid street number",
+                                    }
+                                    ]}
                                 >
                                     <Input placeholder="Street Number" style={{ width: '100%' }} />
                                 </Form.Item>
@@ -250,7 +272,10 @@ function AddNew() {
                                 }}
                                     label={'Unit Number'}
                                     name="unit_number"
-                                    rules={[{ required: true, message: 'Please enter the unit number!' }]}
+                                    rules={[{ required: true, message: 'Please enter the unit number!' }, {
+                                        pattern: new RegExp(/^[0-9\b]+$/),
+                                        message: "Please enter valid unit number",
+                                    }]}
                                 >
                                     <Input placeholder='Unit Number' style={{ width: '100%' }} />
                                 </Form.Item>
@@ -265,7 +290,12 @@ function AddNew() {
                                 }}
                                     label={'Level Number'}
                                     name="level_number"
-                                    rules={[{ required: true, message: 'Please enter the level number!' }]}
+                                    rules={[{ required: true, message: 'Please enter the level number!' },
+                                    {
+                                        pattern: new RegExp(/^[0-9\b]+$/),
+                                        message: "Please enter valid level number",
+                                    }
+                                    ]}
                                 >
                                     <Input placeholder="Level Number" style={{ width: '100%' }} />
                                 </Form.Item>
@@ -276,11 +306,7 @@ function AddNew() {
                                     name="country"
                                     rules={[{ required: true, message: 'Please select a country!' }]}
                                 >
-                                    <Select placeholder='Country' style={{ width: '100%' }}>
-                                    <Option value="155">Singapore</Option>
-                                    <Option value="75">India</Option>
-                                        {/* Add more countries as needed */}
-                                    </Select>
+                                    <CountrySelector />
                                 </Form.Item>
                             </div >
 
@@ -335,17 +361,28 @@ function AddNew() {
                                                                 <div className="d-flex align-items-center">
                                                                     <UploadFileIcon />{" "}
                                                                     <span className="ml-2">{file.name} </span>{" "}
-                                                                    <span className="ml-5">
+                                                                    {/* <span className="ml-5">
                                                                         {file.url ? (<EyeOutlined style={{ cursor: "pointer" }} onClick={() => window.open(file.url)} />) : null}
+                                                                    </span> */}
+                                                                </div>
+                                                                <div>
+                                                                    {
+                                                                        file.url && <span className="ml-3 " style={{
+                                                                            cursor: "pointer"
+                                                                        }} onClick={() => {
+                                                                            window.open(file.url, '_blank')
+                                                                        }}>
+                                                                            <EyeOutlined />
+                                                                        </span>
+                                                                    }
+                                                                    <span
+                                                                        style={{ cursor: "pointer" }}
+                                                                        onClick={() => delUplFile(i)}
+                                                                    >
+                                                                        {" "}
+                                                                        <CloseCircleOutlined />{" "}
                                                                     </span>
                                                                 </div>
-                                                                <span
-                                                                    style={{ cursor: "pointer" }}
-                                                                    onClick={() => delUplFile(i)}
-                                                                >
-                                                                    {" "}
-                                                                    <CloseCircleOutlined />{" "}
-                                                                </span>
                                                             </li>
                                                         ))}
                                                     </ul>

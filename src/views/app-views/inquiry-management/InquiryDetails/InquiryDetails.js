@@ -9,7 +9,7 @@ import {
   Tag,
   Timeline,
 } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Icon1 from "assets/OrderDetail/question (4) 1.png";
 import Icon2 from "assets/OrderDetail/precision_manufacturing_black_24dp 1 (1).png";
 import Icon3 from "assets/OrderDetail/comments 1.png";
@@ -24,9 +24,11 @@ import { axiosInstance } from "App";
 import moment from "moment";
 import TravelerRemarksLabel from "./TravelerRemarks/TravelerRemarksLabel";
 import TravelerRemarks from "./TravelerRemarks/TravelerRemarks";
+import { CountryContext } from "CountryContext";
 
 function InquiryDetails() {
   const history = useHistory();
+  const {countryList} = useContext(CountryContext);
   const [data, setData] = useState({});
   const { id } = useParams();
   const [reamarks, setRemarks] = useState([
@@ -154,7 +156,7 @@ function InquiryDetails() {
                 padding: "3px 30px",
               }}
             >
-              Active
+              Open
             </Tag>
           ) : (
             <Tag
@@ -163,7 +165,7 @@ function InquiryDetails() {
                 padding: "3px 30px",
               }}
             >
-              InActive
+              Close
             </Tag>
           )}
           <div
@@ -413,9 +415,7 @@ function InquiryDetails() {
                   Country
                 </div>
                 <div>
-                  {data.country == 155
-                    ? "Singapore"
-                    : data.country == 75 && "India"}
+                  {countryList.find((item) => item.id == data.country_id)?.name}
                 </div>
               </div>
               <div
@@ -560,22 +560,20 @@ function InquiryDetails() {
           >
             <div>
               <Timeline>
-                <Timeline.Item>
-                  <div>Inquiry Generated.</div>
-                  <div>16 Jan 2022, 10:02 AM</div>
-                </Timeline.Item>
-                <Timeline.Item>
-                  <div>Inquiry Generated.</div>
-                  <div>16 Jan 2022, 10:02 AM</div>
-                </Timeline.Item>
-                <Timeline.Item>
-                  <div>Inquiry Generated.</div>
-                  <div>16 Jan 2022, 10:02 AM</div>
-                </Timeline.Item>
-                <Timeline.Item>
-                  <div>Inquiry Generated.</div>
-                  <div>16 Jan 2022, 10:02 AM</div>
-                </Timeline.Item>
+                  {
+                    data.timeline?.map((item)=>{
+                      return <Timeline.Item>
+                        <div style={{
+                          display:"flex",
+                          flexDirection:"column",
+                          gap:"5px"
+                        }}>
+                          <div style={{fontWeight:"bold"}}>{item.text}</div>
+                          <div>{moment(item.created_at).format("DD-MM-YYYY hh:mm a")}</div>
+                        </div>
+                      </Timeline.Item>
+                    })
+                  }
               </Timeline>
             </div>
           </Card>

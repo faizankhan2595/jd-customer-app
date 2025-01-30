@@ -4,7 +4,7 @@ import { BasicDetail, LocationIcon, SuccessTickIcon, UploadDocument, UploadFileI
 import React from "react";
 import { useState } from "react";
 import { Tabs } from "antd";
-import { CloseCircleOutlined, EnvironmentOutlined, PlusOutlined, TeamOutlined, UserSwitchOutlined } from "@ant-design/icons";
+import { CloseCircleOutlined, EnvironmentOutlined, EyeOutlined, LaptopOutlined, PlusOutlined, TeamOutlined, UserSwitchOutlined } from "@ant-design/icons";
 import { Option } from "antd/lib/mentions";
 // import axios from "../../../../axios";
 import moment from "moment";
@@ -15,6 +15,8 @@ import { useHistory } from 'react-router-dom';
 import { API_BASE_URL } from "constants/ApiConstant";
 import { axiosInstance } from "App";
 import { UploadImage } from "utils/Upload";
+import CountrySelector from "utils/CountrySelector";
+import PhoneCode from "utils/PhoneCode";
 export default function AddNewTechnician() {
     const { TabPane } = Tabs;
 
@@ -117,7 +119,10 @@ export default function AddNewTechnician() {
 
     const handleNext = (active) => {
         if (active === "1") {
-
+            if(!imageUrl){
+                message.error("Please upload profile picture");
+                return;
+            }
             form1.validateFields().then(() => {
                 setActiveTab("2");
             })
@@ -140,9 +145,9 @@ export default function AddNewTechnician() {
         console.log(selectedFiles);
         // const image = await uploadImage(fileList);
         let profile_pic = imageUrl
-
+        
         console.log(fileList);
-      if(profile_pic.includes('base64')){
+      if(profile_pic && profile_pic.includes('base64')){
          profile_pic = await UploadImage(fileList);
      }
         let file= [];
@@ -182,6 +187,10 @@ export default function AddNewTechnician() {
 
 
             })
+            if(resp.data.message=="Invalid phone number format. Please provide a valid phone number."){
+                message.error("Invalid phone number format. Please provide a valid phone number.");
+                return;
+              }
             handleCloseAlert()
             setTimeout(() => {
                 history.goBack()
@@ -203,10 +212,14 @@ export default function AddNewTechnician() {
                 phone_code : countryCode,
                 profile_pic,
                 documents: file,
-                parent_id: localStorage.getItem("parent_id"),
+                parent_id: localStorage.getItem("parent_id")!="null"?localStorage.getItem("parent_id"):localStorage.getItem("user_id"),
 
 
             })
+            if(resp.data.message=="Invalid phone number format. Please provide a valid phone number."){
+                message.error("Invalid phone number format. Please provide a valid phone number.");
+                return;
+              }
             handleCloseAlert()
             setTimeout(() => {
                 history.goBack()
@@ -230,9 +243,9 @@ export default function AddNewTechnician() {
             setSuccessModal(true);
             setSuccesmodaltext({
                 title: "Technician Status Change Successfully!",
-                text: "Technician status changed to terminated.",
+                text: "Technician status changed to " + (statu === 1 ? "Active" : "Inactive"),
             });
-            history.goBack();
+            // history.goBack();
         } catch (error) {
             console.error(error);
             message.error(error.response.data.message);
@@ -357,13 +370,15 @@ export default function AddNewTechnician() {
                     </Button>
                 </div>
             </Modal>
-            <h4> <UserSwitchOutlined /><span style={{
+            <h4> <LaptopOutlined /><span style={{
                 color: '#6a6a6a',
                 fontWeight: '300'
-            }}> Staff Management / Admin Accounts</span> / Add New Accounts </h4>
+            }}> Technician Management / </span> {
+                id ? "Edit Technician" : "Add New Technician"
+            } </h4>
 
             <Tabs activeKey={activeTab} onTabClick={handleTabClick} tabBarExtraContent={
-                <Button onClick={() => {
+                 id && <Button onClick={() => {
                     setIsChangeStudModalOpen(true)
                 }}>
                     Change Technician Status
@@ -476,20 +491,10 @@ export default function AddNewTechnician() {
                                     >
                                         <Input
                                             addonBefore={
-                                                <Select
-                                                    // defaultValue={"In"}
-                                                    style={{
-                                                        width: 80,
-                                                    }}
-                                                    value={countryCode}
-                                                    onChange={(e) => {
-                                                        setCountryCode(e)
-                                                    }}
-                                                >
-                                                    <Option value="+91">+91</Option>
-                                                    <Option value="+65">+65</Option>
-                                                     
-                                                </Select>
+                                                <PhoneCode value={countryCode} onChange={(e) => {
+                                                    setCountryCode(e)
+                                                }
+                                                } />
                                             }
                                             style={{ width: "100%" }}
                                             placeholder="Phone number"
@@ -516,6 +521,9 @@ export default function AddNewTechnician() {
                                         rules={[{ required: true, message: "Please enter DOB" }]}
                                     >
                                         <DatePicker
+                                            disabledDate={(current) => {
+                                                return current && current > moment().endOf("day");  
+                                            }}
                                             placeholder="Date of birth"
                                             style={{ width: "100%" }}
                                         />
@@ -529,10 +537,7 @@ export default function AddNewTechnician() {
                                         label="Nationality"
                                         rules={[{ required: true, message: "Please Select Nationality" }]}
                                     >
-                                        <Select>
-                                        <Option value={155}>Singapore</Option>
-                                        <Option value={75}>India</Option>
-                                        </Select>
+                                       <CountrySelector/>
                                     </Form.Item>
                                 </div>
                                 <div style={{ width: "45%" }}>
@@ -578,7 +583,10 @@ export default function AddNewTechnician() {
                                     <Form.Item
                                         label={'Postal Code'}
                                         name="postal_code"
-                                        rules={[{ required: true, message: 'Please enter the postal code!' }]}
+                                        rules={[{ required: true, message: 'Please enter the postal code!' },{
+                                                      pattern: new RegExp(/^[0-9\b]+$/),
+                                                      message: "Please enter valid postal code",
+                                                    }]}
                                     >
                                         <Input placeholder="Postal Code" style={{ width: '100%' }} />
                                     </Form.Item>
@@ -597,7 +605,12 @@ export default function AddNewTechnician() {
                                     <Form.Item
                                         label={'Street Number'}
                                         name="street_number"
-                                        rules={[{ required: true, message: 'Please enter the street number!' }]}
+                                        rules={[{ required: true, message: 'Please enter the street number!' },
+                                            {
+                                            pattern: new RegExp(/^[0-9\b]+$/),
+                                            message: "Please enter valid street number",
+                                            }
+                                        ]}
                                     >
                                         <Input placeholder="Street Number" style={{ width: '100%' }} />
                                     </Form.Item>
@@ -605,7 +618,10 @@ export default function AddNewTechnician() {
                                     <Form.Item
                                         label={'Unit Number'}
                                         name="unit_number"
-                                        rules={[{ required: true, message: 'Please enter the unit number!' }]}
+                                        rules={[{ required: true, message: 'Please enter the unit number!' }, {
+                                                        pattern: new RegExp(/^[0-9\b]+$/),
+                                                        message: "Please enter valid unit number",
+                                                      }]}
                                     >
                                         <Input placeholder='Unit Number' style={{ width: '100%' }} />
                                     </Form.Item>
@@ -627,11 +643,7 @@ export default function AddNewTechnician() {
                                         name="country"
                                         rules={[{ required: true, message: 'Please select a country!' }]}
                                     >
-                                        <Select placeholder='Country' style={{ width: '100%' }}>
-                                        <Option value={155}>Singapore</Option>
-                                        <Option value={75}>India</Option>
-                                            {/* Add more countries as needed */}
-                                        </Select>
+                                      <CountrySelector/>
                                     </Form.Item>
                                 </div>
                             </div>
@@ -706,14 +718,36 @@ export default function AddNewTechnician() {
                                             <div className="d-flex align-items-center">
                                                 <UploadFileIcon />{" "}
                                                 <span className="ml-2">{file.name} </span>{" "}
+                                                {/* {
+                                                    file.url && <span className="ml-5 " style={{
+                                                        cursor: "pointer"
+                                                    }} onClick={()=>{
+                                                        window.open(file.url, '_blank')  
+                                                    }}>
+                                                        <EyeOutlined />
+                                                    </span>
+                                                } */}
                                             </div>
-                                            <span
-                                                style={{ cursor: "pointer" }}
-                                                onClick={() => delUplFile(i)}
-                                            >
-                                                {" "}
-                                                <CloseCircleOutlined />{" "}
-                                            </span>
+                                            
+
+                                            <div>
+                        {
+                          file.url && <span className="ml-3 " style={{
+                            cursor: "pointer"
+                          }} onClick={() => {
+                            window.open(file.url, '_blank')
+                          }}>
+                            <EyeOutlined />
+                          </span>
+                        }
+                        <span
+                          style={{ cursor: "pointer" }}
+                          onClick={() => delUplFile(i)}
+                        >
+                          {" "}
+                          <CloseCircleOutlined />{" "}
+                        </span>
+                      </div>
                                         </li>
                                     ))}
                                 </ul>
@@ -792,7 +826,7 @@ export default function AddNewTechnician() {
                             //     message.error(`Please select status first !`)
                             //     return
                             // }
-                            if(remark === ''){
+                            if(remark == '' || remark == null){
                                 message.error(`Please enter remarks !`)
                                 return
                             }
