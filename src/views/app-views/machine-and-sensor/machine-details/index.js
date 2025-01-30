@@ -1,7 +1,9 @@
 import {
   Avatar,
   Button,
+  Card,
   Checkbox,
+  DatePicker,
   Divider,
   Empty,
   Input,
@@ -11,6 +13,9 @@ import {
   Table,
   Tabs,
   Tag,
+  Dropdown,
+  Menu,
+  message
 } from "antd";
 import {
   AlarmIcon,
@@ -30,24 +35,31 @@ import {
   StepsGreyIcon,
   StepsIcon,
 } from "assets/svg/icon";
+import AnalysisReport from "../../../../assets/images/Mask group (1).png"
 import ReportSerchIcon from "assets/svg/greenSearch.png";
 import React, { useState, useEffect } from "react";
 import ProgressBar from "./Progress";
 import { Select } from "antd";
 import { Popover, Steps } from "antd";
+import SeriesImage from "assets/images/Mask group.png"
 import {
   UserOutlined,
   SolutionOutlined,
   LoadingOutlined,
   SmileOutlined,
   SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  MoreOutlined,
 } from "@ant-design/icons";
-import { Link } from "react-router-dom/cjs/react-router-dom";
+import { Link, useHistory } from "react-router-dom/cjs/react-router-dom";
 import Icon from "@ant-design/icons/lib/components/Icon";
 import { axiosInstance } from "App";
 import { useParams } from "react-router-dom";
 import moment from "moment";
-import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
+import ReactApexChart from "react-apexcharts";
+import LineChart from "components/shared-components/ChartWidget/LineChart";
+import BarChart from "components/shared-components/ChartWidget/BarChart";
 
 
 const { Option } = Select;
@@ -56,6 +68,7 @@ const options = [
   { label: "Option 2", value: "option2" },
   { label: "Option 3", value: "option3" },
 ];
+
 const { Step } = Steps;
 const customDot = (dot, { status, index }) => (
   <Popover
@@ -111,15 +124,59 @@ const MachineDetails = () => {
   const [kwHp, setKwHp] = useState(null);
   const [frequency, setFrequency] = useState(null);
   const [rpm, setRpm] = useState(null);
+  const [machinePictures, setMachinePictures] = useState([]);
+  const [horizontalData, setHorizontalData] = useState([]);
+  const [AnalysisXData, setAnalysisXData] = useState([]);
+  const [AnalysisYData, setAnalysisYData] = useState([]);
+  const [AnalysisZData, setAnalysisZData] = useState([]);
+  const [verticalData, setVerticalData] = useState([]);
+  const [axialData, setAxialData] = useState([]);
+  const history = useHistory();
+  const [motorServiceTemperature, setMotorServiceTemperature] = useState([]);
+  const [batteryPercentage, setBatteryPercentage] = useState([]);
+  const [batteryVoltage, setBatteryVoltage] = useState([]);
+  const [rssi, setRssi] = useState([]);
+  const [rawData, setRawData] = useState([]);
+  const [dateRangeModal, setDateRangeModal] = useState(false);
+  const [eventsData, setEventsData] = useState([])
+  const [currentEventsData, setCurrentEventsData] = useState([])
+  const [alarmsPage, setAlarmsPage] = useState(false)
+  const [currentStep, setCurrentStep] = useState(0)
+  const [data, setData] = useState({});
+  const [sensorsData, setSensorsData] = useState([]);
+  const [serviceReportData, setServiceReportData] = useState({
+      event_id: null,
+      job_reference: false,
+      receiving_and_delivery: false,
+  })
+  const [repairReportData, setRepairReportData] = useState({
+      event_id: false,
+      job_reference: false,
+      receiving_and_delivery: false,
+  })
+  const [failurePredictionReportData, setFailurePredictionReportData] = useState({
+      event_id: false,
+      job_reference: false,
+      receiving_and_delivery: false,
+  })
+  const [serviceReportList, setServiceReportList] = useState([])
+  const [repairReportList, setRepairReportList] = useState([])
+  const [failurePredictionReportList, setFailurePredictionReportList] = useState([])
+  const [serviceReportListOriginal, setServiceReportListOriginal] = useState([])
+  const [repairReportListOriginal, setRepairReportListOriginal] = useState([])
+  const [failurePredictionReportListOriginal, setFailurePredictionReportListOriginal] = useState([])
+  const [serviceReportSearch, setServiceReportSearch] = useState([])
+  const [repairReportSearch, setRepaireReportSearch] = useState([])
+  const [failurePredictionReportSearch, setFailurePredictionReportSearch] = useState([])
 
-  const history = useHistory()
 
   const fetchData = async () => {
-    const response = await axiosInstance.get(`api/admin/machine/${id}/show`);
-    const res2 = await axiosInstance.get(`api/admin/machine-senser/${id}/show`);
-    setAlarmList(res2.data.item.results);
-    const data = response.data.item.results;
-
+    const response = await axiosInstance.get(`api/admin/machines/${id}`);
+    const res2 = await axiosInstance.get(`api/admin/machines/${id}/sensors`);
+    setSensorsData(res2.data.items);
+    const data = response.data.item;
+    console.log(data);
+    setData(data);
     setMachineId(data.id);
     setMachineName(data.name);
     setSerialNumber(data.serial_no);
@@ -128,9 +185,165 @@ const MachineDetails = () => {
     setKwHp(data.kw_hp);
     setFrequency(data.frequency);
     setRpm(data.rpm);
+    setMachinePictures(data.pictures);
   }
+
+  const fetchSensorData = async () => {
+    const response = await axiosInstance.get(`api/machine-data`);
+    // console.log(response.data);
+    const rawData = response.data.data;
+    setRawData(rawData);
+    setHorizontalData(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.mid_freq_displacement_x
+        }
+      })
+      return data
+    })
+    setVerticalData(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.mid_freq_displacement_y
+        }
+      })
+      return data
+    })
+    setAxialData(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.mid_freq_displacement_z
+        }
+      })
+      return data
+    })
+    setMotorServiceTemperature(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.temperature
+        }
+      })
+      return data
+    })
+    setBatteryPercentage(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.battery_percentage
+        }
+      })
+      return data
+    })
+    setBatteryVoltage(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.battery_voltage
+        }
+      })
+      return data
+    })
+    setRssi(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.RSSI
+        }
+      })
+      return data
+    })
+    setAnalysisXData(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: Number(item.mid_freq_env_x),
+          y: item.mid_freq_displacement_x
+        }
+      })
+      return data
+    })
+    setAnalysisYData(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: Number(item.mid_freq_env_y),
+          y: item.mid_freq_displacement_y
+        }
+      })
+      return data
+    })
+    setAnalysisZData(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: Number(item.mid_freq_env_z),
+          y: item.mid_freq_displacement_z
+        }
+      })
+      return data
+    })
+  }
+
+  const fetchEventsData = async () => {
+    const response = await axiosInstance.get(`api/admin/life-cycle-event/list`);
+    console.log(response.data.items)
+    let data = response.data.items;
+    if(data) {
+      setEventsData([
+        ...data
+      ])
+    }
+  }
+
+  const fetchReportsData = async () => {
+    const response = await axiosInstance.get(`api/admin/reports/list`);
+    let data = response.data.items;
+    for(let i=0; i< data.length; i++) {
+      if(data[i].report_type == 'Service') {
+        data[i] = {...data[i], srNo: serviceReportList.length+1}
+        console.log(data[i])
+        let serv_data = serviceReportList;
+        serv_data.push(data[i])
+        setServiceReportList(serv_data)
+        setServiceReportListOriginal(serv_data)
+      }
+      if(data[i].report_type == 'Repair') {
+        data[i] = {...data[i], srNo: repairReportList.length+1}
+        let repr_data = repairReportList;
+        repr_data.push(data[i])
+        setRepairReportList(repr_data)
+        setRepairReportListOriginal(repr_data)
+      }
+      if(data[i].report_type == 'Failure Prediction') {
+        data[i] = {...data[i], srNo: failurePredictionReportList.length+1}
+        let fail_data = failurePredictionReportList;
+        fail_data.push(data[i])
+        setFailurePredictionReportList(fail_data)
+        setFailurePredictionReportListOriginal(fail_data)
+      }
+    }
+  }
+
+
+  const fetchAlarmsData = async () => {
+    const response = await axiosInstance.get(`api/admin/alarms/list?machine_id=${id}`);
+    let data = response.data.items;
+    console.log(data);
+    setAlarmList(data);
+  }
+  const fetchMachineHealthData = async () => {
+    const response = await axiosInstance.get(`api/admin/alarms/${id}/show`);
+    console.log(response.data);
+  }
+
   useEffect(() => {
     fetchData();
+    fetchEventsData();
+    fetchReportsData();
+    fetchSensorData();
+    fetchAlarmsData();
+    // fetchMachineHealthData();
   }, [])
 
 
@@ -170,47 +383,47 @@ const MachineDetails = () => {
       dataIndex: "id",
       key: "id",
     },
-    {
-      // title: 'Image',
-      dataIndex: "image",
-      key: "image",
-      render: (text, record) => (
-        <Avatar
-          src={
-            "https://images.unsplash.com/photo-1708616748538-bdd66d6a9e25?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          }
-          alt={`Avatar for ${record.organization}`}
-        />
-      ),
-    },
+   
     {
       title: "Sensor ID",
-      dataIndex: "sensor_id",
+      dataIndex: "machineSensor",
       key: "sensor_id",
+      render: (machineSensor) => <>{machineSensor.sensor_id}</>,
     },
     {
       title: "Sensor Name",
-      dataIndex: "sensor_name",
+      dataIndex: "machineSensor",
       key: "sensor_name",
+      render: (machineSensor) => <>{machineSensor.sensor_name}</>,
     },
     {
       title: "Location",
-      dataIndex: "sensor_location",
+      dataIndex: "machineSensor",
       key: "sensor_location",
+      render: (machineSensor) => <>{machineSensor.sensor_location}</>,
     },
     {
       title: "Machine Condition",
-      dataIndex: "machineCondition",
-      key: "machineCondition",
-      render: (machineCondition) => <>-</>,
+      dataIndex: "machine_health",
+      key: "machine_health",
+      // render: (machineCondition) => <>-</>,
+      render: (machine_health) => {
+        if (machine_health == "Normal") {
+          return <Tag color="green">{machine_health}</Tag>;
+        } else if (machine_health == "Warning") {
+          return <Tag color="orange">{machine_health}</Tag>;
+        } else {
+          return <Tag color="red">{machine_health}</Tag>;
+        }
+      }
       // render: (machineCondition) => <Tag color="green">{machineCondition}</Tag>,
     },
     {
       title: "Date & Time",
       dataIndex: "created_at",
       key: "created_at",
-      render:(row)=>{
-        return<></>
+      render: (row) => {
+        return <>{moment(row).format('DD-MM-YYYY, h:mm:ss A')}</>
       }
     },
   ];
@@ -218,7 +431,201 @@ const MachineDetails = () => {
     // Handle filter change here
     console.log("Selected filter:", value);
   };
-  const columns1 = [
+
+  const handleAnalysisChange = (e) => {
+    if (e === 'mid_freq_displacement') {
+      setHorizontalData(() => {
+        const data = rawData.map((item) => {
+          return {
+            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+            y: item.mid_freq_displacement_x
+          }
+        })
+        return data
+      })
+
+      setVerticalData(() => {
+        const data = rawData.map((item) => {
+          return {
+            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+            y: item.mid_freq_displacement_y
+          }
+        })
+        return data
+      })
+
+      setAxialData(() => {
+        const data = rawData.map((item) => {
+          return {
+            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+            y: item.mid_freq_displacement_z
+          }
+        })
+        return data
+      })
+    } else if (e === 'mid_freq_velocity') {
+      setHorizontalData(() => {
+        const data = rawData.map((item) => {
+          return {
+            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+            y: item.mid_freq_velocity_x
+          }
+        })
+        return data
+      })
+
+      setVerticalData(() => {
+        const data = rawData.map((item) => {
+          return {
+            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+            y: item.mid_freq_velocity_y
+          }
+        })
+        return data
+      })
+
+      setAxialData(() => {
+        const data = rawData.map((item) => {
+          return {
+            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+            y: item.mid_freq_velocity_z
+          }
+        })
+        return data
+      })
+    } else if (e === 'mid_freq_env') {
+      setHorizontalData(() => {
+        const data = rawData.map((item) => {
+          return {
+            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+            y: item.mid_freq_env_x
+          }
+        })
+        return data
+      })
+
+      setVerticalData(() => {
+        const data = rawData.map((item) => {
+          return {
+            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+            y: item.mid_freq_env_y
+          }
+        })
+        return data
+      })
+
+      setAxialData(() => {
+        const data = rawData.map((item) => {
+          return {
+            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+            y: item.mid_freq_env_z
+          }
+        })
+        return data
+      })
+    }
+    else if (e === 'inclination') {
+      setHorizontalData(() => {
+        const data = rawData.map((item) => {
+          return {
+            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+            y: item.inclination_x
+          }
+        })
+        return data
+      })
+
+      setVerticalData(() => {
+        const data = rawData.map((item) => {
+          return {
+            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+            y: item.inclination_y
+          }
+        })
+        return data
+      })
+
+      setAxialData(() => {
+        const data = rawData.map((item) => {
+          return {
+            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+            y: item.inclination_z
+          }
+        })
+        return data
+      })
+    } else if (e === 'mid_freq_acceleration_p2p') {
+      setHorizontalData(() => {
+        const data = rawData.map((item) => {
+          return {
+            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+            y: item.mid_freq_acceleration_p2p_x
+          }
+        })
+        return data
+      })
+
+      setVerticalData(() => {
+        const data = rawData.map((item) => {
+          return {
+            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+            y: item.mid_freq_acceleration_p2p_y
+          }
+        })
+        return data
+      })
+
+      setAxialData(() => {
+        const data = rawData.map((item) => {
+          return {
+            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+            y: item.mid_freq_acceleration_p2p_z
+          }
+        })
+        return data
+      })
+    }
+  }
+  const columns_events = [
+    {
+      title: 'Event ID',
+      dataIndex: 'id',
+      key: 'id',
+      render: (item) => <div>#{item}</div>
+    },
+    {
+      title: 'Date Received',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (item) => <div>{moment(item).format('DD-MM-YYYY')}</div>
+    },
+    {
+      title: 'Date Requested',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (item) => <div>{moment(item).format('DD-MM-YYYY')}</div>
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => (
+        <Tag color={status === 'Pending' ? 'yellow' : 'green'}>{status || 'Submitted'}</Tag>
+      ),
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (text, record) => (
+        <Space size="middle">
+          <Dropdown overlay={getEventsMenu(record)} trigger={['click']}>
+            <MoreOutlined />
+          </Dropdown>
+        </Space>
+      ),
+    },
+  ];
+  const columnsServiceReports = [
     {
       title: 'Sr No',
       dataIndex: 'srNo',
@@ -226,18 +633,33 @@ const MachineDetails = () => {
     },
     {
       title: 'Service Report',
-      dataIndex: 'serviceReport',
-      key: 'serviceReport',
+      dataIndex: 'enabled_fields',
+      key: 'enabled_fields',
+      render: (text, record) => (
+        <>
+          {record.enabled_fields.map((e,i) => <span>{i>0 ? ', ':''}{e}</span>)}
+        </>
+      ),
     },
     {
       title: 'Date & Time',
-      dataIndex: 'dateTime',
-      key: 'dateTime',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (text, record) => (
+        <>
+          <div>{moment(record.created_at).format('DD-MM-YYYY')}</div>
+        </>
+      ),
     },
     {
       title: 'Created By',
-      dataIndex: 'createdBy',
-      key: 'createdBy',
+      dataIndex: 'created_by',
+      key: 'created_by',
+      render: (text, record) => (
+        <>
+          <div>User #{record.created_by}</div>
+        </>
+      ),
     },
     {
       title: 'Report',
@@ -245,14 +667,14 @@ const MachineDetails = () => {
       key: 'report',
       render: (text, record) => (
         <>
-          <Link to={`view-reports/${5}`}>
+          <Link to={`view-reports/${record.id}`}>
             <span><ReportIcon /></span>
           </Link>
         </>
       ),
     },
   ];
-  const columns2 = [
+  const columnsRepairReports = [
     {
       title: 'Sr No',
       dataIndex: 'srNo',
@@ -260,18 +682,33 @@ const MachineDetails = () => {
     },
     {
       title: 'Repair Report',
-      dataIndex: 'serviceReport',
-      key: 'serviceReport',
+      dataIndex: 'enabled_fields',
+      key: 'enabled_fields',
+      render: (text, record) => (
+        <>
+          {record.enabled_fields.map((e,i) => <span>{i>0 ? ', ':''}{e}</span>)}
+        </>
+      ),
     },
     {
       title: 'Date & Time',
-      dataIndex: 'dateTime',
-      key: 'dateTime',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (text, record) => (
+        <>
+          <div>{moment(record.created_at).format('DD-MM-YYYY')}</div>
+        </>
+      ),
     },
     {
       title: 'Created By',
-      dataIndex: 'createdBy',
-      key: 'createdBy',
+      dataIndex: 'created_by',
+      key: 'created_by',
+      render: (text, record) => (
+        <>
+          <div>User #{record.created_by}</div>
+        </>
+      ),
     },
     {
       title: 'Report',
@@ -279,14 +716,14 @@ const MachineDetails = () => {
       key: 'report',
       render: (text, record) => (
         <>
-          <Link to={`view-reports/${5}`}>
+          <Link to={`view-reports/${record.id}`}>
             <span><ReportIcon /></span>
           </Link>
         </>
       ),
     },
   ];
-  const columns3 = [
+  const columnsFailurePredictionReports = [
     {
       title: 'Sr No',
       dataIndex: 'srNo',
@@ -294,18 +731,33 @@ const MachineDetails = () => {
     },
     {
       title: 'Failure Prediction Report',
-      dataIndex: 'serviceReport',
-      key: 'serviceReport',
+      dataIndex: 'enabled_fields',
+      key: 'enabled_fields',
+      render: (text, record) => (
+        <>
+          {record.enabled_fields.map((e,i) => <span>{i>0 ? ', ':''}{e}</span>)}
+        </>
+      ),
     },
     {
       title: 'Date & Time',
-      dataIndex: 'dateTime',
-      key: 'dateTime',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (text, record) => (
+        <>
+          <div>{moment(record.created_at).format('DD-MM-YYYY')}</div>
+        </>
+      ),
     },
     {
       title: 'Created By',
-      dataIndex: 'createdBy',
-      key: 'createdBy',
+      dataIndex: 'created_by',
+      key: 'created_by',
+      render: (text, record) => (
+        <>
+          <div>User #{record.created_by}</div>
+        </>
+      ),
     },
     {
       title: 'Report',
@@ -313,7 +765,7 @@ const MachineDetails = () => {
       key: 'report',
       render: (text, record) => (
         <>
-          <Link to={`view-reports/${5}`}>
+          <Link to={`view-reports/${record.id}`}>
             <span><ReportIcon /></span>
           </Link>
         </>
@@ -349,23 +801,23 @@ const MachineDetails = () => {
                   >
                     <Button
                       className="px-4 font-weight-semibold"
-                      onClick={() => {
-                        history.push("/app/machine-and-sensors/machine-details/sensors")
-                       }}
+                      onClick={() => { 
+                        history.push(`/app/machine-and-sensors/sensor-list/${id}`)
+                      }}
                     >
                       View Sensors
                     </Button>
                     {/* <Button className="px-4 font-weight-semibold" htmlType="button">
                             Save Draft
                         </Button> */}
-                    <Button
+                    {/* <Button
                       className="px-4 font-weight-semibold text-white bg-primary"
                       onClick={() => {
                         setAlarmModal(true);
                       }}
                     >
                       Set Alarm Range
-                    </Button>
+                    </Button> */}
                   </div>
                 </div>
 
@@ -412,23 +864,35 @@ const MachineDetails = () => {
             </div>
             <div style={{ width: "40%" }}>
               <div style={{ height: "50%" }} className="p-2">
-                <div className="bg-white rounded border p-2 h-100">
+                <div className="bg-white rounded border p-2 ">
                   <div>
                     <h5 className="m-0 d-flex" style={{ gap: "4px" }}>
                       <ImagesIcon /> Machine Pictures
                     </h5>
                   </div>
-                  <div className="customDashedBorder">
+                  {/* <div className="customDashedBorder">
                     <img
                       src={
                         "https://images.unsplash.com/photo-1524514587686-e2909d726e9b?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                       }
                       alt="..."
                     />
-                  </div>
+                  </div> */}
+                  {
+                    machinePictures.map((item, index) => {
+                      return (
+                        <div className="customDashedBorder" key={index}>
+                          <img
+                            src={item.file_url}
+                            alt="..."
+                          />
+                        </div>
+                      )
+                    })
+                  }
                 </div>
               </div>
-              <div style={{ height: "50%" }} className="p-2">
+              {/* <div style={{ height: "50%" }} className="p-2">
                 <div className="bg-white rounded border p-2 h-100">
                   <div>
                     <h5 className="m-0 d-flex" style={{ gap: "4px" }}>
@@ -437,7 +901,7 @@ const MachineDetails = () => {
                   </div>
                   <div className="customDashedBorder"></div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </>
@@ -474,25 +938,25 @@ const MachineDetails = () => {
               <div className="d-flex" style={{ gap: "10px" }}>
                 <Button className="bg-primary text-white">
                   <Link
-                    to={`/app/machine-and-sensors/machine-details/life-cycle-management/add-new-life-cycle-event`}
+                    to={`/app/machine-and-sensors/machine-details/life-cycle-management/add-new-life-cycle-event/${id}`}
                   >
                     + Add New Event
                   </Link>
                 </Button>
                 <Button>
                   <Link
-                    to={`/app/machine-and-sensors/machine-details/view-past-event`}
+                    to={`/app/machine-and-sensors/machine-details/sensor/view-past-event/${id}`}
                   >
                     View Past Event
                   </Link>
                 </Button>
-                <Button>
+                {false && <Button>
                   <Link
-                    to={`/app/machine-and-sensors/machine-details/misc`}
+                    to={`/app/machine-and-sensors/machine-details/sensor/misc-files/${2}`}
                   >
                     Misc File Upload
                   </Link>
-                </Button>
+                </Button>}
               </div>
               <div className="d-flex justify-content-end">
                 <Select
@@ -509,18 +973,56 @@ const MachineDetails = () => {
                 </Select>
               </div>
             </div>
-            <div className="mt-3 bg-white rounded pt-4">
+            <div className="mt-3 bg-white rounded pt-4" >
+              <div style={{ width: "100%", overflowX: "auto", paddingBottom: "10px" }}>
               <Steps
-                current={1}
-                style={{ marginTop: "50px" }}
+                current={currentStep}
+                style={{ marginTop: "50px",width:"1000px" }}
                 progressDot={customDot}
               >
                 <Step
-                  title="Start of Machine"
+                  title="Start of Machine LifeCycle"
                   icon={<UserOutlined />}
-                  description="Today 4:00 pm"
+                  description={<div className="d-flex flex-column">
+                  <div>{moment(data.created_at).format('DD-MM-YYYY')}</div>
+                  <div>{moment(data.created_at).format('hh:mm A')}</div>
+                </div>}
+                  onClick={() => {
+                    setCurrentStep(0);
+                    setCurrentEventsData([])
+                    setAlarmsPage(false)
+                  }}
                 />
                 <Step
+                  title="Alarms"
+                  icon={<UserOutlined />}
+                  description={<div className="d-flex flex-column">
+                  <div>{moment(data.created_at).format('DD-MM-YYYY')}</div>
+                  <div>{moment(data.created_at).format('hh:mm A')}</div>
+                </div>}
+                  onClick={() => {
+                    setCurrentStep(1);
+                    // setCurrentEventsData([])
+                    setAlarmsPage(true)
+                  }}
+                />
+                  
+                {eventsData.map((event, index) => (
+                  <Step
+                    title={'Event #'+event.id}
+                    icon={<UserOutlined />}
+                    description={<div className="d-flex flex-column">
+                      <div>{moment(event.created_at).format('DD-MM-YYYY')}</div>
+                      <div>{moment(event.created_at).format('hh:mm A')}</div>
+                    </div>}
+                    onClick={() => {
+                      setCurrentStep(index+2);
+                      setCurrentEventsData([eventsData[index]])
+                      setAlarmsPage(false)
+                    }}
+                  />
+                )) }
+                {/* <Step
                   title="Lifecycle"
                   icon={<SolutionOutlined />}
                   description="2nd Jan 2023,  4:00 pm"
@@ -549,16 +1051,18 @@ const MachineDetails = () => {
                   title="Decommission"
                   icon={<LoadingOutlined />}
                   description="12th Feb 2023 4:00 pm"
-                />
+                /> */}
               </Steps>
+              </div>
               <div className="p-2 mt-2">
-                {false ? (
+                {alarmsPage ? (
                   <>
-                    <hr />
-                    <Empty />
+                   <div className="">
+            <Table dataSource={alarmList} columns={columns} />
+          </div>
                   </>
                 ) : (
-                  <Table dataSource={dataSource} columns={columns} />
+                  <Table dataSource={currentEventsData} columns={columns_events} />
                 )}
               </div>
             </div>
@@ -583,7 +1087,21 @@ const MachineDetails = () => {
                   <Input
                     placeholder="Search"
                     allowClear
-                    onChange={() => { }}
+                    value={serviceReportSearch}
+                    onChange={(e) => { 
+                      let search_value = e.target.value;
+                      setServiceReportSearch(search_value);
+                      // if(search_value) {
+                      //   setServiceReportList(serviceReportListOriginal.filter(elem => {
+                      //     for(let item of elem.enabled_fields) {
+                      //       if(item.toUpperCase().includes(search_value.toUpperCase())) return true
+                      //       else return false
+                      //     }
+                      //   }))
+                      // } else {
+                      //   setServiceReportList(serviceReportListOriginal);
+                      // }
+                    }}
                     style={{
                       width: 200,
                     }}
@@ -596,9 +1114,7 @@ const MachineDetails = () => {
                   onClick={() => setGenerateReportModal(true)}
                   className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
                 >
-                  {/* <Link to={'/app/notifications/add_notification'}> */}
                   Generate Report
-                  {/* </Link> */}
                 </Button>
               </div>
             </div>
@@ -610,7 +1126,7 @@ const MachineDetails = () => {
                     <Empty />
                   </>
                 ) : (
-                  <Table dataSource={dataSource1} columns={columns1} />
+                  <Table dataSource={serviceReportList} columns={columnsServiceReports} />
                 )}
               </div>
             </div>
@@ -635,7 +1151,21 @@ const MachineDetails = () => {
                   <Input
                     placeholder="Search"
                     allowClear
-                    onChange={() => { }}
+                    value={repairReportSearch}
+                    onChange={(e) => { 
+                      let search_value = e.target.value;
+                      setRepaireReportSearch(search_value);
+                      // if(search_value) {
+                      //   setServiceReportList(serviceReportListOriginal.filter(elem => {
+                      //     for(let item of elem.enabled_fields) {
+                      //       if(item.toUpperCase().includes(search_value.toUpperCase())) return true
+                      //       else return false
+                      //     }
+                      //   }))
+                      // } else {
+                      //   setServiceReportList(serviceReportListOriginal);
+                      // }
+                    }}
                     style={{
                       width: 200,
                     }}
@@ -662,7 +1192,7 @@ const MachineDetails = () => {
                     <Empty />
                   </>
                 ) : (
-                  <Table dataSource={dataSource1} columns={columns2} />
+                  <Table dataSource={repairReportList} columns={columnsRepairReports} />
                 )}
               </div>
             </div>
@@ -687,7 +1217,21 @@ const MachineDetails = () => {
                   <Input
                     placeholder="Search"
                     allowClear
-                    onChange={() => { }}
+                    value={failurePredictionReportSearch}
+                    onChange={(e) => { 
+                      let search_value = e.target.value;
+                      setFailurePredictionReportSearch(search_value);
+                      // if(search_value) {
+                      //   setServiceReportList(serviceReportListOriginal.filter(elem => {
+                      //     for(let item of elem.enabled_fields) {
+                      //       if(item.toUpperCase().includes(search_value.toUpperCase())) return true
+                      //       else return false
+                      //     }
+                      //   }))
+                      // } else {
+                      //   setServiceReportList(serviceReportListOriginal);
+                      // }
+                    }}
                     style={{
                       width: 200,
                     }}
@@ -714,11 +1258,101 @@ const MachineDetails = () => {
                     <Empty />
                   </>
                 ) : (
-                  <Table dataSource={dataSource1} columns={columns3} />
+                  <Table dataSource={failurePredictionReportList} columns={columnsFailurePredictionReports} />
                 )}
               </div>
             </div>
           </div>
+        </>
+      ),
+    },
+    {
+      label: (
+        <div className="d-flex align-items-center">
+          <img src={AnalysisReport} alt="Analysis Report" />
+          <span className="ml-2">Analysis Report</span>
+        </div>
+      ),
+      key: 7,
+      children: (
+        <>
+          <Card>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '20px',
+              gap: '15px'
+            }}>
+              <div><img src={SeriesImage} /></div>
+              <div style={{
+                fontWeight: 'bold',
+                fontSize: '16px'
+              }}>Analysis</div>
+              <div>{moment().format("DD MMM YYYY HH:mm a")}</div>
+              <div >
+                <Button type="primary" ghost onClick={() => { }}>Status Update</Button>
+              </div>
+              <div >
+                <Button type="primary" onClick={() => { }}>Accquire Raw Data</Button>
+              </div>
+              <div style={{
+                width: '300px'
+              }}><Select onChange={handleAnalysisChange} style={{
+                width: '100%'
+              }} defaultValue="mid_freq_displacement">
+                  <Option value="mid_freq_displacement">Displacement</Option>
+                  <Option value="mid_freq_acceleration_p2p">Acceleration</Option>
+                  <Option value="mid_freq_velocity">Velocity</Option>
+                  <Option value="inclination">Inclination</Option>
+                  <Option value="mid_freq_env">Frequency</Option>
+                </Select></div>
+
+              <div style={{
+                width: '200px'
+              }}>
+                <Select defaultValue={"1"} onChange={(e) => {
+                  console.log(e)
+                  if (e === "Date Range") {
+                    setDateRangeModal(true)
+                  }
+                }} style={{
+                  width: '100%'
+                }} >
+                  <Select.Option value="1">1 Day</Select.Option>
+                  <Select.Option value="7">7 Day</Select.Option>
+                  <Select.Option value="30">30 Day</Select.Option>
+                  <Select.Option value="60">60 Day</Select.Option>
+                  <Select.Option value={"Date Range"}>Date Range</Select.Option>
+                </Select>
+              </div>
+            </div>
+            <div style={{
+              width:"300px",
+              marginBottom:"30px"
+            }}>
+                  <Select  defaultValue={alarmList[0]?.id} style={{
+                    width:"100%"
+                  }}>
+                    {
+                      alarmList.map((item) => {
+                        return (
+                          <Option value={item.id}>{item.sensor_type + " #"+ item.sensor_id}</Option>
+                        )
+                      })
+                    }
+                  </Select>
+            </div>
+            <LineChart title="Horizontal Data" series={horizontalData} label={"Amplitude VS Time"} />
+            <LineChart title="Vertical Data" series={verticalData} label={"Amplitude VS Time"} />
+            <LineChart title="Axial Data" series={axialData} label={"Amplitude VS Time"} />
+          </Card>
+          <LineChart title="Motor Service Temperature " series={motorServiceTemperature} label={"Celsius VS Time"} />
+          <LineChart title="Voltage" series={batteryVoltage} label={"Voltage (v) VS Time"} />
+          <LineChart title="Battery %" series={batteryPercentage} label={"Battery % VS Time"} />
+          <LineChart title="RSSI (Received Signal Strength Indicator)" series={rssi} label={"RSSI (dBm) VS Time"} />
+          {/* <BarChart title="Analysis (Frequency) - X Axis" series={AnalysisXData} label={"Amplitude VS Frequency (Hz)"} />
+            <BarChart title="Analysis (Frequency) - Y Axis" series={AnalysisYData} label={"Amplitude VS Frequency (Hz)"} />
+            <BarChart title="Analysis (Frequency) - Z Axis" series={AnalysisZData} label={"Amplitude VS Frequency (Hz)"} /> */}
         </>
       ),
     },
@@ -727,6 +1361,103 @@ const MachineDetails = () => {
     setRange(value);
     console.log(value);
   };
+
+  const getEventsMenu = (record) => (
+    <Menu>
+      <Menu.Item key="edit" onClick={() => editLifecycleEvent(record.id)}>
+        <EditOutlined /> Edit
+      </Menu.Item>
+      <Menu.Item key="view" onClick={() => deleteLifecycleEventHandler(record.id)}>
+        <DeleteOutlined /> Delete
+      </Menu.Item>
+    </Menu>
+  );
+
+  const editLifecycleEvent = async (event_id) => {
+    history.push(`/app/machine-and-sensors/machine-details/life-cycle-management/edit-life-cycle-event/${event_id}`);
+  }
+
+  const deleteLifecycleEventHandler = async (event_id) => {
+    console.log("fetch called")
+    const response = await axiosInstance.delete(`api/admin/life-cycle-event/${event_id}/delete`
+      // , { search: 'none' }
+    );
+    console.log(response.data.items)
+    let data = response.data;
+    if(data.status) {
+      message.success("Event deleted successfully")
+      fetchData();
+    } else {
+      message.success("Event cannot be deleted")
+    }
+  }
+
+  const generateServiceReport = async () => {
+    let enabled_fields = [];
+    if(serviceReportData.job_reference) enabled_fields.push('Job Reference');
+    if(serviceReportData.receiving_and_delivery) enabled_fields.push('Receiving & Delivery');
+    const response = await axiosInstance.post(`api/admin/reports/invoke`
+      , { 
+        user_id: localStorage.getItem("user_id"),
+        life_cycle_event_id: serviceReportData.event_id,
+        machine_id: +id,
+        report_type: 'Service',
+        enabled_fields: enabled_fields,
+        pdf_url: '',
+       }
+    );
+    // if(response.data.status) {
+      message.success("Service Report generated successfully")
+      fetchReportsData();
+    // } else {
+      // message.success("Event cannot be deleted")
+    // }
+  }
+
+  const generateRepairReport = async () => {
+    let enabled_fields = []
+    if(repairReportData.job_reference) enabled_fields.push('Job Reference');
+    if(repairReportData.receiving_and_delivery) enabled_fields.push('Receiving & Delivery');
+    const response = await axiosInstance.post(`api/admin/reports/invoke`
+      , { 
+        user_id: localStorage.getItem("user_id"),
+        life_cycle_event_id: repairReportData.event_id,
+        machine_id: +id,
+        report_type: 'Repair',
+        enabled_fields: enabled_fields,
+        pdf_url: '',
+       }
+    );
+    if(data.status) {
+      message.success("Repair Report generated successfully")
+      fetchReportsData();
+    } else {
+      message.success("Event cannot be deleted")
+    }
+  }
+
+  const generateFailurePredictionReport = async () => {
+    let enabled_fields = []
+    if(failurePredictionReportData.job_reference) enabled_fields.push('Job Reference');
+    if(failurePredictionReportData.receiving_and_delivery) enabled_fields.push('Receiving & Delivery');
+    const response = await axiosInstance.post(`api/admin/reports/invoke`
+      , { 
+        user_id: localStorage.getItem("user_id"),
+        life_cycle_event_id: failurePredictionReportData.event_id,
+        machine_id: +id,
+        report_type: 'Failure Prediction',
+        enabled_fields: enabled_fields,
+        pdf_url: '',
+       }
+    );
+    if(data.status) {
+      message.success("Failure Prediction Report generated successfully")
+      fetchReportsData();
+    } else {
+      message.success("Event cannot be deleted")
+    }
+  }
+
   return (
     <div>
       <div className="bg-white p-3">
@@ -755,18 +1486,19 @@ const MachineDetails = () => {
             <div style={{ width: "45%" }}>
               <div style={{ gap: "10px" }} className="d-flex align-items-top">
                 <div>
-                  <img
+                  {/* <img
                     style={{ borderRadius: "50%" }}
                     height={40}
                     width={40}
                     src="https://images.unsplash.com/photo-1708616748538-bdd66d6a9e25?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt="img"
-                  />
+                  /> */}
                 </div>
                 <div className="ml-1" style={{ width: "auto" }}>
-                  <h5 className="m-0">Centrifugal pump</h5>
+                  <h5 className="m-0">{data.name}</h5>
                   <div className="d-flex align-items-center">
-                    Acme co | Pumping station 1
+                    {/* Acme co | Pumping station 1 */}
+                    {data.user?.company_name || "NA"} | {data.job_site?.jobsite_name}
                   </div>
                 </div>
                 <div>
@@ -778,24 +1510,24 @@ const MachineDetails = () => {
                   className="d-flex align-items-center"
                   style={{ gap: "8px" }}
                 >
-                  <SensorIcon /> 02 Sensors
+                  <SensorIcon /> { sensorsData.length } Sensors
                 </h5>
                 <h5
                   className="d-flex align-items-center"
                   style={{ gap: "8px" }}
                 >
-                  <MachineIcon /> M/C ID:
-                  <span className="font-weight-300"> #12345</span> | Serial no:
-                  <span className="font-weight-300"> 1234567 </span>{" "}
+                  <MachineIcon />
+                   Serial no:
+                  <span className="font-weight-300"> {data.serial_no} </span>{" "}
                 </h5>
                 <h5
                   className="d-flex align-items-center"
                   style={{ gap: "8px" }}
                 >
                   <MachineModelIcon /> Model:{" "}
-                  <span className="font-weight-300">CFG23 Classic</span> |
+                  <span className="font-weight-300">{data.model}</span> |
                   Manufacturer:{" "}
-                  <span className="font-weight-300">abc tech </span>
+                  <span className="font-weight-300">{data.manufacturer}</span>
                 </h5>
               </div>
             </div>
@@ -803,16 +1535,16 @@ const MachineDetails = () => {
             <div className="ml-4" style={{ width: "50%" }}>
               <div className="mt-2">
                 <h5 className="mb-1">Machine Status (ISO)</h5>
-                <ProgressBar progress={5} />
+                <ProgressBar progress={data.health_iso} />
               </div>
               <div className="mt-2">
                 <h5 className="mb-1">Machine Status (User Defined)</h5>
-                <ProgressBar progress={25} />
+                <ProgressBar progress={data.health} />
               </div>
-              <div className="mt-2">
+              {/* <div className="mt-2">
                 <h5 className="mb-1">Machine Status (AI)</h5>
-                <ProgressBar progress={38} />
-              </div>
+                <ProgressBar progress={10} />
+              </div> */}
               <div className="mt-4 d-flex justify-content-between px-5">
                 <div className="d-flex align-items-center">
                   <span
@@ -840,7 +1572,7 @@ const MachineDetails = () => {
                       height: "20px",
                     }}
                   >
-                    3
+                    7
                   </span>{" "}
                   Satisfactory
                 </div>
@@ -855,7 +1587,7 @@ const MachineDetails = () => {
                       height: "20px",
                     }}
                   >
-                    2
+                    5
                   </span>{" "}
                   Warning
                 </div>
@@ -870,7 +1602,7 @@ const MachineDetails = () => {
                       height: "20px",
                     }}
                   >
-                    6
+                    2
                   </span>{" "}
                   Critical
                 </div>
@@ -919,6 +1651,7 @@ const MachineDetails = () => {
           </Button>
         </div>
       </Modal>
+      
       <Modal
         title={
           <div className="d-flex align-items-center">
@@ -932,110 +1665,63 @@ const MachineDetails = () => {
         width={1000}
       >
         <div>
+          <div className="d-flex justify-content-start align-items-center">
+            <h5 className="mr-2">Event Id</h5>
+            <Select
+              id="dates"
+              style={{ width: 200 }}
+              placeholder="Select Event"
+              value={serviceReportData.event_id}
+              onChange={(value) => {
+                setServiceReportData((prevData) => {
+                  return {
+                    ...prevData,
+                    event_id: value
+                  }
+                })
+              }}
+            >
+              {eventsData.map((item, index) => {
+                return (
+                  <Option key={index} value={item.id}>{item.id}</Option>
+                )
+              })}
+            </Select>
+          </div>
           <div className="d-flex justify-content-between report-modal-boxes">
-            <Checkbox>
+            <Checkbox value={serviceReportData.job_reference} onChange={()=>{
+              setServiceReportData((prevData) => {
+                return {
+                  ...prevData,
+                  job_reference: !prevData.job_reference
+                }
+              })
+            }}>
               <h5 className="pl-2 m-0">
                 <img src={ReportSerchIcon} alt="..." /> Job Reference
               </h5>
             </Checkbox>
-            <Select
-              id="dates"
-              style={{ width: 200 }}
-              placeholder="Select Report Date"
-              onChange={(value) => {
-                console.log(`Selected date and time: ${value}`);
-                // You can perform any action you want with the selected date and time here
-              }}
-            >
-              <Option value="2023-06-02T10:00:24">
-                02 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-04T10:00:24">
-                04 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-05T10:00:24">
-                05 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-06T10:00:24">
-                06 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-08T10:00:24">
-                08 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-10T10:00:24">
-                10 Jun 2023, 10:00:24 AM
-              </Option>
-            </Select>
           </div>
           <div className="d-flex justify-content-between report-modal-boxes">
-            <Checkbox>
+            <Checkbox value={serviceReportData.receiving_and_delivery} onChange={()=>{
+              setServiceReportData((prevData) => {
+                return {
+                  ...prevData,
+                  receiving_and_delivery: !prevData.receiving_and_delivery
+                }
+              })
+            }}>
               <h5 className="pl-2 m-0">
                 <img src={ReportSerchIcon} alt="..." /> Receiving & Delivery
               </h5>
             </Checkbox>
-            <Select
-              id="dates"
-              style={{ width: 200 }}
-              placeholder="Select Report Date"
-              onChange={(value) => {
-                console.log(`Selected date and time: ${value}`);
-                // You can perform any action you want with the selected date and time here
-              }}
-            >
-              <Option value="2023-06-02T10:00:24">
-                02 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-04T10:00:24">
-                04 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-05T10:00:24">
-                05 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-06T10:00:24">
-                06 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-08T10:00:24">
-                08 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-10T10:00:24">
-                10 Jun 2023, 10:00:24 AM
-              </Option>
-            </Select>
           </div>
-          <div className="d-flex justify-content-between report-modal-boxes">
+          {/* <div className="d-flex justify-content-between report-modal-boxes">
             <Checkbox>
               <h5 className="pl-2 m-0">
                 <img src={ReportSerchIcon} alt="..." /> Machine Data
               </h5>
             </Checkbox>
-            <Select
-              id="dates"
-              style={{ width: 200 }}
-              placeholder="Select Report Date"
-              onChange={(value) => {
-                console.log(`Selected date and time: ${value}`);
-                // You can perform any action you want with the selected date and time here
-              }}
-            >
-              <Option value="2023-06-02T10:00:24">
-                02 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-04T10:00:24">
-                04 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-05T10:00:24">
-                05 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-06T10:00:24">
-                06 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-08T10:00:24">
-                08 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-10T10:00:24">
-                10 Jun 2023, 10:00:24 AM
-              </Option>
-            </Select>
           </div>
           <div className="d-flex justify-content-between report-modal-boxes">
             <Checkbox>
@@ -1043,34 +1729,6 @@ const MachineDetails = () => {
                 <img src={ReportSerchIcon} alt="..." /> Initial Conditions & Physical Inspection
               </h5>
             </Checkbox>
-            <Select
-              id="dates"
-              style={{ width: 200 }}
-              placeholder="Select Report Date"
-              onChange={(value) => {
-                console.log(`Selected date and time: ${value}`);
-                // You can perform any action you want with the selected date and time here
-              }}
-            >
-              <Option value="2023-06-02T10:00:24">
-                02 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-04T10:00:24">
-                04 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-05T10:00:24">
-                05 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-06T10:00:24">
-                06 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-08T10:00:24">
-                08 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-10T10:00:24">
-                10 Jun 2023, 10:00:24 AM
-              </Option>
-            </Select>
           </div>
           <div className="d-flex justify-content-between report-modal-boxes">
             <Checkbox>
@@ -1078,34 +1736,6 @@ const MachineDetails = () => {
                 <img src={ReportSerchIcon} alt="..." /> Stator winding electrical tests
               </h5>
             </Checkbox>
-            <Select
-              id="dates"
-              style={{ width: 200 }}
-              placeholder="Select Report Date"
-              onChange={(value) => {
-                console.log(`Selected date and time: ${value}`);
-                // You can perform any action you want with the selected date and time here
-              }}
-            >
-              <Option value="2023-06-02T10:00:24">
-                02 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-04T10:00:24">
-                04 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-05T10:00:24">
-                05 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-06T10:00:24">
-                06 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-08T10:00:24">
-                08 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-10T10:00:24">
-                10 Jun 2023, 10:00:24 AM
-              </Option>
-            </Select>
           </div>
           <div className="d-flex justify-content-between report-modal-boxes">
             <Checkbox>
@@ -1113,35 +1743,7 @@ const MachineDetails = () => {
                 <img src={ReportSerchIcon} alt="..." /> Auxiliaries Checks
               </h5>
             </Checkbox>
-            <Select
-              id="dates"
-              style={{ width: 200 }}
-              placeholder="Select Report Date"
-              onChange={(value) => {
-                console.log(`Selected date and time: ${value}`);
-                // You can perform any action you want with the selected date and time here
-              }}
-            >
-              <Option value="2023-06-02T10:00:24">
-                02 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-04T10:00:24">
-                04 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-05T10:00:24">
-                05 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-06T10:00:24">
-                06 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-08T10:00:24">
-                08 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-10T10:00:24">
-                10 Jun 2023, 10:00:24 AM
-              </Option>
-            </Select>
-          </div>
+          </div> */}
         </div>
         <div className="d-flex justify-content-end mt-3">
           <Button key="cancel" onClick={() => setGenerateReportModal(false)}>
@@ -1150,12 +1752,13 @@ const MachineDetails = () => {
           <Button
             key="save"
             className="bg-primary text-white ml-2"
-            onClick={() => setGenerateReportModal(false)}
+            onClick={() => generateServiceReport()}
           >
             Generate Report
           </Button>
         </div>
       </Modal>
+
       <Modal
         title={
           <div className="d-flex align-items-center">
@@ -1169,77 +1772,58 @@ const MachineDetails = () => {
         width={1000}
       >
         <div>
+        <div className="d-flex justify-content-start align-items-center">
+            <h5 className="mr-2">Event Id</h5>
+            <Select
+              id="dates"
+              style={{ width: 200 }}
+              placeholder="Select Event"
+              value={repairReportData.event_id}
+              onChange={(value) => {
+                setRepairReportData((prevData) => {
+                  return {
+                    ...prevData,
+                    event_id: value
+                  }
+                })
+              }}
+            >
+              {eventsData.map((item, index) => {
+                return (
+                  <Option key={index} value={item.id}>{item.id}</Option>
+                )
+              })}
+            </Select>
+          </div>
           <div className="d-flex justify-content-between report-modal-boxes">
-            <Checkbox>
+            <Checkbox value={repairReportData.job_reference} onChange={()=>{
+              setRepairReportData((prevData) => {
+                return {
+                  ...prevData,
+                  job_reference: !prevData.job_reference
+                }
+              })
+            }}>
               <h5 className="pl-2 m-0">
                 <img src={ReportSerchIcon} alt="..." /> Job Reference
               </h5>
             </Checkbox>
-            <Select
-              id="dates"
-              style={{ width: 200 }}
-              placeholder="Select Report Date"
-              onChange={(value) => {
-                console.log(`Selected date and time: ${value}`);
-                // You can perform any action you want with the selected date and time here
-              }}
-            >
-              <Option value="2023-06-02T10:00:24">
-                02 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-04T10:00:24">
-                04 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-05T10:00:24">
-                05 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-06T10:00:24">
-                06 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-08T10:00:24">
-                08 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-10T10:00:24">
-                10 Jun 2023, 10:00:24 AM
-              </Option>
-            </Select>
           </div>
           <div className="d-flex justify-content-between report-modal-boxes">
-            <Checkbox>
+            <Checkbox value={repairReportData.receiving_and_delivery} onChange={()=>{
+              setRepairReportData((prevData) => {
+                return {
+                  ...prevData,
+                  receiving_and_delivery: !prevData.receiving_and_delivery
+                }
+              })
+            }}>
               <h5 className="pl-2 m-0">
                 <img src={ReportSerchIcon} alt="..." /> Receiving & Delivery
               </h5>
             </Checkbox>
-            <Select
-              id="dates"
-              style={{ width: 200 }}
-              placeholder="Select Report Date"
-              onChange={(value) => {
-                console.log(`Selected date and time: ${value}`);
-                // You can perform any action you want with the selected date and time here
-              }}
-            >
-              <Option value="2023-06-02T10:00:24">
-                02 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-04T10:00:24">
-                04 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-05T10:00:24">
-                05 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-06T10:00:24">
-                06 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-08T10:00:24">
-                08 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-10T10:00:24">
-                10 Jun 2023, 10:00:24 AM
-              </Option>
-            </Select>
           </div>
-          <div className="d-flex justify-content-between report-modal-boxes">
+          {/* <div className="d-flex justify-content-between report-modal-boxes">
             <Checkbox>
               <h5 className="pl-2 m-0">
                 <img src={ReportSerchIcon} alt="..." /> Machine Data
@@ -1378,7 +1962,7 @@ const MachineDetails = () => {
                 10 Jun 2023, 10:00:24 AM
               </Option>
             </Select>
-          </div>
+          </div> */}
         </div>
         <div className="d-flex justify-content-end mt-3">
           <Button key="cancel" onClick={() => setRepairReportModal(false)}>
@@ -1387,17 +1971,18 @@ const MachineDetails = () => {
           <Button
             key="save"
             className="bg-primary text-white ml-2"
-            onClick={() => setRepairReportModal(false)}
+            onClick={() => generateRepairReport()}
           >
             Generate Report
           </Button>
         </div>
       </Modal>
+
       <Modal
         title={
           <div className="d-flex align-items-center">
             <RepairReportIcon />{" "}
-            <span className="d-block ml-2"> Repair Report </span>
+            <span className="d-block ml-2"> Failure Prediction Report </span>
           </div>
         }
         visible={failureReportModal}
@@ -1406,77 +1991,58 @@ const MachineDetails = () => {
         width={1000}
       >
         <div>
+        <div className="d-flex justify-content-start align-items-center">
+            <h5 className="mr-2">Event Id</h5>
+            <Select
+              id="dates"
+              style={{ width: 200 }}
+              placeholder="Select Event"
+              value={failurePredictionReportData.event_id}
+              onChange={(value) => {
+                setFailurePredictionReportData((prevData) => {
+                  return {
+                    ...prevData,
+                    event_id: value
+                  }
+                })
+              }}
+            >
+              {eventsData.map((item, index) => {
+                return (
+                  <Option key={index} value={item.id}>{item.id}</Option>
+                )
+              })}
+            </Select>
+          </div>
           <div className="d-flex justify-content-between report-modal-boxes">
-            <Checkbox>
+            <Checkbox value={failurePredictionReportData.job_reference} onChange={()=>{
+              setFailurePredictionReportData((prevData) => {
+                return {
+                  ...prevData,
+                  job_reference: !prevData.job_reference
+                }
+              })
+            }}>
               <h5 className="pl-2 m-0">
                 <img src={ReportSerchIcon} alt="..." /> Job Reference
               </h5>
             </Checkbox>
-            <Select
-              id="dates"
-              style={{ width: 200 }}
-              placeholder="Select Report Date"
-              onChange={(value) => {
-                console.log(`Selected date and time: ${value}`);
-                // You can perform any action you want with the selected date and time here
-              }}
-            >
-              <Option value="2023-06-02T10:00:24">
-                02 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-04T10:00:24">
-                04 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-05T10:00:24">
-                05 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-06T10:00:24">
-                06 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-08T10:00:24">
-                08 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-10T10:00:24">
-                10 Jun 2023, 10:00:24 AM
-              </Option>
-            </Select>
           </div>
           <div className="d-flex justify-content-between report-modal-boxes">
-            <Checkbox>
+            <Checkbox value={failurePredictionReportData.receiving_and_delivery} onChange={()=>{
+              setFailurePredictionReportData((prevData) => {
+                return {
+                  ...prevData,
+                  receiving_and_delivery: !prevData.receiving_and_delivery
+                }
+              })
+            }}>
               <h5 className="pl-2 m-0">
                 <img src={ReportSerchIcon} alt="..." /> Receiving & Delivery
               </h5>
             </Checkbox>
-            <Select
-              id="dates"
-              style={{ width: 200 }}
-              placeholder="Select Report Date"
-              onChange={(value) => {
-                console.log(`Selected date and time: ${value}`);
-                // You can perform any action you want with the selected date and time here
-              }}
-            >
-              <Option value="2023-06-02T10:00:24">
-                02 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-04T10:00:24">
-                04 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-05T10:00:24">
-                05 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-06T10:00:24">
-                06 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-08T10:00:24">
-                08 Jun 2023, 10:00:24 AM
-              </Option>
-              <Option value="2023-06-10T10:00:24">
-                10 Jun 2023, 10:00:24 AM
-              </Option>
-            </Select>
           </div>
-          <div className="d-flex justify-content-between report-modal-boxes">
+          {/* <div className="d-flex justify-content-between report-modal-boxes">
             <Checkbox>
               <h5 className="pl-2 m-0">
                 <img src={ReportSerchIcon} alt="..." /> Machine Data
@@ -1615,7 +2181,7 @@ const MachineDetails = () => {
                 10 Jun 2023, 10:00:24 AM
               </Option>
             </Select>
-          </div>
+          </div> */}
         </div>
         <div className="d-flex justify-content-end mt-3">
           <Button key="cancel" onClick={() => setFailureReportModal(false)}>
@@ -1624,12 +2190,13 @@ const MachineDetails = () => {
           <Button
             key="save"
             className="bg-primary text-white ml-2"
-            onClick={() => setFailureReportModal(false)}
+            onClick={() => generateFailurePredictionReport(false)}
           >
             Generate Report
           </Button>
         </div>
       </Modal>
+
       <div className="customTableBackground">
         <Tabs>
           {items.map((item) => (
@@ -1639,6 +2206,12 @@ const MachineDetails = () => {
           ))}
         </Tabs>
       </div>
+
+      <Modal title="Date Range" visible={dateRangeModal} onCancel={() => setDateRangeModal(false)} >
+        <div>
+          <DatePicker.RangePicker />
+        </div>
+      </Modal>
     </div>
   );
 };

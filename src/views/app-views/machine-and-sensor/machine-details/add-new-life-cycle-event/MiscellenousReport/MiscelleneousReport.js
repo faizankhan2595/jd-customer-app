@@ -1,15 +1,17 @@
 import React, { useState } from 'react'
-import { ViewDetailsIcon } from 'assets/svg/icon'
-import { EditOutlined, HistoryOutlined } from '@ant-design/icons'
 import { Collapse, Button, Upload, Form } from 'antd';
-import ReportSerchIcon from "assets/svg/greenSearch.png";
 import { UploadFileIcon } from 'assets/svg/icon';
 import { CloseCircleOutlined } from '@ant-design/icons';
 import { useHistory } from 'react-router-dom/cjs/react-router-dom';
+import { ViewDetailsIcon } from 'assets/svg/icon'
+import { EditOutlined, HistoryOutlined, EyeOutlined } from '@ant-design/icons'
+import ReportSerchIcon from "assets/svg/greenSearch.png";
+import { UploadFile, UploadImage } from "utils/Upload";
 
-const MiscelleneousReport = () => {
+const MiscelleneousReport = ({miscelleneousReportData, setMiscelleneousReportData}) => {
     const history = useHistory();
-    const { Panel } = Collapse;
+    // const { Panel } = Collapse;
+
     let styles = {
         files: {
             listStyle: "none",
@@ -49,35 +51,50 @@ const MiscelleneousReport = () => {
         },
     };
 
-
-
-
     const [machineStatus, setMachineStatus] = useState(false)
-    const [selectedFiles, setSelectedFiles] = useState([]);
     const onFinish = (values) => {
         console.log('Form values:', values);
         // Add logic to handle form submission
     };
-    function handleFileSelect(event) {
+
+    // function handleFileSelect(event) {
+    const handleFileSelect = async (event) => {
         const fileList = event.target.files;
+        console.log(fileList);
+
         const newSelectedFiles = [];
         for (let i = 0; i < fileList.length; i++) {
-            newSelectedFiles.push(fileList[i]);
+            // newSelectedFiles.push(fileList[i]);
+            console.log(fileList[i]);
+
+            if(fileList[i]) {
+                const url = await UploadImage(fileList[i]);
+                newSelectedFiles.push({
+                    name: (fileList[i] && fileList[i].name) || '',
+                    url: url
+                });
+            }
+
         }
-        //   console.log(selectedFiles)
-        setSelectedFiles([...selectedFiles, newSelectedFiles[0]]);
+        console.log(newSelectedFiles);
+        // setMiscelleneousReportData([...miscelleneousReportData, newSelectedFiles[0]]);
+        setMiscelleneousReportData([...miscelleneousReportData, ...newSelectedFiles]);
     }
+
     const delUplFile = (i) => {
-        let AfterDeleteFile = selectedFiles.filter((elem, index) => {
+        let AfterDeleteFile = miscelleneousReportData.filter((elem, index) => {
             return index !== i;
         });
-        setSelectedFiles(AfterDeleteFile);
+        setMiscelleneousReportData(AfterDeleteFile);
+        console.log(AfterDeleteFile)
     };
+
     function handleBackClick() {
         // if (activeTab > 1 && activeTab <= 7) {
         //   let actnum = Number(activeTab) - 1;
         //   setActiveTab(actnum.toString());
         // }
+
         history.goBack();
     }
 
@@ -137,15 +154,18 @@ const MiscelleneousReport = () => {
                     />
                 </div>
                 <div className="mt-4">
-                    {selectedFiles.length > 0 && (
+                    {miscelleneousReportData.length > 0 && (
                         <ul className="p-0" style={{ width: "40%" }}>
-                            {selectedFiles.map((file, i) => (
+                            {miscelleneousReportData.map((file, i) => (
                                 <li key={file.name} className="my-3" style={styles.files}>
                                     {" "}
                                     <div className="d-flex align-items-center">
                                         <UploadFileIcon />{" "}
                                         <span className="ml-2">{file.name} </span>{" "}
                                     </div>
+                                    <span className="ml-5">
+                                        {file.url ? (  <EyeOutlined style={{ cursor: "pointer" }} onClick={() => window.open(file.url)} />) : null}
+                                    </span>
                                     <span
                                         style={{ cursor: "pointer" }}
                                         onClick={() => delUplFile(i)}
@@ -186,7 +206,8 @@ const MiscelleneousReport = () => {
                     <Button>fb</Button>
                 </Upload>
             </div> */}
-            <Form.Item>
+
+            {/* <Form.Item>
                 <div
                     style={{ gap: "10px" }}
                     className="mt-5 d-flex justify-content-end"
@@ -198,9 +219,6 @@ const MiscelleneousReport = () => {
                     >
                         Back
                     </Button>
-                    {/* <Button className="px-4 font-weight-semibold" htmlType="button">
-                            Save Draft
-                        </Button> */}
                     <Button
                         className="px-4 font-weight-semibold text-white bg-primary"
                         htmlType="submit"
@@ -208,7 +226,7 @@ const MiscelleneousReport = () => {
                         Save
                     </Button>
                 </div>
-            </Form.Item>
+            </Form.Item> */}
 
         </>
     )

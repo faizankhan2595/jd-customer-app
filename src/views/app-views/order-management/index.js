@@ -277,7 +277,11 @@ function OrderManagement() {
           >
             Export
           </Button>
-          <Button className="d-flex align-items-center ml-2">
+          <Button className="d-flex align-items-center ml-2"
+            onClick={()=>{
+              history.push("/app/order-management/orders")
+            }}
+          >
             <img src={CalendarIcon} alt="Calendar Icon" />
           </Button>
         </div>
