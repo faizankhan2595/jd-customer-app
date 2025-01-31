@@ -54,6 +54,24 @@ const RotatorShaftRunout = ({
         }
     }
 
+    const convertImageToBase64 = async (imageUrl, markings) => {
+        try {
+            const response = await fetch(imageUrl, { mode: "cors" }); // Ensure CORS is allowed
+            const blob = await response.blob(); // Convert response to Blob
+            const reader = new FileReader();
+            
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => {
+                let base64 = reader.result;
+                if(base64) {
+                    UploadImageMarkingKonva(base64, markings);
+                }
+            };
+        } catch (error) {
+          console.error("Error fetching image:", error);
+        }
+    };
+
     return (
         <div className="normal-header-color">
             {editStatus && <EditRotatorShaftRunout modalName={modalName} editStatus={editStatus} setEditStatus={setEditStatus}

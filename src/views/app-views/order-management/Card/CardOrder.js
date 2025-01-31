@@ -52,7 +52,14 @@ function CardOrder({ data }) {
              { 
               data.status === 2 ? (
                 <Tag color="green">Survery Scheduled</Tag>
-              ) :  (<Tag color="gold">Order Created</Tag>)
+              ) : 
+              data.status === 3 ? (
+                <Tag color="green">Survey Completed</Tag>
+              ) :
+              data.status === 1 ? (
+                <Tag color="green">Order Created</Tag>
+        
+            ):null
             }
               
             </div>

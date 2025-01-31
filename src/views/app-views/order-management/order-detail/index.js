@@ -77,15 +77,17 @@ function Index() {
           history.push("/app/order-management/view-quotation")
         }} type="primary">View Quotation</Button> */}
         <div>
-            {
-              
-              order.status === 2 ? (
-                <Tag color="green">Survery Scheduled</Tag>
-              ):
-              (
-                <Tag color="gold">Order Created</Tag>
-              )
-            }
+        {
+                (order.status === 1) ? (
+                  <Tag color="gold">Order Created</Tag>
+                ):
+                (order.status === 2) ? (
+                  <Tag color="green">Order Scheduled</Tag>
+                ):
+                (order.status === 3) ? (
+                  <Tag color="blue">Order Closed</Tag>
+                ):"NA"
+              }
           <div style={{
             color: "#72849A",
             fontSize: "12px",
