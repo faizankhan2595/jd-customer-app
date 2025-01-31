@@ -122,7 +122,7 @@ function OrderManagement() {
     setSearchText(value.target.value)
     clearTimeout(timeout)
     timeout = setTimeout(() => {
-      getOrderList(value.target.value, selectedStatus=='active'?1:selectedStatus=='inactive'?2:'all'
+      getOrderList(value.target.value, selectedStatus=='active'?1:selectedStatus=='inactive'?2: selectedStatus=='closed'?3:'all'
 
         , 
         selectedWorkshop=='Onsite'?'Onsite':selectedWorkshop=='Workshop'?'Workshop':'all'
@@ -132,7 +132,7 @@ function OrderManagement() {
 
   const handleStatusChange = (filter) => {
     setSelectedStatus(filter);
-    getOrderList(searchText,filter=='active'?1:filter=='inactive'?2:'all',
+    getOrderList(searchText,filter=='active'?1:filter=='inactive'?2:filter=='closed'?3:'all',
     selectedWorkshop=='Onsite'?'Onsite':selectedWorkshop=='Workshop'?'Workshop':'all'
 
     );
@@ -142,7 +142,7 @@ function OrderManagement() {
 
   const handleService = (filter) => {
     setSelectedWorkshop(filter);
-    getOrderList(searchText,selectedStatus=='active'?1:selectedStatus=='inactive'?2:'all', 
+    getOrderList(searchText,selectedStatus=='active'?1:selectedStatus=='inactive'?2:selectedStatus=='closed'?3:'all',
     filter=='Onsite'?'Onsite':filter=='Workshop'?'Workshop':'all'
 
     );
@@ -179,6 +179,15 @@ function OrderManagement() {
           >
             {/* Order Created */}
             Survey Scheduled
+          </Checkbox>
+        </Menu.Item>
+        <Menu.Item key="status-closed">
+          <Checkbox
+            checked={selectedStatus === 'closed'}
+            onChange={() => handleStatusChange('closed')}
+          >
+            {/* Order Created */}
+            Survey Completed
           </Checkbox>
         </Menu.Item>
       </SubMenu>

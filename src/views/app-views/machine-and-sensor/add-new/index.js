@@ -14,6 +14,7 @@ const { Option } = Select;
 const AddNewMachine = () => {
   const history = useHistory();
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
   const [machineStatus, setMachineStatus] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [customerData, setCustomerData] = useState([]);
@@ -46,6 +47,7 @@ const AddNewMachine = () => {
     const temp2 = selectedFiles.filter((item) => {
       return item.url !== undefined;
     })
+    setLoading(true);
     if (temp.length !== 0) {
       const uploadPromise = temp.map(async (item) => {
         if (item.url === undefined) {
@@ -80,6 +82,7 @@ const AddNewMachine = () => {
         }
       } catch (error) {
         console.error('Error adding machine:', error);
+        setLoading(false);
         // Handle error, e.g., show notification
       }
     }else{
@@ -89,6 +92,7 @@ const AddNewMachine = () => {
         history.push(`/app/machine-and-sensors`);
       }
     }
+    setLoading(false);
   };
 
     const getData = async () => {
@@ -572,7 +576,7 @@ const AddNewMachine = () => {
             <Button type="button" onClick={handleBackClick}>
               Back
             </Button>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" loading={loading}>
               Save
             </Button>
           </div>

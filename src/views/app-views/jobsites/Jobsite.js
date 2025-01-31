@@ -19,6 +19,8 @@ const Jobsites = () => {
   const history = useHistory();
   const [modalVisible, setModalVisible] = useState(false);
   const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false)
+  const [looading, setLoading] = useState(false)
+  const [area, setArea] = useState([])
   const [alertModal, setAlertModal] = useState(false)
   const [searchText, setSearchText] = useState('');
   const [selectedDashboards, setSelectedDashboards] = useState([]);
@@ -65,18 +67,37 @@ const Jobsites = () => {
     if((status !== '' && status != 'all')) {
       url += `&status=${status}`
     }
-   
+    if((workshop !== '' && workshop != 'all')) {
+      url += `&operational_area_id=${workshop}`
+    }
+
     try {
+      setLoading(true)
       const resp = await axiosInstance.get(`/api/web/jobsites${url}`);
       setData(resp.data.items);
+      setLoading(false)
     } catch (err) {
       console.log(err)
       message.error('Something went wrong')
     }
   }
 
+    const getData2 = async () => {
+      let url = `?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}&status=1`
+      try {
+        setLoading(true)
+        const resp = await axiosInstance.get('/api/web/operational-area'+url);
+        setArea(resp.data.items);
+      } catch (err) {
+        console.log(err)
+       
+        message.error('Something went wrong')
+      }
+    }
+
   useEffect(() => {
     getData();
+    getData2();
   }, [])
 
 
@@ -238,7 +259,29 @@ const Jobsites = () => {
           </Checkbox>
         </Menu.Item>
       </SubMenu>
+      <SubMenu key="jobType" title="Job Type">
+      <Menu.Item key={`jobType-all`}>
+              <Checkbox
+                checked={selectedWorkshop === "all"}
+                onChange={() => handleWorkshopChange("all")}
+              >
+               All
+              </Checkbox>
+            </Menu.Item>
+        {
+          area.map((item, i) => (
+            <Menu.Item key={`jobType-${i}`}>
+              <Checkbox
+                checked={selectedWorkshop === item.id}
+                onChange={() => handleWorkshopChange(item.id)}
+              >
+                {item.area_name}
+              </Checkbox>
+            </Menu.Item>
+          ))
+        }
 
+      </SubMenu>
    
       {/* <SubMenu key="workshop" title="Area">
         <Menu.Item key="area-all">
@@ -307,7 +350,7 @@ const Jobsites = () => {
       </div>
       <div>
         <Table
-        
+          loading={looading}
           columns={columns} dataSource={data} />
       </div>
       <Modal

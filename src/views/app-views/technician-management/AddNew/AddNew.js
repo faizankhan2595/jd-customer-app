@@ -29,6 +29,7 @@ export default function AddNewTechnician() {
     const [isChangeStudModalOpen, setIsChangeStudModalOpen] = useState(false);
     const [deactiveModalOpen, setIsDeactiveModalOpen] = useState(false);
     const [successModal, setSuccessModal] = useState(false);
+    const [loading, setLoading] = useState(false);
     const location = useLocation();
     const [countryCode, setCountryCode] = useState('+91')
     const queryParams = new URLSearchParams(location.search);
@@ -157,6 +158,7 @@ export default function AddNewTechnician() {
         const temp2 = selectedFiles.filter((item) => {
             return item.url !== undefined;
         })
+        setLoading(true);
         if(temp.length !== 0){
         const uploadPromise = temp.map(async (item) => {
             if (item.url === undefined) {
@@ -188,6 +190,7 @@ export default function AddNewTechnician() {
 
             })
             if(resp.data.message=="Invalid phone number format. Please provide a valid phone number."){
+                setLoading(false);
                 message.error("Invalid phone number format. Please provide a valid phone number.");
                 return;
               }
@@ -198,6 +201,7 @@ export default function AddNewTechnician() {
             // history.goBack();
 
         } catch (error) {
+            setLoading(false);
             console.error(error)
             message.error(error.response.data.message)
         }
@@ -217,6 +221,7 @@ export default function AddNewTechnician() {
 
             })
             if(resp.data.message=="Invalid phone number format. Please provide a valid phone number."){
+                setLoading(false);
                 message.error("Invalid phone number format. Please provide a valid phone number.");
                 return;
               }
@@ -228,6 +233,7 @@ export default function AddNewTechnician() {
 
         } catch (error) {
             console.error(error)
+            setLoading(false);
             message.error(error.response.data.message)
         }
     }
@@ -774,6 +780,7 @@ export default function AddNewTechnician() {
                     <Button
                         className="px-4 bg-primary font-weight-semibold text-white bg-info"
                         htmlType="submit"
+                        loading={loading}
                         onClick={() => {
                             handleNext(activeTab)
                         }}

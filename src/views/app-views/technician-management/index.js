@@ -24,6 +24,7 @@ import Csv from "utils/Csv";
 function TechnicianManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const history = useHistory();
+  const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
   const { countryList } = useContext(CountryContext);
@@ -241,10 +242,11 @@ function TechnicianManagement() {
     if((filter !== '' && filter != 'all')) {
       url += `&status=${filter}`
     }
-
+    setLoading(true);
     const res1 = await axiosInstance.get(`api/web/technician/list${url}`);
     console.log('res1', res1);
     setData(res1.data.items);
+    setLoading(false);
 
     setCSVData(res1.data.items.map((item)=>{
       return {
@@ -332,6 +334,7 @@ function TechnicianManagement() {
         //     setSelectedRowKeys(selectedRowKeys);
         //   }
         // }} 
+        loading={loading}
         columns={columns} dataSource={data} />
     </div>
 

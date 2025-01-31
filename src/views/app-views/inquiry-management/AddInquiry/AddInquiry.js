@@ -35,6 +35,7 @@ function AddInquiry() {
   const [data, setData] = useState([]);
   const [machineData, setMachineData] = useState([]);
   const { id } = useParams();
+  const [loading, setLoading] = useState(false);
   const handleFileSelect = (event) => {
     const fileList = event.target.files;
     const newSelectedFiles = [];
@@ -78,6 +79,7 @@ function AddInquiry() {
     const temp2 = selectedFiles.filter((item) => {
       return item.url !== undefined;
     });
+    setLoading(true);
     if (temp.length !== 0) {
       const uploadPromise = temp.map(async (item) => {
         if (item.url === undefined) {
@@ -112,6 +114,7 @@ function AddInquiry() {
         }
       } catch (error) {
         console.log(error);
+        setLoading(false);
       }
     } else {
       try {
@@ -129,6 +132,7 @@ function AddInquiry() {
         }
       } catch (error) {
         console.log(error);
+        setLoading(false);
       }
     }
   };
@@ -462,7 +466,7 @@ function AddInquiry() {
                   Clear
                 </Button>
 
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={loading}>
                   Submit
                   {/* Save */}
                 </Button>

@@ -15,6 +15,7 @@ function AddNew() {
     const [status, setStatus] = useState(true);
     const [data, setData] = useState([]);
     const [countryCode, setCountryCode] = useState("+91");
+    const [loading, setLoading] = useState(false);
     const history = useHistory();
     const { id } = useParams();
     const [selectedFiles, setSelectedFiles] = useState([]);
@@ -39,6 +40,7 @@ function AddNew() {
         const temp2 = selectedFiles.filter((item) => {
             return item.url !== undefined;
         })
+        setLoading(true);
         if (temp.length !== 0) {
             const uploadPromise = temp.map(async (item) => {
                 if (item.url === undefined) {
@@ -68,6 +70,7 @@ function AddNew() {
                     }
                 })
             } catch (error) {
+                setLoading(false);
                 message.error("Something went wrong");
             }
         } else {
@@ -85,6 +88,7 @@ function AddNew() {
                     }
                 })
             } catch (error) {
+                setLoading(false);
                 message.error("Something went wrong");
             }
         }
@@ -414,7 +418,7 @@ function AddNew() {
 
                                     <Button
 
-                                        type="primary" htmlType="submit">
+                                        type="primary" htmlType="submit" loading={loading}>
                                         {/* Submit */}
                                         Save
                                     </Button>

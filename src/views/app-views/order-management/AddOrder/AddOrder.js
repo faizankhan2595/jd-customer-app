@@ -37,6 +37,7 @@ function AddOrder() {
   const [machineFaultInput, setMachineFaultInput] = React.useState("");
   const [faultDetails, setFaultDetails] = React.useState("");
   const [machineFault, setMachineFault] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const history = useHistory();
 
@@ -55,7 +56,7 @@ function AddOrder() {
     const temp2 = selectedFiles.filter((item) => {
       return item.url !== undefined;
     });
-
+    setLoading(true);
     if (temp.length !== 0) {
       const uploadPromise = temp.map(async (item) => {
         if (item.url === undefined) {
@@ -93,6 +94,7 @@ function AddOrder() {
       }
     } catch (error) {
       console.error("Error fetching data:", error);
+      setLoading(false);
     }
   };
 
@@ -640,7 +642,7 @@ function AddOrder() {
             }}
           >
             <Form.Item>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" loading={loading}>
                 Submit
               </Button>
             </Form.Item>

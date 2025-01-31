@@ -9,9 +9,11 @@ function AddNew() {
     const [form] = Form.useForm();
     const [status, setStatus] = useState(true);
     const history = useHistory();
+    const [loading, setLoading] = useState(false);
     const { id } = useParams();
 
     const onFinish = (values) => {
+        setLoading(true);
         if (id) {
             try {
                 axiosInstance.put(`api/web/operational-area/${id}`, {
@@ -25,6 +27,7 @@ function AddNew() {
                 })
             } catch (error) {
                 message.error("Something went wrong");
+                setLoading(false);
             }
         } else {
             try {
@@ -39,6 +42,7 @@ function AddNew() {
                 })
             } catch (error) {
                 message.error("Something went wrong");
+                setLoading(false);
             }
         }
 
@@ -103,7 +107,7 @@ function AddNew() {
                             </Button>
 
                             <Button
-
+                                loading={loading}
                                 type="primary" htmlType="submit">
                                 {/* Submit */}
                                 Save
