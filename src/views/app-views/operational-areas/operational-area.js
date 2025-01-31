@@ -22,6 +22,7 @@ const OperationalAreas = () => {
   const [selectedDashboards, setSelectedDashboards] = useState([]);
   const [alertModal, setAlertModal] = useState(false)
   const [searchText, setSearchText] = useState('');
+  const [loading, setLoading] = useState(false);
   // const [data, setData] = useState([]);
   const handleCancel = () => {
     setModalVisible(false);
@@ -127,10 +128,13 @@ const OperationalAreas = () => {
       url += `&status=${status}`
     }
     try {
+      setLoading(true)
       const resp = await axiosInstance.get('/api/web/operational-area'+url);
       setData(resp.data.items);
+      setLoading(false)
     } catch (err) {
       console.log(err)
+      setLoading(false)
       message.error('Something went wrong')
     }
   }
@@ -294,7 +298,7 @@ const OperationalAreas = () => {
       </div>
       <div>
         <Table
-        
+          loading={loading}
           columns={columns} dataSource={data} />
       </div>
       <Modal
