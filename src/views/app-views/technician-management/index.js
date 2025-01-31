@@ -248,10 +248,10 @@ function TechnicianManagement() {
 
     setCSVData(res1.data.items.map((item)=>{
       return {
-        ...item,
+        id: item.id,
         name: item.name,
         created_at: moment(item.created_at).format('DD-MM-YYYY'),
-        gender: item.gender,
+        gender: item.gender == 1 ? 'Male':'Female',
         phone_no: item.phone_code + ' ' + item.phone_no,
         email: item?.email,
         status: item.status===1?"Active":"Inactive",
