@@ -185,7 +185,7 @@ const LoginOne = (props) => {
     // setStep(2);
   };
 
-  const sendUID = async (data) => {
+  const sendUID = async (data,signUp=false) => {
     try {
       const res = await axiosInstance.post("/api/web/auth/login", {
         // uid: uid,
@@ -193,7 +193,12 @@ const LoginOne = (props) => {
       });
       console.log(res.data);
       if (res.data.item.token?.token) {
-        message.success("Logged in successfully");
+        if(signUp){
+          message.success("Account created successfully");
+          setVisible(false);
+          setPhoneNumber("");
+          return;
+        }
 		console.log(res.data.item.user);
         localStorage.setItem("company_name", res.data.item.user?.company_name);
         localStorage.setItem("parent_id", res.data.item.user?.parent_id);
@@ -201,7 +206,11 @@ const LoginOne = (props) => {
         localStorage.setItem("role", res.data.item.user?.role_id);
         localStorage.setItem("name", res.data.item.user?.name); 
 		localStorage.setItem("user_id", res.data.item.user?.id);
-        window.location.reload();
+ 
+          message.success("Logged in successfully");
+          window.location.reload();
+  
+
       } else {
         message.error(res.data.message);
       }
@@ -245,7 +254,7 @@ const LoginOne = (props) => {
       company_name: searchValue,
 	  email: values.email,
 	  nric_fin_number: values.nric_fin_number
-    });
+    },true);
   };
 
   return (
