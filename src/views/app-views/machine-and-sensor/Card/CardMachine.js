@@ -17,7 +17,7 @@ function CardMachine({data}) {
                 cursor: "pointer",
             }}
                 onClick={() => {
-                    history.push("/app/machine-and-sensors/machine-details")
+                    history.push("/app/machine-and-sensors/machine-details/"+data.id)
                 }}
             >
                 <div style={{

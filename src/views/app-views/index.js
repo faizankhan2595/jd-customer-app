@@ -48,16 +48,31 @@ export const AppViews = () => {
         <Route exact path={`${APP_PREFIX_PATH}/operator-master/jobsites/edit/:id`} component={lazy(() => import(`./jobsites/AddNew/AddNew`))} /> 
     
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors`} component={lazy(() => import(`./machine-and-sensor`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/:id`} component={lazy(() => import(`./machine-and-sensor/machine-details`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/life-cycle-management/add-new-life-cycle-event/:id`} component={lazy(() => import(`./machine-and-sensor/machine-details/add-new-life-cycle-event`))} /> 
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/life-cycle-management/edit-life-cycle-event/:id`} component={lazy(() => import(`./machine-and-sensor/machine-details/add-new-life-cycle-event`))} /> 
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/view-reports/:id`} component={lazy(() => import(`./machine-and-sensor/machine-details/view-reports/Index`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensor/misc-files/:id`} component={lazy(() => import(`./machine-and-sensor/machine-details/misc-files`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensor/view-past-event/:id`} component={lazy(() => import(`./machine-and-sensor/machine-details/view-past-event`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensor/misc-files/:id/add-new`} component={lazy(() => import(`./machine-and-sensor/machine-details/misc-files/add-new`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/add-new`} component={lazy(() => import(`./machine-and-sensor/add-new`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/edit/:id`} component={lazy(() => import(`./machine-and-sensor/add-new`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/sensor-list/add-new/:id`} component={lazy(() => import(`./machine-and-sensor/add-new-sensor/index`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/sensor-list/edit-sensor/:id/:editId`} component={lazy(() => import(`./machine-and-sensor/add-new-sensor/edit.js`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/sensor-list/:id`} component={lazy(() => import(`./machine-and-sensor/view-sensor`))} />
+
+
+        {/* <Route exact path={`${APP_PREFIX_PATH}/machine-range/edit/:id`} component={lazy(() => import(`./machine-range/add-new/index`))} /> */}
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/add-new`} component={lazy(() => import(`./machine-and-sensor/add-new/index`))} />
-        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details`} component={lazy(() => import(`./machine-and-sensor/machine-details/index`))} />
+        {/* <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details`} component={lazy(() => import(`./machine-and-sensor/machine-details/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/view-past-event`} component={lazy(() => import(`./machine-and-sensor/machine-details/view-past-event/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/misc`} component={lazy(() => import(`./machine-and-sensor/machine-details/misc-files/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/misc/add-new`} component={lazy(() => import(`./machine-and-sensor/machine-details/misc-files/add-new/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensors/:id`} component={lazy(() => import(`./machine-and-sensor/view-sensor/index`))} />
-        {/* <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensors/add-new`} component={lazy(() => import(`./machine-and-sensor/add-new-sensor/index`))} /> */}
+       
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensors/add-new/:id`} component={lazy(() => import(`./machine-and-sensor/add-new-sensor/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensors/edit-sensor/:id/:editId`} component={lazy(() => import(`./machine-and-sensor/add-new-sensor/edit.js`))} />
-        <Route exact path={`${APP_PREFIX_PATH}/life-cycle`} component={lazy(() => import(`./machine-and-sensor/machine-details/add-new-life-cycle-event/index`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/life-cycle`} component={lazy(() => import(`./machine-and-sensor/machine-details/add-new-life-cycle-event/index`))} /> */}
         <Route exact path={`${APP_PREFIX_PATH}/reports`} component={lazy(() => import(`./Reports/Index`))} />
         <Redirect from={`${APP_PREFIX_PATH}`} to={`${localStorage.getItem("dashboardType") != "workshop" ? `${APP_PREFIX_PATH}/dashboard` : `${APP_PREFIX_PATH}/machine-and-sensors`}`} />
       </Switch>

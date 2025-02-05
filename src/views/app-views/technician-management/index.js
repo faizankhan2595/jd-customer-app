@@ -124,7 +124,7 @@ function TechnicianManagement() {
       title:"Nationality",
       dataIndex:"nationality",
       render:(text, record) => (
-        countryList.find((country) => country.id === text)?.name
+        text? countryList.find((country) => country.id === text)?.name : "-"
       )
     },
     // {
