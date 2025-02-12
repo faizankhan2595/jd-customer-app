@@ -6,6 +6,8 @@ import Address from "assets/Machine/Frame 367.png"
 import { useHistory } from 'react-router-dom/cjs/react-router-dom.min'
 import VibrationIcon from "assets/Frame 1171275235.png"
 import moment from 'moment'
+import Gauge from './Gauge'
+
 
 function CardMachine({data}) {
     const history = useHistory();
@@ -17,7 +19,7 @@ function CardMachine({data}) {
                 cursor: "pointer",
             }}
                 onClick={() => {
-                    history.push("/app/machine-and-sensors/machine-details")
+                    history.push("/app/machine-and-sensors/machine-details/"+data.id)
                 }}
             >
                 <div style={{
@@ -31,7 +33,17 @@ function CardMachine({data}) {
                         flexDirection: "column",
                         width:"40%"
                     }}>
-                        <div><img src={MeterIcon} /></div>
+                        <div style={{
+                            width: "100%",
+                            height: "100%",
+                            borderRadius: "50%",
+                            // border: "1px solid #000",
+                        }}>
+                            <div>
+                                <Gauge value={data.health}/>
+                            </div>
+                        {/* <img src={MeterIcon} /> */}
+                        </div>
                         <div style={{
 
                             fontSize: "12px"

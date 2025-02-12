@@ -53,6 +53,7 @@ const LoginOne = (props) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [countryCode, setCountryCode] = useState("+65");
   const [visibleModal, setVisible] = useState(false);
+  const [signUp, setSignUp] = useState(false);
   const history = useHistory();
   const [otp, setOtp] = useState("");
   const [options, setOptions] = useState([]);
@@ -104,8 +105,8 @@ const LoginOne = (props) => {
   const selectBefore = (
     <PhoneCode value={countryCode} onChange={(e) => {
       setCountryCode(e)
-  }
-  } />
+    }
+    } />
   );
 
   function onCaptchVerify() {
@@ -193,15 +194,25 @@ const LoginOne = (props) => {
       });
       console.log(res.data);
       if (res.data.item.token?.token) {
-        message.success("Logged in successfully");
-		console.log(res.data.item.user);
+        if (signUp) {
+          message.success("Account created successfully");
+          setVisible(false);
+          setSignUp(false);
+          setPhoneNumber("");
+          return;
+        }
+        console.log(res.data.item.user);
         localStorage.setItem("company_name", res.data.item.user?.company_name);
         localStorage.setItem("parent_id", res.data.item.user?.parent_id);
         localStorage.setItem("token", res.data.item.token?.token);
         localStorage.setItem("role", res.data.item.user?.role_id);
-        localStorage.setItem("name", res.data.item.user?.name); 
-		localStorage.setItem("user_id", res.data.item.user?.id);
+        localStorage.setItem("name", res.data.item.user?.name);
+        localStorage.setItem("user_id", res.data.item.user?.id);
+
+        message.success("Logged in successfully");
         window.location.reload();
+
+
       } else {
         message.error(res.data.message);
       }
@@ -237,15 +248,44 @@ const LoginOne = (props) => {
       message.error("Please select a company name");
     }
     console.log(values, searchValue);
-    // return;
-    sendUID({
-      phoneCode: countryCode,
-      phoneNo: phoneNumber,
-      name: values.name,
-      company_name: searchValue,
-	  email: values.email,
-	  nric_fin_number: values.nric_fin_number
-    });
+    if(signUp){
+      try {
+        const res = await axiosInstance.post("/api/app/auth/checkByNumber", {
+          // phoneNumber: countryCode + phoneNumber,
+          phoneCode: countryCode,
+          phoneNo: phoneNumber,
+        });
+      
+        if (res.data.item.success == true) {
+          message.error("Phone number already exists. Please login");
+          return;
+        }
+      
+        // }
+      } catch (err) {
+        console.log(err);
+        sendUID({
+          phoneCode: countryCode,
+          phoneNo: phoneNumber,
+          name: values.name,
+          company_name: searchValue,
+          email: values.email,
+          nric_fin_number: values.nric_fin_number
+        })
+
+      }
+    }
+    else{
+      sendUID({
+        phoneCode: countryCode,
+        phoneNo: phoneNumber,
+        name: values.name,
+        company_name: searchValue,
+        email: values.email,
+        nric_fin_number: values.nric_fin_number
+      });
+    }
+   
   };
 
   return (
@@ -287,7 +327,7 @@ const LoginOne = (props) => {
                   style={{
                     backgroundColor: "#3CA6C1",
                     color: "white",
-                    marginTop: "4rem",
+                    marginTop: "1rem",
                     marginBottom: "1.9rem",
                   }}
                   className="w-100"
@@ -361,9 +401,33 @@ const LoginOne = (props) => {
             <p className="text-center">
               By continuing, you agree to the JD Works Terms & Services
             </p>
-            <a className="text-center d-block w-100" href="#">
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              justifyContent: 'center',
+              // flexDirection: 'column',
+            }}>
+              {
+               false&& step === 1 && (
+                  <div
+              onClick={() => {
+                setVisible(true);
+                setSignUp(true);
+              }}
+              style={{
+                textAlign: 'center',
+                cursor: 'pointer',
+                color: 'rgb(62, 121, 247)',
+           
+              }}> 
+                Sign Up
+              </div>
+                )
+              }
+            <a className="text-center " href="#">
               Terms & Services
             </a>
+            </div>
           </div>
         </div>
 
@@ -510,17 +574,17 @@ const LoginOne = (props) => {
             label="Name"
             name="name"
             rules={[{ required: true, message: "Please input your name!" },
-              { pattern: /^[a-zA-Z\s]*$/, message: "Please enter a valid name!" }
+            { pattern: /^[a-zA-Z\s]*$/, message: "Please enter a valid name!" }
             ]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label="Company Name"
-            // name="company_name"
-            // rules={[
-            //   { required: true, message: "Please input your company name!" },
-            // ]}
+          // name="company_name"
+          // rules={[
+          //   { required: true, message: "Please input your company name!" },
+          // ]}
           >
             <AutoComplete
               options={options} // List of company suggestions
@@ -575,24 +639,24 @@ export default LoginOne;
 
 {
   /* <Row justify="center">
-					<Col xs={20} sm={20} md={20} lg={7}> */
+          <Col xs={20} sm={20} md={20} lg={7}> */
 }
 {
   /* <Card>
-							<div className="my-4">
-								<div className="text-center">
-									<img className="img-fluid" src={`/img/${theme === 'light' ? 'logo.png': 'logo-white.png'}`} alt="" />
-									<p>Don't have an account yet? <a href="/auth/register-1">Sign Up</a></p>
-								</div>
-								<Row justify="center">
-									<Col xs={24} sm={24} md={20} lg={20}>
-										
-									</Col>
-								</Row>
-							</div>
-						</Card> */
+              <div className="my-4">
+                <div className="text-center">
+                  <img className="img-fluid" src={`/img/${theme === 'light' ? 'logo.png': 'logo-white.png'}`} alt="" />
+                  <p>Don't have an account yet? <a href="/auth/register-1">Sign Up</a></p>
+                </div>
+                <Row justify="center">
+                  <Col xs={24} sm={24} md={20} lg={20}>
+                  	
+                  </Col>
+                </Row>
+              </div>
+            </Card> */
 }
 {
   /* </Col>
-				</Row> */
+        </Row> */
 }
