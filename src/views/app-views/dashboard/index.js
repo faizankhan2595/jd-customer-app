@@ -11,6 +11,7 @@ import PieChartWidget from 'components/shared-components/pieChartWidget/PieChart
 import LineChart from 'components/shared-components/lineChart/LineChart'
 import BarChart from 'components/shared-components/BarChart/BarChart'
 import { axiosInstance } from 'App'
+import GoogleMapWithMarkers from 'components/shared-components/Map/googleMap'
 
 const Dashboard = () => {
 	const [cardData, setCardData] = useState([
@@ -356,9 +357,9 @@ const Dashboard = () => {
 				</div>
 			</Card>
 
-			{/* <Card title="Machine Locations">
-
-			</Card> */}
+			<Card title="Machine Locations">
+						<GoogleMapWithMarkers data={[]}/>
+			</Card>
 		</div>
 	)
 }
