@@ -8,6 +8,7 @@ import Icon4 from "assets/OrderDetail/perm_media_black_24dp 1.png"
 import SampleImage from "assets/OrderDetail/360_F_185851253_EmJWmKOrReArl27PN6bVVV5fOanRiCCm 1.png"
 import Icon5 from "assets/OrderDetail/task_black_24dp (4) 1.png"
 import Icon6 from "assets/OrderDetail/analytics-icon 1.png"
+import SurveyNotFoundImage from "assets/images/—Pngtree—not found_5408094 (1) 1.png";
 import { useHistory, useParams } from 'react-router-dom/cjs/react-router-dom'
 import { axiosInstance } from 'App'
 import moment from 'moment'
@@ -51,6 +52,17 @@ function Index() {
   useEffect(()=>{
     getData();
   },[])
+
+  const getTimelineStatus = (time_item, i) => {
+    if(time_item.status == 1) {
+      return "Order Created"
+    }
+    if(time_item.status == 2) {
+      return "Survey Scheduled"
+    }
+    return "Timeline "+(i+1)
+  }
+
   return (
     <div>
       <h4> <SettingOutlined /><span
@@ -368,7 +380,7 @@ function Index() {
             </div>
           }>
 
-            <div style={{
+            {surveyData.created_at ? <div style={{
               display: "flex",
               justifyContent: "space-between",
               flexWrap: "wrap",
@@ -487,7 +499,20 @@ function Index() {
                 }} type="primary">Save</Button>
               </div> */}
 
-            </div>
+            </div> : 
+            (<div className="d-flex flex-column justify-content-center mt-3">
+              <img
+                style={{
+                  width: "200px",
+                  margin: "auto",
+                }}
+                src={SurveyNotFoundImage}
+                alt="..."
+              />
+              <p className="text-center mt-3">
+                Survey is not scheduled yet!{" "}
+              </p>
+            </div>)}
 
           </Card>
         </div>
@@ -556,7 +581,8 @@ function Index() {
                   order.timeline?.map((item,i)=>{
                     return (
                       <Timeline.Item>
-                        <div>Timeline{i+1}</div>
+                        {/* <div>Timeline{i+1}</div> */}
+                        <div>{getTimelineStatus(item, i)}</div>
                         <div>{moment(item.created_at).format("DD-MM-YYYY hh:mmA")}</div>
                       </Timeline.Item>
                     )
