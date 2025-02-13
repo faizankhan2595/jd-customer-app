@@ -10,7 +10,8 @@ import utils from "utils";
 import { onMobileNavToggle } from "redux/actions/Theme";
 import { axiosInstance } from "App";
 import { role } from "utils/role";
-import { LogoutOutlined } from "@ant-design/icons";
+import { EditOutlined, LogoutOutlined } from "@ant-design/icons";
+import { useHistory } from "react-router-dom/cjs/react-router-dom";
 
 const { SubMenu } = Menu;
 const { useBreakpoint } = Grid;
@@ -57,19 +58,19 @@ const SideNavContent = (props) => {
         return value === "null" || value === null ? null : value;
       };
       const name = getLocalStorageItem("name");
-const parent_id = getLocalStorageItem("parent_id");
-const company_name = getLocalStorageItem("company_name");
-const user_id = getLocalStorageItem("user_id");
-const role = getLocalStorageItem("role");
+      const parent_id = getLocalStorageItem("parent_id");
+      const company_name = getLocalStorageItem("company_name");
+      const user_id = getLocalStorageItem("user_id");
+      const role = getLocalStorageItem("role");
 
-     
+
 
       localStorage.setItem("name", data.data.item.name);
       localStorage.setItem("parent_id", data.data.item.parent_id);
       localStorage.setItem("company_name", data.data.item.company_name);
       localStorage.setItem('user_id', data.data.item.id);
       localStorage.setItem("role", data.data.item.role_id);
-      if(name!=data.data.item.name || parent_id!=data.data.item.parent_id || company_name!=data.data.item.company_name ||  company_name!=data.data.item.company_name || user_id!=data.data.item.id || role!=data.data.item.role_id){
+      if (name != data.data.item.name || parent_id != data.data.item.parent_id || company_name != data.data.item.company_name || company_name != data.data.item.company_name || user_id != data.data.item.id || role != data.data.item.role_id) {
         window.location.reload();
       }
 
@@ -80,6 +81,8 @@ const role = getLocalStorageItem("role");
   useEffect(() => {
     getData();
   }, []);
+
+  const history = useHistory();
   return (
     <Menu
       theme={sideNavTheme === SIDE_NAV_LIGHT ? "light" : "dark"}
@@ -92,35 +95,44 @@ const role = getLocalStorageItem("role");
       }
     >
 
-       
-      <div className="profileCard" style={{ width: "100%" }}>
-      <Dropdown
-  overlay={
-    <Menu>
-      <Menu.Item
-        key="profile"
-        onClick={() => {
-          localStorage.clear(); // Clear localStorage
-          window.location.href = "/"; // Redirect to home
-        }}
-      >
-        <LogoutOutlined />
-        <span>Logout</span>
-      </Menu.Item>
-    </Menu>
-  }
-  placement="bottomCenter"
->
 
-        <img
-          className="sideNavUserImage"
-          src={`https://api.dicebear.com/9.x/initials/svg?seed=${localStorage.getItem("name")}`}
-          alt="..."
-        />
+      <div className="profileCard" style={{ width: "100%" }}>
+        <Dropdown
+          overlay={
+            <Menu>
+              <Menu.Item
+                key="edit"
+                onClick={() => {
+                  history.push(`/app/user-management/user-accounts/edit/${localStorage.getItem('user_id')}`);
+                }}
+              >
+                <EditOutlined />
+                <span>Edit Profile</span>
+              </Menu.Item>
+              <Menu.Item
+                key="profile"
+                onClick={() => {
+                  localStorage.clear(); // Clear localStorage
+                  window.location.href = "/"; // Redirect to home
+                }}
+              >
+                <LogoutOutlined />
+                <span>Logout</span>
+              </Menu.Item>
+            </Menu>
+          }
+          placement="bottomCenter"
+        >
+
+          <img
+            className="sideNavUserImage"
+            src={`https://api.dicebear.com/9.x/initials/svg?seed=${localStorage.getItem("name")}`}
+            alt="..."
+          />
         </Dropdown>
         <h4 className="text-center mt-3 mb-1 text-white">{
           localStorage.getItem("name")
-          }</h4>
+        }</h4>
         <p
           style={{ fontSize: "12px", color: "#65b0f8" }}
           className="text-center mt-0"

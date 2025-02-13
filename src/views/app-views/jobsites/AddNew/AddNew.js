@@ -3,7 +3,9 @@ import { Button, Card, Form, Input, InputNumber, message, Select, Switch, Tabs }
 import { Option } from 'antd/lib/mentions';
 import { axiosInstance } from 'App';
 import { UploadFileIcon } from 'assets/svg/icon';
-import React, { useEffect, useState } from 'react'
+import axios from 'axios';
+import { CountryContext } from 'CountryContext';
+import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom/cjs/react-router-dom';
 import CountrySelector from 'utils/CountrySelector';
 import PhoneCode from 'utils/PhoneCode';
@@ -19,6 +21,7 @@ function AddNew() {
     const history = useHistory();
     const { id } = useParams();
     const [selectedFiles, setSelectedFiles] = useState([]);
+    const { countryList } = useContext(CountryContext);
     const handleFileSelect = (event) => {
         const fileList = event.target.files;
         const newSelectedFiles = [];
@@ -112,6 +115,46 @@ function AddNew() {
                 }))
                 setCountryCode(data.phone_code);
 
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    // const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${API_KEY}`;
+    const getLatitudeLongitude = async (
+    ) => {
+        let address = "";
+        if(form.getFieldValue("postal_code")){
+            address += form.getFieldValue("postal_code") + " ";
+        }
+        if(form.getFieldValue("block_number")){
+            address += form.getFieldValue("block_number") + " ";
+        }
+        if(form.getFieldValue("street_number")){
+            address += form.getFieldValue("street_number") + " ";
+        }
+        if(form.getFieldValue("unit_number")){
+            address += form.getFieldValue("unit_number") + " ";
+        }
+        if(form.getFieldValue("level_number")){
+            address += form.getFieldValue("level_number") + " ";
+        }
+        if(form.getFieldValue("country")){
+            address += countryList.find((item) => item.id == form.getFieldValue("country"))?.name;
+        }
+
+
+        try {
+            const res = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+                address
+            )}&key=${process.env.REACT_APP_GOOGLE_MAP}`);
+
+            if (res.data.results.length > 0) {
+                const { lat, lng } = res.data.results[0].geometry.location;
+                form.setFieldsValue({
+                    latitude: lat,
+                    longitude: lng
+                })
             }
         } catch (error) {
             console.log(error);
@@ -239,7 +282,9 @@ function AddNew() {
                                     }
                                     ]}
                                 >
-                                    <Input placeholder="Postal Code" style={{ width: '100%' }} />
+                                    <Input placeholder="Postal Code" style={{ width: '100%' }}
+                                        onChange={getLatitudeLongitude}
+                                    />
                                 </Form.Item>
                                 <Form.Item style={{
                                     width: "45%"
@@ -248,7 +293,7 @@ function AddNew() {
                                     name="block_number"
                                     rules={[{ required: true, message: 'Please enter the block number!' }]}
                                 >
-                                    <InputNumber placeholder="Block Number" style={{ width: '100%' }} />
+                                    <InputNumber placeholder="Block Number" onChange={getLatitudeLongitude} style={{ width: '100%' }} />
                                 </Form.Item>
                             </div>
 
@@ -263,25 +308,19 @@ function AddNew() {
                                     label={'Street Number'}
                                     name="street_number"
                                     rules={[{ required: true, message: 'Please enter the street number!' }
-                                        , {
-                                        pattern: new RegExp(/^[0-9\b]+$/),
-                                        message: "Please enter valid street number",
-                                    }
+                                     
                                     ]}
                                 >
-                                    <Input placeholder="Street Number" style={{ width: '100%' }} />
+                                    <Input onChange={getLatitudeLongitude} placeholder="Street Number" style={{ width: '100%' }} />
                                 </Form.Item>
                                 <Form.Item style={{
                                     width: "45%"
                                 }}
                                     label={'Unit Number'}
                                     name="unit_number"
-                                    rules={[{ required: true, message: 'Please enter the unit number!' }, {
-                                        pattern: new RegExp(/^[0-9\b]+$/),
-                                        message: "Please enter valid unit number",
-                                    }]}
+                                    rules={[{ required: true, message: 'Please enter the unit number!' }]}
                                 >
-                                    <Input placeholder='Unit Number' style={{ width: '100%' }} />
+                                    <Input onChange={getLatitudeLongitude} placeholder='Unit Number' style={{ width: '100%' }} />
                                 </Form.Item>
                             </div>
                             <div style={{
@@ -295,13 +334,10 @@ function AddNew() {
                                     label={'Level Number'}
                                     name="level_number"
                                     rules={[{ required: true, message: 'Please enter the level number!' },
-                                    {
-                                        pattern: new RegExp(/^[0-9\b]+$/),
-                                        message: "Please enter valid level number",
-                                    }
+                                   
                                     ]}
                                 >
-                                    <Input placeholder="Level Number" style={{ width: '100%' }} />
+                                    <Input onChange={getLatitudeLongitude} placeholder="Level Number" style={{ width: '100%' }} />
                                 </Form.Item>
                                 <Form.Item style={{
                                     width: "45%"
@@ -310,9 +346,42 @@ function AddNew() {
                                     name="country"
                                     rules={[{ required: true, message: 'Please select a country!' }]}
                                 >
-                                    <CountrySelector />
+                                    <CountrySelector onChange={
+                                        (e) => {
+                                            form.setFieldsValue({
+                                                country: e
+                                            })
+                                            getLatitudeLongitude(); 
+                                        }
+                                    } 
+                                    />
                                 </Form.Item>
                             </div >
+                            <div style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                marginBottom: "20px"
+                            }}>
+                                <Form.Item style={{
+                                    width: "45%"
+                                }}
+                                    label={'Latitude'}
+                                    name="latitude"
+                                    rules={[{ required: true, message: 'Please input Latitude!' }]}
+                                
+                                >
+                                    <Input disabled placeholder="Latitude" style={{ width: '100%' }} />
+                                </Form.Item>
+                                <Form.Item style={{
+                                    width: "45%"
+                                }}
+                                    label={'Longitude'}
+                                    name="longitude"
+                                    rules={[{ required: true, message: 'Please input Longitude!' }]}
+                                >
+                                    <Input disabled placeholder='Longitude' style={{ width: '100%' }} />
+                                </Form.Item>
+                            </div>
 
                             <div style={{
                                 display: "flex",
