@@ -113,3 +113,12 @@ export const TechnicianMangementCsv = [
     {label:"Email ID",key:"email"},
     {label:"Status",key:"status"}
 ]
+
+export const JobsitesCsv = [
+    { label: "Id", key: "id" },
+    {label: "Jobsite Name", key:"name"},
+    {label: "Area", key:"area"},
+    {label: "Mobile Number", key:"phone_no"},
+    {label: "Created On", key:"created_at"},
+    {label: "Status", key:"status"}
+]

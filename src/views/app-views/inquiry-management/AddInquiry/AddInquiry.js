@@ -153,7 +153,7 @@ function AddInquiry() {
           }}
         >
           {" "}
-          Order Management
+          Inquiry Management
         </span>{" "}
         / Create New Inquiry{" "}
       </h4>

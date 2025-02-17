@@ -10,7 +10,8 @@ import { Link } from 'react-router-dom/cjs/react-router-dom.min'
 import { axiosInstance } from 'App'
 import moment from 'moment'
 import { useHistory } from 'react-router-dom/cjs/react-router-dom'
-// import { useHistory } from 'react-router-dom/cjs/react-router-dom'
+import { JobsitesCsv } from "constants/Headers";
+import Csv from "utils/Csv";
 
 const { Option } = Select;
 
@@ -24,6 +25,7 @@ const Jobsites = () => {
   const [alertModal, setAlertModal] = useState(false)
   const [searchText, setSearchText] = useState('');
   const [selectedDashboards, setSelectedDashboards] = useState([]);
+  const [csvData, setCSVData] = useState([]);
   // const [data, setData] = useState([]);
   const handleCancel = () => {
     setModalVisible(false);
@@ -75,6 +77,17 @@ const Jobsites = () => {
       setLoading(true)
       const resp = await axiosInstance.get(`/api/web/jobsites${url}`);
       setData(resp.data.items);
+
+      setCSVData(resp.data.items.map((item)=>{
+        return {
+          id: item.id,
+          name: item.jobsite_name,
+          area: item.operational_area.area_name,
+          phone_no: item.phone_code + ' ' + item.phone_no,
+          created_at: moment(item.created_at).format('DD-MM-YYYY'),
+          status: item.status===1?"Active":"Inactive",
+        }
+      }))
       setLoading(false)
     } catch (err) {
       console.log(err)
@@ -306,6 +319,10 @@ const Jobsites = () => {
     </Menu>
   );
 
+  const exportHandler = () => {
+
+  }
+
 
 
   return (
@@ -336,7 +353,8 @@ const Jobsites = () => {
               Filters
             </Button>
           </Filter>
-          {/* <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" >Export</Button> */}
+          <Csv header={JobsitesCsv} data={csvData} filename={"Jobsites List"} />
+          {/* <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" onClick={exportHandler}>Export</Button> */}
         </div>
         <div className="mb-2 d-flex align-items-center">
           <Button
