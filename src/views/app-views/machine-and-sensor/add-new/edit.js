@@ -11,7 +11,7 @@ const AddNewMachine = () => {
   const history = useHistory();
   const [form] = Form.useForm();
   const { id } = useParams();
-  const [machineStatus, setMachineStatus] = useState(false);
+  const [machineStatus, setMachineStatus] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState([]);
 
   const handleFileSelect = (event) => {
@@ -309,7 +309,7 @@ const AddNewMachine = () => {
           </Row>
 
           <Row gutter={16}>
-            <Col span={12}>
+           {/* <Col span={12}>
               <Form.Item
                 label="Year"
                 name="year"
@@ -317,7 +317,7 @@ const AddNewMachine = () => {
               >
                 <Input type="number" />
               </Form.Item>
-            </Col>
+             </Col>  */}
             <Col span={12}>
               <Form.Item
                 label="Equipment"

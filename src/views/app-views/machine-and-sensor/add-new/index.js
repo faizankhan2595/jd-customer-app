@@ -15,7 +15,7 @@ const AddNewMachine = () => {
   const history = useHistory();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [machineStatus, setMachineStatus] = useState(false);
+  const [machineStatus, setMachineStatus] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [customerData, setCustomerData] = useState([]);
   const [jobSiteData, setJobSiteData] = useState([]);
@@ -70,6 +70,7 @@ const AddNewMachine = () => {
         pictures:file,
         machine_status:machineStatus,
         year: values.year ? moment(values.year).format('YYYY') : null,
+        user_id:localStorage.getItem("parent_id")==="null"?localStorage.getItem("user_id"):localStorage.getItem("parent_id")
     };
 
     if(!id){
@@ -375,16 +376,16 @@ const AddNewMachine = () => {
           </Row>
 
           <Row gutter={16}>
-            <Col span={12}>
+            {/* <Col span={12}>
               <Form.Item
                 label="Year"
                 name="year"
                 rules={[{ required: true, message: 'Please enter Year' }]}
               >
-                {/* <Input type="number" /> */}
+               
                 <DatePicker picker="year" format={"YYYY"} />
               </Form.Item>
-            </Col>
+            </Col> */}
             <Col span={12}>
               <Form.Item
                 label="Equipment"
