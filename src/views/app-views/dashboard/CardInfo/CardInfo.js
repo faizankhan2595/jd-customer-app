@@ -5,7 +5,7 @@ function CardInfo({ color, image, backgroundImage, value, heading }) {
         <div
             style={{
                 borderRadius: "10px",
-                width: "23%",
+                width: "32%",
                 backgroundColor: color,
 
                 color: "white",

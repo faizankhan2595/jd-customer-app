@@ -1,6 +1,6 @@
 import { SettingOutlined } from '@ant-design/icons'
 import { Button, Card, Empty, Input, Tag, Timeline } from 'antd'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import Icon1 from "assets/OrderDetail/question (4) 1.png"
 import Icon2 from "assets/OrderDetail/precision_manufacturing_black_24dp 1 (1).png"
 import Icon3 from "assets/OrderDetail/question (4) 1.png"
@@ -12,10 +12,12 @@ import SurveyNotFoundImage from "assets/images/—Pngtree—not found_5408094 (1
 import { useHistory, useParams } from 'react-router-dom/cjs/react-router-dom'
 import { axiosInstance } from 'App'
 import moment from 'moment'
+import { CountryContext } from 'CountryContext'
 
 function Index() {
   const history = useHistory()
   const {id} = useParams();
+  const {countryList} = useContext(CountryContext);
   const [order, setOrder] = useState({});
   const [surveyData, setSurveyData] = useState({
     "id": 0,
@@ -224,7 +226,7 @@ function Index() {
                 }}>Level Number</div>
                 <div>{order.level_number}</div>
               </div>
-              {/* <div style={{
+              <div style={{
                 width: "45%",
                 color: "#000"
               }}>
@@ -232,8 +234,11 @@ function Index() {
                   fontWeight: "bold",
                   marginBottom: "10px"
                 }}>Country</div>
-                <div>Singapore</div>
-              </div> */}
+                <h5>
+                {/* {data.country} */}
+                {countryList.find((country) => country.id == order.country)?.name}
+              </h5>
+              </div>
               <div style={{
                 width: "45%",
                 color: "#000"
@@ -323,40 +328,44 @@ function Index() {
               gap: "40px"
             }}>
               {
-                order.machine_faults?.map((item,i)=>{
-                 return <div style={{
-                    width: "80%",
-                    color: "#000"
-                  }}>
-                   <Card>
-                        <div>
-                          <div
-                            style={{
-                              fontWeight: "bold",
-
-                              // color:"black"
-                            }}
-                          >
-                            Fault{" "}
+                order.faults?.length>0 ?               
+                  order.machine_faults?.map((item,i)=>{
+                   return <div style={{
+                      width: "80%",
+                      color: "#000"
+                    }}>
+                     <Card>
+                          <div>
+                            <div
+                              style={{
+                                fontWeight: "bold",
+  
+                                // color:"black"
+                              }}
+                            >
+                              Fault{" "}
+                            </div>
+                            {item.fault}
                           </div>
-                          {item.fault}
-                        </div>
-                        <div>
-                          <div
-                            style={{
-                              fontWeight: "bold",
-                              marginTop: "10px",
-                              // color:"black"
-                            }}
-                          >
-                            Fault Detail
+                          <div>
+                            <div
+                              style={{
+                                fontWeight: "bold",
+                                marginTop: "10px",
+                                // color:"black"
+                              }}
+                            >
+                              Fault Detail
+                            </div>
+                            {item.faultDetails}
                           </div>
-                          {item.faultDetails}
-                        </div>
-                      </Card>
-                  </div>
-                 
-                })
+                        </Card>
+                    </div>
+                   
+                  })
+                :<Empty style={{
+                  width: "100%",
+                }}/>
               }
             </div>
 

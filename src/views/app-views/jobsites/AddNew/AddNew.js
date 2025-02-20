@@ -152,8 +152,8 @@ function AddNew() {
             if (res.data.results.length > 0) {
                 const { lat, lng } = res.data.results[0].geometry.location;
                 form.setFieldsValue({
-                    latitude: lat,
-                    longitude: lng
+                    latitude: lat+"",
+                    longitude: lng+""
                 })
             }
         } catch (error) {

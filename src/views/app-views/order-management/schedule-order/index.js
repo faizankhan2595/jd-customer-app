@@ -319,6 +319,16 @@ const ScheduleOrder = () => {
                 plugins={[dayGridPlugin, timeGridPlugin]}
                 initialView="timeGridWeek"
                 height={"auto"}
+                views={{
+                    dayGridMonth: { buttonText: "Month" },
+                    timeGridWeek: { buttonText: "Week" },
+                    timeGridDay: { buttonText: "Day" },
+                }}
+                buttonText={{
+                    today: "Today",
+                }}
+            allDayText="All Day"
+            
                 events={data}
                 datesSet={(info) => {
                     // Fetch events whenever calendar view changes
@@ -328,7 +338,7 @@ const ScheduleOrder = () => {
                   }}
                 headerToolbar={{
                     left: "today,prev,next",
-                    center: "timeGridDay,timeGridWeek,dayGridMonth",
+                    center: "dayGridMonth,timeGridWeek,timeGridDay",
                     right: "title",
                 }}
                 eventContent={renderEventContent}
