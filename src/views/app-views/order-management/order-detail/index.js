@@ -1,4 +1,4 @@
-import { SettingOutlined } from '@ant-design/icons'
+import { EyeOutlined, SettingOutlined } from '@ant-design/icons'
 import { Button, Card, Empty, Input, Tag, Timeline } from 'antd'
 import React, { useContext, useEffect, useState } from 'react'
 import Icon1 from "assets/OrderDetail/question (4) 1.png"
@@ -13,12 +13,14 @@ import { useHistory, useParams } from 'react-router-dom/cjs/react-router-dom'
 import { axiosInstance } from 'App'
 import moment from 'moment'
 import { CountryContext } from 'CountryContext'
+import { ImageIcon, UploadFileIcon } from 'assets/svg/icon'
 
 function Index() {
   const history = useHistory()
   const {id} = useParams();
   const {countryList} = useContext(CountryContext);
   const [order, setOrder] = useState({});
+  const [fileData, setFileData] = useState([]);
   const [surveyData, setSurveyData] = useState({
     "id": 0,
     "user_id": 0,
@@ -38,11 +40,16 @@ function Index() {
     "is_deleted": 0,
     "technician": ""
 });
+const getMachineImage = async (id) => {
+  const res = await axiosInstance.get(`api/admin/machines/${id}`);
+  setFileData(res.data.item.pictures);
+}
   const getData = async () => {
     try{
       const data = await axiosInstance.get(`/api/admin/orders/${id}`);
       // orders/${id}
       const order = data.data.item;
+      getMachineImage(order.machine_id);
       setOrder(order);
       // const order = data.data.items.find((item)=>item.id == id);
       // setOrder(order);
@@ -532,7 +539,7 @@ function Index() {
             <div style={{
               display: "flex",
               gap: "10px",
-
+              overflow:"auto" ,height:"100%" ,
               alignItems: "center"
             }}>
               <img src={Icon4} />
@@ -545,29 +552,77 @@ function Index() {
           }>
 
             <div>
-              {
-              order.files?.length>0?  order.files?.map((item,i)=>{
-                  <div style={{
-                    // outline-style: dashed;
-                    // outline-color: #E6EBF1;
-                    // border-radius: 12px;
-                    outlineStyle: "dashed",
-                    outlineColor: "#E6EBF1",
-                    borderRadius: "12px",
-                    padding: "20px",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-    
-                  }}>
-                    <img src={item.file_path} />
-                  </div>
-                }):<Empty/>
-              }
+            {
+                  fileData.length > 0 ? fileData?.map((item, i) => {
+                    return <div style={{
+                      // outline-style: dashed;
+                      // outline-color: #E6EBF1;
+                      // border-radius: 12px;
+                      outlineStyle: "dashed",
+                      outlineColor: "#E6EBF1",
+                      borderRadius: "12px",
+                      padding: "20px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+
+                    }}>
+                       <img style={{
+                        maxWidth:"100%"
+                      }} src={item.file_url} />
+                      
+                    </div>
+                  }) : <Empty />
+                }
             </div>
 
           </Card>
+          <div style={{ height: "35%", paddingBottom: "0.6rem" }}>
+            <div
+              style={{ minHeight: "100%" }}
+              className="p-3 bg-white border rounded ml-1 customimgUploader"
+            >
+              <h4 className="d-flex m-0 mb-2">
+                <ImageIcon />
+                <span className="ml-2">Orders Document</span>
+              </h4>
+              <div>
+  
+                 <div className="mt-4">
+                      {order?.files?.length > 0 && (
+                        <ul className="p-0" style={{ width: "100%" }}>
+                          {order.files.map((file, i) => (
+                            <li key={i} className="my-3" style={styles.files}>
+                              {" "}
+                              <div className="d-flex align-items-center">
+                                <UploadFileIcon />{" "}
+                                <span className="ml-2">Document #{i+1} </span>{" "}
+                                {/* <span className="ml-5">
+                                            {file.url ? (  <EyeOutlined style={{ cursor: "pointer" }} onClick={() => window.open(file.url)} />) : null}
+                                        </span> */}
+                              </div>
+                              <div>
+                                {
+                                  file.file_url && <span className="ml-3 " style={{
+                                    cursor: "pointer"
+                                  }} onClick={() => {
+                                    window.open(file.file_url, '_blank')
+                                  }}>
+                                    <EyeOutlined />
+                                  </span>
+                                }
+                               
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                   
+                  </div>
+              </div>
 
+            </div>
+          </div>
           <Card title={
             <div style={{
               display: "flex",
@@ -647,3 +702,37 @@ function Index() {
 }
 
 export default Index
+
+const styles = {
+  files: {
+    listStyle: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '13px',
+    border: '1px solid lightblue',
+    padding: '10px',
+    borderRadius: '9px',
+    background: '#0093ff0a',
+  },
+  uploadFile: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0,
+  },
+  '.uploadFile::-webkit-file-upload-button': {
+    visibility: 'hidden',
+  },
+  '.uploadFile::before': {
+    content: "'Drag & Drop'",
+    display: 'inline-block',
+    padding: '10px',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    cursor: 'pointer',
+  },
+  '.uploadFile:hover::before': {
+    backgroundColor: '#ccc',
+  },
+};
