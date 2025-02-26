@@ -12,11 +12,13 @@ import moment from 'moment'
 import { useHistory } from 'react-router-dom/cjs/react-router-dom'
 import { JobsitesCsv } from "constants/Headers";
 import Csv from "utils/Csv";
+import ConfirmModal from 'components/shared-components/ConfirmModal'
 
 const { Option } = Select;
 
 const Jobsites = () => {
-
+  const [modalVisible2, setModalVisible2] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
   const history = useHistory();
   const [modalVisible, setModalVisible] = useState(false);
   const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false)
@@ -30,6 +32,10 @@ const Jobsites = () => {
   const handleCancel = () => {
     setModalVisible(false);
   };
+  const handleYesConfirmation2 = () => {
+    deleteRow(deleteId);
+    setModalVisible2(false);
+  }
   const handleCancelConfirmation = () => {
     setDeleteConfirmationModal(false)
   }
@@ -185,19 +191,24 @@ const Jobsites = () => {
       }}>
         <EditOutlined /> Edit
       </Menu.Item>
-      <Popconfirm
+      {/* <Popconfirm
         title={"Are you sure you want to delete this item?"}
         description={"This action cannot be undone."}
         okText="Yes"
         cancelText="No"
         onConfirm={() => deleteRow(record)}
-      >
-        <Menu.Item key="delete">
+      > */}
+        <Menu.Item key="delete"
+          onClick={() => {
+            setModalVisible2(true)
+            setDeleteId(record)
+          }}
+        >
           <span style={{ display: "flex", gap: "8px", alignItems: "center" }}>
             <DeleteOutlined /> Delete
           </span>
         </Menu.Item>
-      </Popconfirm>
+      {/* </Popconfirm> */}
       {/* <Menu.Item onClick={() => setModalVisible(true)}>
         <AccountStatusIcon /> Account Status
       </Menu.Item> */}
@@ -407,7 +418,12 @@ const Jobsites = () => {
           </Button>
         </div>
       </Modal>
-
+      <ConfirmModal
+        deleteConfirmationModal={modalVisible2}
+        setDeleteConfirmationModal={setModalVisible2}
+        handleYesConfirmation={handleYesConfirmation2}
+        msg={'Do you want to delete this Jobsite?'}
+      />     
     </div>
   )
 }

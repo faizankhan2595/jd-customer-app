@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom/cjs/react-router-dom.min'
 import { axiosInstance } from 'App'
 import moment from 'moment'
 import { useHistory } from 'react-router-dom/cjs/react-router-dom'
+import ConfirmModal from 'components/shared-components/ConfirmModal'
 // import { useHistory } from 'react-router-dom/cjs/react-router-dom'
 
 const { Option } = Select;
@@ -17,6 +18,8 @@ const { Option } = Select;
 const OperationalAreas = () => {
 
   const history = useHistory();
+    const [modalVisible2, setModalVisible2] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false)
   const [selectedDashboards, setSelectedDashboards] = useState([]);
@@ -142,7 +145,10 @@ const OperationalAreas = () => {
   useEffect(() => {
     getData();
   }, [])
-
+  const handleYesConfirmation2 = () => {
+    deleteRow(deleteId);
+    setModalVisible2(false);
+  }
 
 
   const columns = [
@@ -210,19 +216,24 @@ const OperationalAreas = () => {
       }}>
         <EditOutlined /> Edit
       </Menu.Item>
-      <Popconfirm
+      {/* <Popconfirm
         title={"Are you sure you want to delete this item?"}
         description={"This action cannot be undone."}
         okText="Yes"
         cancelText="No"
         onConfirm={() => deleteRow(record)}
-      >
-        <Menu.Item key="delete">
+      > */}
+        <Menu.Item key="delete"
+          onClick={()=>{
+            setModalVisible2(true)
+            setDeleteId(record)
+          }}
+        >
           <span style={{ display: "flex", gap: "8px", alignItems: "center" }}>
             <DeleteOutlined /> Delete
           </span>
         </Menu.Item>
-      </Popconfirm>
+      {/* </Popconfirm> */}
       {/* <Menu.Item onClick={() => setModalVisible(true)}>
         <AccountStatusIcon /> Account Status
       </Menu.Item> */}
@@ -337,7 +348,12 @@ const OperationalAreas = () => {
           </Button>
         </div>
       </Modal>
-
+      <ConfirmModal
+        deleteConfirmationModal={modalVisible2}
+        setDeleteConfirmationModal={setModalVisible2}
+        handleYesConfirmation={handleYesConfirmation2}
+        msg={'Do you want to delete this Area?'}
+      />     
     </div>
   )
 }

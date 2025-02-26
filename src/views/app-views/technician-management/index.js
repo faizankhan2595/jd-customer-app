@@ -19,6 +19,7 @@ import SubMenu from "antd/lib/menu/SubMenu";
 import { CountryContext } from "CountryContext";
 import { TechnicianMangementCsv } from "constants/Headers";
 import Csv from "utils/Csv";
+import ConfirmModal from "components/shared-components/ConfirmModal";
 
 
 function TechnicianManagement() {
@@ -27,11 +28,18 @@ function TechnicianManagement() {
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [modalVisible2, setModalVisible2] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
   const { countryList } = useContext(CountryContext);
   const [data, setData] = useState([
     
     
   ])
+
+  const handleYesConfirmation = () => {
+    deleteRow(deleteId);
+    setModalVisible2(false);
+  }
   const [csvData, setCSVData] = useState([]);
   const getMenu = (record) => (
     <Menu>
@@ -43,19 +51,24 @@ function TechnicianManagement() {
       {/* <Menu.Item key="delete" onClick={() => handleDelete(record.key)}>
         <DeleteOutlined /> Delete
       </Menu.Item> */}
-        <Popconfirm
+        {/* <Popconfirm
         title={"Are you sure you want to delete this item?"}
         description={"This action cannot be undone."}
         okText="Yes"
         cancelText="No"
         onConfirm={() => deleteRow(record)}
-      >
-        <Menu.Item key="delete">
+      > */}
+        <Menu.Item key="delete"
+        onClick={()=>{
+          setModalVisible2(true)
+          setDeleteId(record)
+        }}
+        >
           <span style={{ display: "flex", gap: "8px", alignItems: "center" }}>
             <DeleteOutlined /> Delete
           </span>
         </Menu.Item>
-      </Popconfirm>
+      {/* </Popconfirm> */}
     </Menu>
   );
 
@@ -337,7 +350,12 @@ function TechnicianManagement() {
         loading={loading}
         columns={columns} dataSource={data} />
     </div>
-
+    <ConfirmModal
+        deleteConfirmationModal={modalVisible2}
+        setDeleteConfirmationModal={setModalVisible2}
+        handleYesConfirmation={handleYesConfirmation}
+        msg={'Do you want to delete this Technician?'}
+      />
     </div>
   );
 }
