@@ -220,16 +220,6 @@ export const PhoneCodeJson = [
     code: "CN",
   },
   {
-    name: "Christmas Island",
-    dial_code: "+61",
-    code: "CX",
-  },
-  {
-    name: "Cocos (Keeling) Islands",
-    dial_code: "+61",
-    code: "CC",
-  },
-  {
     name: "Colombia",
     dial_code: "+57",
     code: "CO",
