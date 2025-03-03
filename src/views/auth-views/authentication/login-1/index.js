@@ -270,7 +270,7 @@ const LoginOne = (props) => {
           name: values.name,
           company_name: searchValue,
           email: values.email,
-          nric_fin_number: values.nric_fin_number
+          // nric_fin_number: values.nric_fin_number
         })
 
       }
@@ -282,7 +282,7 @@ const LoginOne = (props) => {
         name: values.name,
         company_name: searchValue,
         email: values.email,
-        nric_fin_number: values.nric_fin_number
+        // nric_fin_number: values.nric_fin_number
       });
     }
    
@@ -613,7 +613,7 @@ const LoginOne = (props) => {
           >
             <Input prefix={<MailOutlined className="text-primary" />} />
           </Form.Item>
-          <Form.Item
+          {/* <Form.Item
             name="nric_fin_number"
             label="NRIC/FIN Number"
             rules={[
@@ -628,7 +628,7 @@ const LoginOne = (props) => {
             ]}
           >
             <Input />
-          </Form.Item>
+          </Form.Item> */}
         </Form>
       </Modal>
     </div>
