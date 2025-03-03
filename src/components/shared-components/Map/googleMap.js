@@ -27,10 +27,10 @@ const GoogleMapWithMarkers = ({data}) => {
 
   return (
     <GoogleMap mapContainerStyle={mapContainerStyle} center={center} zoom={12}>
-     {markersData.map((marker) => (
+     {data.map((marker) => (
         <Marker
           key={marker.id}
-          position={{ lat: marker.lat, lng: marker.lng }}
+          position={{ lat: +marker.lat, lng:+marker.lng }}
           icon={{
             url: Circle, 
             scaledSize: new window.google.maps.Size(20, 20), 

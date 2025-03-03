@@ -118,6 +118,7 @@ const Dashboard = () => {
 	})
 
 	const [batteryCategories,setBatteryCategories] = useState([]);
+	const [mapData, setMapData] = useState([]);
 	
 	useEffect(() => {
 		const fetchData = async () => {
@@ -203,8 +204,21 @@ const Dashboard = () => {
 			}
 		};
 
+		const fetchMapData = async () => {
+		
+			
+			try {
+				const response = await axiosInstance.get(`api/admin/dashboard/map?customer_id=${localStorage.getItem("parent_id")==="null"?localStorage.getItem("user_id"):localStorage.getItem("parent_id")}`);
+				setMapData(response.data.item.markersData.filter(item => item.lat && item.lng));
+	
+			} catch (err) {
+				console.log(err)
+			}
+		}
+		fetchMapData();
 		fetchData();
 	}, []);
+	
 
 	return (
 		<div style={{
@@ -358,7 +372,7 @@ const Dashboard = () => {
 			</Card>
 
 			<Card title="Machine Locations">
-						<GoogleMapWithMarkers data={[]}/>
+						<GoogleMapWithMarkers data={mapData}/>
 			</Card>
 		</div>
 	)
