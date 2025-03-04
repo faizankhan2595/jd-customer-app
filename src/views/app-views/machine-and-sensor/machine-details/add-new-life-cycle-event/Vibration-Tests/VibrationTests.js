@@ -325,7 +325,10 @@ const VibrationTests = ({
                     onChange={(e) => {
                     setVibrationData((prev) => ({
                         ...prev,
-                        remarks: e.target.value,
+                        remarks: {
+                        check:null,
+                        value: e.target.value,
+                        },
                     }));
                     }}
                     cols={16}
@@ -380,7 +383,7 @@ const VibrationTests = ({
                                 <h4>Markings</h4>
                                 {image.image_markings.length > 0 ?
                                     image.image_markings.map((marking, index) => (
-                                        <div>
+                                        marking.text && <div>
                                             <b>{index+1}. </b>{marking.text}
                                         </div>
                                     ))

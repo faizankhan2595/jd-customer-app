@@ -327,7 +327,7 @@ const FlamePathDimension = ({
                                                     <h4>Markings</h4>
                                                     {image.image_markings.length > 0 ?
                                                         image.image_markings.map((marking, index) => (
-                                                            <div>
+                                                            marking.text && <div>
                                                                 <b>{index+1}. </b>{marking.text}
                                                             </div>
                                                         ))

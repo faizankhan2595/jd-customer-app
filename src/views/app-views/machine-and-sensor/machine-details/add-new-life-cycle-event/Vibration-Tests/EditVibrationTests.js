@@ -3,7 +3,6 @@ import { Button, Modal, Radio, Select, Input, Collapse, DatePicker, Form, messag
 import {
   EditColorIcon,
 } from "assets/svg/icon";
-import { Option } from "antd/lib/mentions";
 
 const EditVibrationTests = ({
     initialModalFormdata,
@@ -97,8 +96,8 @@ const EditVibrationTests = ({
                           })
                       }}
                   >
-                      <Option value="mm/s">mm/s</Option>
-                      <Option value="m/s">m/s<sup>2</sup></Option>
+                      <Select.Option value="mm/s">mm/s</Select.Option>
+                      <Select.Option value="m/s">m/s<sup>2</sup></Select.Option>
                   </Select>
               }
             />
@@ -155,8 +154,8 @@ const EditVibrationTests = ({
                           })
                       }}
                   >
-                      <Option value="mm/s">mm/s</Option>
-                      <Option value="m/s">m/s<sup>2</sup></Option>
+                      <Select.Option  value="mm/s">mm/s</Select.Option >
+                      <Select.Option  value="m/s">m/s<sup>2</sup></Select.Option >
                   </Select>
               }
             />
@@ -213,8 +212,8 @@ const EditVibrationTests = ({
                           })
                       }}
                   >
-                      <Option value="mm/s">mm/s</Option>
-                      <Option value="m/s">m/s<sup>2</sup></Option>
+                      <Select.Option  value="mm/s">mm/s</Select.Option >
+                      <Select.Option  value="m/s">m/s<sup>2</sup></Select.Option >
                   </Select>
               }
             />
@@ -271,8 +270,8 @@ const EditVibrationTests = ({
                           })
                       }}
                   >
-                      <Option value="mm/s">mm/s</Option>
-                      <Option value="m/s">m/s<sup>2</sup></Option>
+                      <Select.Option  value="mm/s">mm/s</Select.Option >
+                      <Select.Option  value="m/s">m/s<sup>2</sup></Select.Option >
                   </Select>
               }
             />
@@ -328,8 +327,8 @@ const EditVibrationTests = ({
                           })
                       }}
                   >
-                      <Option value="mm/s">mm/s</Option>
-                      <Option value="m/s">m/s<sup>2</sup></Option>
+                      <Select.Option  value="mm/s">mm/s</Select.Option >
+                      <Select.Option  value="m/s">m/s<sup>2</sup></Select.Option >
                   </Select>
               }
             />
@@ -384,8 +383,8 @@ const EditVibrationTests = ({
                           })
                       }}
                   >
-                      <Option value="mm/s">mm/s</Option>
-                      <Option value="m/s">m/s<sup>2</sup></Option>
+                      <Select.Option on value="mm/s">mm/s</Select.Option >
+                      <Select.Option  value="m/s">m/s<sup>2</sup></Select.Option >
                   </Select>
               }
             />

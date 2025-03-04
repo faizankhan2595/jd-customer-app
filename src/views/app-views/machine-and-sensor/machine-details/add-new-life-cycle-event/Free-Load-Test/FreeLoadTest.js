@@ -333,8 +333,12 @@ const FreeLoadTest = ({
                                 onChange={(e) => {
                                     setFreeLoadData((prev) => ({
                                         ...prev,
-                                        remarks: e.target.value
+                                        remarks: {
+                                        check:null,
+                                        value: e.target.value,
+                                        },
                                     }));
+                                
                                 }}
                                 cols={16} placeholder="Type Here..." />
                         </div>
@@ -397,7 +401,7 @@ const FreeLoadTest = ({
                                             <h4>Markings</h4>
                                             {image.image_markings.length > 0 ?
                                                 image.image_markings.map((marking, index) => (
-                                                    <div key={index}>
+                                                    marking.text && <div key={index}>
                                                         <b>{index+1}. </b>{marking.text}
                                                     </div>
                                                 ))

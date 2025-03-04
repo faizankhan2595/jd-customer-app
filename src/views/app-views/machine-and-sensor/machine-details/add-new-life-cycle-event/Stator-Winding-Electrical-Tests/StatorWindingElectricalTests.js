@@ -27,25 +27,6 @@ const StatorWindingElectricalTests = ({
     const [editStatus, setEditStatus] = useState(false);
     const { Panel } = Collapse;
 
-    const convertImageToBase64 = async (imageUrl, markings) => {
-        console.log("Image URL:", imageUrl);
-        try {
-          const response = await fetch(imageUrl, { mode: "cors" }); // Ensure CORS is allowed
-          const blob = await response.blob(); // Convert response to Blob
-          const reader = new FileReader();
-      
-          reader.readAsDataURL(blob);
-          reader.onloadend = () => {
-            let base64 = reader.result;
-            if(base64) {
-                UploadImageMarkingKonva(base64, markings);
-            }
-          };
-        } catch (error) {
-          console.error("Error fetching image:", error);
-        }
-      };
-
     const [modalName, setModalName] = useState("");
     const [editKey, setEditKey] = useState("");
     const [editData, setEditData] = useState("");
@@ -94,6 +75,25 @@ const StatorWindingElectricalTests = ({
             return ''
         }
     }
+
+    const convertImageToBase64 = async (imageUrl, markings) => {
+        try {
+            const response = await fetch(imageUrl, { mode: "cors" }); // Ensure CORS is allowed
+            const blob = await response.blob(); // Convert response to Blob
+            const reader = new FileReader();
+            
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => {
+            let base64 = reader.result;
+            if(base64) {
+                UploadImageMarkingKonva(base64, markings);
+            }
+          };
+        } catch (error) {
+          console.error("Error fetching image:", error);
+        }
+    };
+    
   return (
     <div className="normal-header-color">
         {editStatus && <EditStatorWindingElectricalTests modalName={modalName} editStatus={editStatus} setEditStatus={setEditStatus}
@@ -105,7 +105,7 @@ const StatorWindingElectricalTests = ({
                         <Collapse
                             key={i} // Added key prop to Collapse component
                             expandIconPosition={"end"}
-                            onChange={(data) => console.log(data)}
+                            // onChange={(data) => console.log(data)}
                             className="mb-3"
                         >
                             <Panel
@@ -227,19 +227,19 @@ const StatorWindingElectricalTests = ({
                                                             Edit Photo
                                                         </Button>
 
-                                                        {/* <Button className='mt-2 ml-2' onClick={() => {
-                                                                delSubUploadedPhoto(index, `Mechanical-Inspection ~ ${item?.title}`)
+                                                        <Button className='mt-2 ml-2' onClick={() => {
+                                                                delSubUploadedPhoto(index, `Stator-Winding ~ ${item?.title}`)
                                                             }}>
                                                             {" "}
                                                             Delete Photo
-                                                        </Button> */}
+                                                        </Button>
                                                     </div>
                                                 </div>
                                                 <div>
                                                     <h4>Markings</h4>
                                                     {image.image_markings.length > 0 ?
                                                         image.image_markings.map((marking, index) => (
-                                                            <div>
+                                                            marking.text && <div>
                                                                 <b>{index+1}. </b>{marking.text}
                                                             </div>
                                                         ))

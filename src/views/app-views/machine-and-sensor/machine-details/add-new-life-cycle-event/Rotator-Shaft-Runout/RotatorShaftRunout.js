@@ -62,11 +62,11 @@ const RotatorShaftRunout = ({
             
             reader.readAsDataURL(blob);
             reader.onloadend = () => {
-                let base64 = reader.result;
-                if(base64) {
-                    UploadImageMarkingKonva(base64, markings);
-                }
-            };
+            let base64 = reader.result;
+            if(base64) {
+                UploadImageMarkingKonva(base64, markings);
+            }
+          };
         } catch (error) {
           console.error("Error fetching image:", error);
         }
@@ -87,7 +87,7 @@ const RotatorShaftRunout = ({
                         <Collapse
                             key={i} // Added key prop to Collapse component
                             expandIconPosition={"end"}
-                            onChange={(data) => {}}
+                            // onChange={(data) => console.log(data)}
                             className="mb-3"
                         >
                             <Panel
@@ -200,19 +200,19 @@ const RotatorShaftRunout = ({
                                                             Edit Photo
                                                         </Button>
 
-                                                        {/* <Button className='mt-2 ml-2' onClick={() => {
+                                                        <Button className='mt-2 ml-2' onClick={() => {
                                                                 delSubUploadedPhoto(index, `Rotor-Shaft ~ ${item?.title}`)
                                                             }}>
                                                             {" "}
                                                             Delete Photo
-                                                        </Button> */}
+                                                        </Button>
                                                     </div>
                                                 </div>
                                                 <div>
                                                     <h4>Markings</h4>
                                                     {image.image_markings.length > 0 ?
                                                         image.image_markings.map((marking, index) => (
-                                                            <div>
+                                                            marking.text && <div>
                                                                 <b>{index+1}. </b>{marking.text}
                                                             </div>
                                                         ))

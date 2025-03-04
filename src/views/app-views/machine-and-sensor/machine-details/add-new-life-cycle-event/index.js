@@ -55,7 +55,6 @@ import marker_images from "./marker_images";
 import { UploadImage } from "utils/Upload";
 import { set } from "lodash";
 import UploadPhotos from "./Upload-Photos/UploadPhotos";
-import { Option } from "antd/lib/mentions";
 
 
 
@@ -3240,39 +3239,81 @@ const returnClass = (value) => {
     // console.log(i, type)
     if(img_section == 'Flame-Path') {
       let index = flamePathData.findIndex((e) => e.title == img_subsection)
-      let all_data = flamePathData
-      all_data[index].photos = all_data[index].photos.filter((e, ind) => ind !== i);
-      setFlamePathData(all_data);
+      // let all_data = flamePathData
+      // all_data[index].photos = all_data[index].photos.filter((e, ind) => ind !== i);
+      setFlamePathData((prevData) => {
+        return prevData.map((el,ind) => {
+          return {
+            ...el,
+            photos: ind == index ? el.photos.filter((e, ind) => ind !== i) : el.photos
+          }
+        })
+      });
     }
     if(img_section == 'Free-Volume') {
       let index = freeVolumeData.findIndex((e) => e.title == img_subsection)
-      let all_data = freeVolumeData
-      all_data[index].photos = all_data[index].photos.filter((e, ind) => ind !== i);
-      setFreeVolumeData(all_data);
+      // let all_data = freeVolumeData
+      // all_data[index].photos = freeVolumeData[index].photos.filter((e, ind) => ind !== i);
+      setFreeVolumeData((prevData) => {
+        return prevData.map((el,ind) => {
+          return {
+            ...el,
+            photos: ind == index ? el.photos.filter((e, ind) => ind !== i) : el.photos
+          }
+        })
+      });
     }
     if(img_section == 'Rotor-Shaft') {
       let index = rotatorShaftData.findIndex((e) => e.title == img_subsection)
-      let all_data = rotatorShaftData
-      all_data[index].photos = all_data[index].photos.filter((e, ind) => ind !== i);
-      setRotatorShaftData(all_data);
+      // let all_data = rotatorShaftData
+      // all_data[index].photos = all_data[index].photos.filter((e, ind) => ind !== i);
+      setRotatorShaftData((prevData) => {
+        return prevData.map((el,ind) => {
+          return {
+            ...el,
+            photos: ind == index ? el.photos.filter((e, ind) => ind !== i) : el.photos
+          }
+        })
+      });
     }
     if(img_section == 'Mechanical-Inspection') {
       let index = mechanicalInspectionData.findIndex((e) => e.title == img_subsection)
-      let all_data = mechanicalInspectionData
-      all_data[index].photos = all_data[index].photos.filter((e, ind) => ind !== i);
-      setMechanicalInspectionData(all_data);
+      // let all_data = mechanicalInspectionData
+      // all_data[index].photos = all_data[index].photos.filter((e, ind) => ind !== i);
+      setMechanicalInspectionData((prevData) => {
+        return prevData.map((el,ind) => {
+          return {
+            ...el,
+            photos: ind == index ? el.photos.filter((e, ind) => ind !== i) : el.photos
+          }
+        })
+      });
     }
     if(img_section == 'Auxiliary-Checks') {
       let index = auxiliariesChecksData.findIndex((e) => e.title == img_subsection)
-      let all_data = auxiliariesChecksData
-      all_data[index].photos = all_data[index].photos.filter((e, ind) => ind !== i);
-      setAuxiliariesChecksData(all_data);
+      // let all_data = auxiliariesChecksData
+      // all_data[index].photos = all_data[index].photos.filter((e, ind) => ind !== i);
+      setAuxiliariesChecksData((prevData) => {
+        return prevData.map((el,ind) => {
+          return {
+            ...el,
+            photos: ind == index ? el.photos.filter((e, ind) => ind !== i) : el.photos
+          }
+        })
+      });
     }
     if(img_section == 'Stator-Winding') {
       let index = statorWindingData.findIndex((e) => e.title == img_subsection)
-      let all_data = statorWindingData
-      all_data[index].photos = all_data[index].photos.filter((e, ind) => ind !== i);
-      setStatorWindingData(all_data);
+      // let all_data = statorWindingData
+      // all_data[index].photos = all_data[index].photos.filter((e, ind) => ind !== i);
+      setStatorWindingData((prevData) => {
+        return prevData.map((el,ind) => {
+          return {
+            ...el,
+            photos: ind == index ? el.photos.filter((e, ind) => ind !== i) : el.photos
+          }
+        })
+      });
     }
   };
 
@@ -3800,28 +3841,102 @@ const returnClass = (value) => {
       setMachineId(data.machine_id)
       
       // processControl
-      setGeneralProcess(data.process_control.generalProcess)
-      setRewinding(data.process_control.generalProcess)
-      setAssemblyAndFinalTest(data.process_control.assemblyAndFinalTest)
-      setDeliverToSite(data.process_control.generalProcess)
-      setRewinding(data.process_control.deliverToSite)
-      setOtherProcessControl(data.process_control.otherProcessControl)
+      let gen_keys = Object.keys(data.process_control.generalProcess);
+      let gen_data = {}
+      for(let key of gen_keys) {
+        gen_data[key] = {
+          ...data.process_control.generalProcess[key], 
+          start_date: data.process_control.generalProcess[key].start_date ? moment(data.process_control.generalProcess[key].start_date) : null, 
+          completion_date: data.process_control.generalProcess[key].completion_date ? moment(data.process_control.generalProcess[key].completion_date) : null
+        }
+      }
+      setGeneralProcess(gen_data);
+      // console.log(gen_data)
 
+      let rew_keys = Object.keys(data.process_control.rewinding);
+      let rew_data = {}
+      for(let key of rew_keys) {
+        rew_data[key] = {
+          ...data.process_control.rewinding[key], 
+          start_date: data.process_control.rewinding[key].start_date ? moment(data.process_control.rewinding[key].start_date) : null, 
+          completion_date: data.process_control.rewinding[key].completion_date ? moment(data.process_control.rewinding[key].completion_date) : null
+        }
+      }
+      setRewinding(rew_data);
+      // console.log(rew_data)
+
+      let asm_keys = Object.keys(data.process_control.assemblyAndFinalTest);
+      let asm_data = {}
+      for(let key of asm_keys) {
+        asm_data[key] = {
+          ...data.process_control.assemblyAndFinalTest[key], 
+          start_date: data.process_control.assemblyAndFinalTest[key].start_date ? moment(data.process_control.assemblyAndFinalTest[key].start_date) : null, 
+          completion_date: data.process_control.assemblyAndFinalTest[key].completion_date ? moment(data.process_control.assemblyAndFinalTest[key].completion_date) : null
+        }
+      }
+      setAssemblyAndFinalTest(asm_data);
+      // console.log(asm_data)
+
+      let dts_keys = Object.keys(data.process_control.deliverToSite);
+      let dts_data = {}
+      for(let key of dts_keys) {
+        dts_data[key] = {
+          ...data.process_control.deliverToSite[key], 
+          start_date: data.process_control.deliverToSite[key].start_date ? moment(data.process_control.deliverToSite[key].start_date) : null, 
+          completion_date: data.process_control.deliverToSite[key].completion_date ? moment(data.process_control.deliverToSite[key].completion_date) : null
+        }
+      }
+      setDeliverToSite(dts_data);
+      // console.log(dts_data)
+
+      let oth_data = {
+        ...data.process_control.otherProcessControl, 
+        date: data.process_control.otherProcessControl.date ? moment(data.process_control.otherProcessControl.date) : null, 
+      }
+      setOtherProcessControl(oth_data);
+      // console.log(oth_data)
+      // setOtherProcessControl(data.process_control.otherProcessControl)
+      
+      // parts renewal, job reference, & recieve and deliver data
       setPartsRenewal(data.parts_renewal)
       setJobReference(data.job_reference)
-      setReceiveAndDeliverData(data.receive_and_deliver_data)
+      setReceiveAndDeliverData(data.receive_and_deliver_data.map((item, index) => {
+        return {
+            ...item, 
+            dateReceived: item.dateReceived ? moment(item.dateReceived) : null,
+            dateRequested: item.dateRequested ? moment(item.dateRequested) : null,
+            dateDelivery: item.dateDelivery ? moment(item.dateDelivery) : null,
+        }
+      }));
 
       // machineData
       setMachineData(data.machine_data.machineData)
-      setOtherMachineData(data.machine_data.otherMachineData)
+      setOtherMachineData({
+        ...data.machine_data.otherMachineData, 
+        date: data.machine_data.otherMachineData.date ? moment(data.machine_data.otherMachineData.date) : null,
+      });
       setSelectedImages(data.machine_data.imagesData || []);
 
-      // initialConditionsAndPhysicalInspection
+      // Initial Conditions And Physical Inspection
       setInitialConditionAndPhysicalInspection(data.initial_conditions_and_physical_inspection.initialConditionsAndPhysicalInspection)
-      setOtherInitialData(data.initial_conditions_and_physical_inspection.otherInitialData)
+      setOtherInitialData({
+        ...data.initial_conditions_and_physical_inspection.otherInitialData, 
+        date: data.initial_conditions_and_physical_inspection.otherInitialData.date ? moment(data.initial_conditions_and_physical_inspection.otherInitialData.date) : null,
+      });
       setSelectedImages1(data.initial_conditions_and_physical_inspection.imagesData || []);
 
-      setStatorWindingData(data.stator_winding_data)
+      setStatorWindingData(data.stator_winding_data.map((e, index) => {
+        return {
+          ...data.stator_winding_data[index], 
+          data: data.stator_winding_data[index].data.map((el) => {
+            return {
+              ...el,
+              value: el.name == 'Date' && el.value ? moment(el.value) : el.value
+            }
+          }),
+        }
+      }));
+
       setAuxiliariesChecksData(data.auxiliaries_checks_data)
       setMechanicalInspectionData(data.mechanical_inspection_data)
       setRotatorShaftData(data.rotator_shaft_data)
@@ -6865,16 +6980,16 @@ const returnClass = (value) => {
               <div className="normal-header-color">
                 <Collapse
                   expandIconPosition={"end"}
-                  onChange={(data) => console.log(data)}
+                  // onChange={(data) => console.log(data)}
                   className="mb-3"
                 >
                   <Panel
                     header={
                       <>
                         General Process
-                        <Button className="bg-primary text-white customEditButton">
+                        {/* <Button className="bg-primary text-white customEditButton">
                           <EditOutlined /> Edit
-                        </Button>
+                        </Button> */}
                       </>
                     }
                     key="1"
@@ -7492,9 +7607,9 @@ const returnClass = (value) => {
                     header={
                       <>
                         Rewinding
-                        <Button className="bg-primary text-white customEditButton">
+                        {/* <Button className="bg-primary text-white customEditButton">
                           <EditOutlined /> Edit
-                        </Button>
+                        </Button> */}
                       </>
                     }
                     key="1"
@@ -8153,9 +8268,9 @@ const returnClass = (value) => {
                     header={
                       <>
                         Assembly and Final Test
-                        <Button className="bg-primary text-white customEditButton">
+                        {/* <Button className="bg-primary text-white customEditButton">
                           <EditOutlined /> Edit
-                        </Button>
+                        </Button> */}
                       </>
                     }
                     key="1"
@@ -8812,9 +8927,9 @@ const returnClass = (value) => {
                     header={
                       <>
                         Deliver to Site{" "}
-                        <Button className="bg-primary text-white customEditButton">
+                        {/* <Button className="bg-primary text-white customEditButton">
                           <EditOutlined /> Edit
-                        </Button>
+                        </Button> */}
                       </>
                     }
                     key="1"
@@ -9449,6 +9564,7 @@ const returnClass = (value) => {
                     <h5 className="mr-3">Date</h5>
                     <DatePicker
                       value={otherMachineData?.date}
+                      format={'DD-MM-YYYY'}
                       onChange={(e) => {
                         setOtherMachineData({
                           ...otherMachineData,
@@ -9516,10 +9632,9 @@ const returnClass = (value) => {
                               <h4>Markings</h4>
                               {image.image_markings.length > 0 ?
                                   image.image_markings.map((marking, index) => (
-                                  <div key={index}>
+                                  marking.text && <div key={index}>
                                       <b>{index+1}. </b>{marking.text}
-                                  </div>
-                                  ))
+                                  </div>))
                                   : <div><i>No Markings Added</i></div>
                               }
                           </div>
@@ -10050,6 +10165,7 @@ const returnClass = (value) => {
                     <h5 className="mr-3">Date</h5>
                     <DatePicker
                       value={otherInitialData?.date}
+                      format={'DD-MM-YYYY'}
                       onChange={(e) => {
                         setOtherInitialData({
                           ...otherInitialData,
@@ -10118,7 +10234,7 @@ const returnClass = (value) => {
                               <h4>Markings</h4>
                               {image.image_markings.length > 0 ?
                                   image.image_markings.map((marking, index) => (
-                                  <div key={index}>
+                                    marking.text && <div key={index}>
                                       <b>{index+1}. </b>{marking.text}
                                   </div>
                                   ))

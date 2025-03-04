@@ -74,6 +74,7 @@ export const AppViews = () => {
         <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/sensors/edit-sensor/:id/:editId`} component={lazy(() => import(`./machine-and-sensor/add-new-sensor/edit.js`))} />
         <Route exact path={`${APP_PREFIX_PATH}/life-cycle`} component={lazy(() => import(`./machine-and-sensor/machine-details/add-new-life-cycle-event/index`))} /> */}
         <Route exact path={`${APP_PREFIX_PATH}/reports`} component={lazy(() => import(`./Reports/Index`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/machine-and-sensors/machine-details/analysisReport/:id/:graphType/:bin/:xAxis/:yAxis`} component={lazy(() => import(`./machine-and-sensor/machine-details/graphType`))} />
         <Redirect from={`${APP_PREFIX_PATH}`} to={`${localStorage.getItem("dashboardType") != "workshop" ? `${APP_PREFIX_PATH}/dashboard` : `${APP_PREFIX_PATH}/machine-and-sensors`}`} />
       </Switch>
     </Suspense>

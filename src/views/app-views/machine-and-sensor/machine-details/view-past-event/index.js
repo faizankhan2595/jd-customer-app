@@ -104,7 +104,7 @@ const ViewPasEvent = () => {
     }
 
     const fetchData = async () => {
-      const response = await axiosInstance.get(`api/admin/life-cycle-event/list`, {machine_id: param.id});
+      const response = await axiosInstance.get(`api/admin/life-cycle-event/list?machine_id=${param.id}`);
       let data = response.data.items;
       if(data) {
         setEventsData([

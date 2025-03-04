@@ -213,10 +213,16 @@ const ViewReports = () => {
             {receiveAndDeliverData.map((row, index) => (
             <tr key={index}>
               <td style={{ padding: "8px", border: "none" }}>{row.srNo}</td>
-              <td style={{ padding: "8px", border: "none" }}>{row.dateReceived}</td>
+              <td style={{ padding: "8px", border: "none" }}>{row.dateReceived? 
+              moment(row.dateReceived).format("DD-MM-YYYY"): ''  
+            }</td>
               <td style={{ padding: "8px", border: "none" }}>{row.receivedBy}</td>
-              <td style={{ padding: "8px", border: "none" }}>{row.dateRequested}</td>
-              <td style={{ padding: "8px", border: "none" }}>{row.dateDelivery}</td>
+              <td style={{ padding: "8px", border: "none" }}>{row.dateRequested?
+              moment(row.dateRequested).format("DD-MM-YYYY"): ''  
+            }</td>
+              <td style={{ padding: "8px", border: "none" }}>{row.dateDelivery?
+              moment(row.dateDelivery).format("DD-MM-YYYY"): ''  
+            }</td>
               <td style={{ padding: "8px", border: "none" }}>{row.deliveredBy}</td>
             </tr>
           ))}

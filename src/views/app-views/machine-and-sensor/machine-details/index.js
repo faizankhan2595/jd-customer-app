@@ -60,6 +60,7 @@ import moment from "moment";
 import ReactApexChart from "react-apexcharts";
 import LineChart from "components/shared-components/ChartWidget/LineChart";
 import BarChart from "components/shared-components/ChartWidget/BarChart";
+import { API_BASE_URL } from "constants/ApiConstant";
 
 
 const { Option } = Select;
@@ -125,39 +126,78 @@ const MachineDetails = () => {
   const [frequency, setFrequency] = useState(null);
   const [rpm, setRpm] = useState(null);
   const [machinePictures, setMachinePictures] = useState([]);
-  const [horizontalData, setHorizontalData] = useState([]);
+  // const [horizontalData, setHorizontalData] = useState([]);
   const [AnalysisXData, setAnalysisXData] = useState([]);
+  const [modalStartDate, setModalStartDate] = useState(null);
+  const [modalEndDate, setModalEndDate] = useState(null);
   const [AnalysisYData, setAnalysisYData] = useState([]);
   const [AnalysisZData, setAnalysisZData] = useState([]);
-  const [verticalData, setVerticalData] = useState([]);
-  const [axialData, setAxialData] = useState([]);
+  // const [verticalData, setVerticalData] = useState([]);
+  // const [axialData, setAxialData] = useState([]);
+
+  const [mid_freq_acceleration_p2p_x, setMid_freq_acceleration_p2p_x] = useState([]);
+  const [mid_freq_acceleration_p2p_y, setMid_freq_acceleration_p2p_y] = useState([]);
+  const [mid_freq_acceleration_p2p_z, setMid_freq_acceleration_p2p_z] = useState([]);
+  const [high_freq_acceleration_p2p_x, setHigh_freq_acceleration_p2p_x] = useState([]);
+
+  const [mid_freq_displacement_x, setMid_freq_displacement_x] = useState([]);
+  const [mid_freq_displacement_y, setMid_freq_displacement_y] = useState([]);
+  const [mid_freq_displacement_z, setMid_freq_displacement_z] = useState([]);
+
+
+  const [mid_freq_velocity_x, setMid_freq_velocity_x] = useState([]);
+  const [mid_freq_velocity_y, setMid_freq_velocity_y] = useState([]);
+  const [mid_freq_velocity_z, setMid_freq_velocity_z] = useState([]);
+
+
+  const [mid_freq_env_x, setMid_freq_env_x] = useState([]);
+  const [mid_freq_env_y, setMid_freq_env_y] = useState([]);
+  const [mid_freq_env_z, setMid_freq_env_z] = useState([]);
+
+
+  const [inclination_x, setInclination_x] = useState([]);
+  const [inclination_y, setInclination_y] = useState([]);
+  const [inclination_z, setInclination_z] = useState([]);
+
+
+
+
+  const [tabKey, setTabKey] = useState("1");
+
+
+
+
   const history = useHistory();
+  const [graphType, setGraphType] = useState("mid_freq_displacement");
   const [motorServiceTemperature, setMotorServiceTemperature] = useState([]);
   const [batteryPercentage, setBatteryPercentage] = useState([]);
   const [batteryVoltage, setBatteryVoltage] = useState([]);
   const [rssi, setRssi] = useState([]);
   const [rawData, setRawData] = useState([]);
   const [dateRangeModal, setDateRangeModal] = useState(false);
+  const [selectorDate, setSelectorDate] = useState("1");
   const [eventsData, setEventsData] = useState([])
   const [currentEventsData, setCurrentEventsData] = useState([])
+  const [isReportsLoading, setIsReportsLoading] = useState(false)
   const [alarmsPage, setAlarmsPage] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const [data, setData] = useState({});
   const [sensorsData, setSensorsData] = useState([]);
+  const [selectedAlarm, setSelectedAlarm] = useState(null)
   const [serviceReportData, setServiceReportData] = useState({
-      event_id: null,
-      job_reference: false,
-      receiving_and_delivery: false,
+    event_id: null,
+    job_reference: false,
+    receiving_and_delivery: false,
   })
   const [repairReportData, setRepairReportData] = useState({
-      event_id: false,
-      job_reference: false,
-      receiving_and_delivery: false,
+    event_id: false,
+    job_reference: false,
+    receiving_and_delivery: false,
   })
   const [failurePredictionReportData, setFailurePredictionReportData] = useState({
-      event_id: false,
-      job_reference: false,
-      receiving_and_delivery: false,
+    event_id: false,
+    job_reference: false,
+    receiving_and_delivery: false,
   })
   const [serviceReportList, setServiceReportList] = useState([])
   const [repairReportList, setRepairReportList] = useState([])
@@ -168,12 +208,63 @@ const MachineDetails = () => {
   const [serviceReportSearch, setServiceReportSearch] = useState([])
   const [repairReportSearch, setRepaireReportSearch] = useState([])
   const [failurePredictionReportSearch, setFailurePredictionReportSearch] = useState([])
-
+  const [start_date, setStartDate] = useState(moment().subtract(1, 'days').format("YYYY-MM-DD hh:mm:ss"))
+  const [end_date, setEndDate] = useState(moment().format("YYYY-MM-DD hh:mm:ss"))
+  const [loading, setLoading] = useState(false)
 
   const fetchData = async () => {
     const response = await axiosInstance.get(`api/admin/machines/${id}`);
     const res2 = await axiosInstance.get(`api/admin/machines/${id}/sensors`);
     setSensorsData(res2.data.items);
+    // setSelectedAlarm(res2.data.items[0]?.sensor_id)
+    let tempDeviceId = ''
+    if(localStorage.getItem('deviceId')){
+      const tempSensor = res2.data.items.find(item => item.sensor_id == localStorage.getItem('deviceId'))
+      if(tempSensor){
+        setSelectedAlarm(localStorage.getItem('deviceId'))
+        tempDeviceId = localStorage.getItem('deviceId')
+      }else{
+        setSelectedAlarm(res2.data.items[0]?.sensor_id)
+        tempDeviceId = res2.data.items[0]?.sensor_id
+      }
+      localStorage.removeItem('deviceId')
+
+    }
+    else{
+      setSelectedAlarm(res2.data.items[0]?.sensor_id)
+      tempDeviceId = res2.data.items[0]?.sensor_id
+    }
+    localStorage.setItem('deviceId2', tempDeviceId)
+    let temp_start = ''
+    let temp_end = ''
+    if(localStorage.getItem('start_date')){
+      temp_start = localStorage.getItem('start_date')
+      localStorage.removeItem('start_date')
+      
+    }else{
+      temp_start = moment().subtract(1, 'days').format("YYYY-MM-DD hh:mm:ss")
+
+    }
+
+    if(localStorage.getItem('end_date')){
+      temp_end = localStorage.getItem('end_date')
+      localStorage.removeItem('end_date')
+    }
+    else{
+      temp_end = moment().format("YYYY-MM-DD hh:mm:ss")
+    }
+
+    if(localStorage.getItem('dateSelector')){
+      setSelectorDate(localStorage.getItem('dateSelector'))
+      localStorage.removeItem('dateSelector')
+    }
+
+
+    setStartDate(temp_start)
+    setEndDate(temp_end)
+
+    fetchSensorData(tempDeviceId, temp_start, temp_end);
+    // fetchSensorData(res2.data.items[0]?.sensor_id, moment().subtract(1, 'days').format("YYYY-MM-DD hh:mm:ss"), moment().format("YYYY-MM-DD hh:mm:ss"));
     const data = response.data.item;
     console.log(data);
     setData(data);
@@ -188,38 +279,233 @@ const MachineDetails = () => {
     setMachinePictures(data.pictures);
   }
 
-  const fetchSensorData = async () => {
-    const response = await axiosInstance.get(`api/machine-data`);
+  const download = async (sensor_id, start_date, end_date) => {
+    if(rawData.length == 0){
+      message.error("No data found")
+      return
+    }
+    let url = `${API_BASE_URL}/api/downloadMultipleRawFilesAndZipAndServe?machine_id=${id}&deviceID=${sensor_id}&start_date=${start_date}&end_date=${end_date}`
+    window.open(url, '_blank');
+  }
+
+  const fetchSensorData = async (sensor_id, start_date, end_date) => {
+    const response = await axiosInstance.get(`api/machine-data?machine_id=${id}&deviceID=${sensor_id}&start_date=${start_date}&end_date=${end_date}`);
     // console.log(response.data);
     const rawData = response.data.data;
     setRawData(rawData);
-    setHorizontalData(() => {
+
+    setMid_freq_acceleration_p2p_x(() => {
       const data = rawData.map((item) => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.mid_freq_displacement_x
+          y: item.mid_freq_acceleration_p2p_x,
+          extraValue: item.file.replace("uploads/", ""), 
         }
       })
       return data
     })
-    setVerticalData(() => {
+
+
+    setMid_freq_acceleration_p2p_y(() => {
       const data = rawData.map((item) => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.mid_freq_displacement_y
+          y: item.mid_freq_acceleration_p2p_y,
+          extraValue: item.file.replace("uploads/", ""), 
         }
       })
       return data
     })
-    setAxialData(() => {
+
+
+    setMid_freq_acceleration_p2p_z(() => {
       const data = rawData.map((item) => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.mid_freq_displacement_z
+          y: item.mid_freq_acceleration_p2p_z,
+          extraValue: item.file.replace("uploads/", ""), 
         }
       })
       return data
     })
+
+    setHigh_freq_acceleration_p2p_x(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.high_freq_acceleration_p2p_x,
+          extraValue: item.file.replace("uploads/", ""), 
+        }
+      })
+      return data
+    })
+
+
+    setMid_freq_displacement_x(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.mid_freq_displacement_x,
+          extraValue: item.file.replace("uploads/", ""), 
+        }
+      })
+      return data
+    })
+
+
+    setMid_freq_displacement_y(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.mid_freq_displacement_y,
+          extraValue: item.file.replace("uploads/", ""), 
+        }
+      })
+      return data
+    })
+
+    setMid_freq_displacement_z(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.mid_freq_displacement_z,
+          extraValue: item.file.replace("uploads/", ""), 
+        }
+      })
+      return data
+    })
+
+    setMid_freq_velocity_x(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.mid_freq_velocity_x,
+          extraValue: item.file.replace("uploads/", ""), 
+        }
+      })
+      return data
+    })
+
+    setMid_freq_velocity_y(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.mid_freq_velocity_y,
+          extraValue: item.file.replace("uploads/", ""), 
+        }
+      })
+      return data
+    })
+
+
+    setMid_freq_velocity_z(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.mid_freq_velocity_z,
+          extraValue: item.file.replace("uploads/", ""), 
+        }
+      })
+      return data
+    })
+
+    setMid_freq_env_x(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.mid_freq_env_x,
+          extraValue: item.file.replace("uploads/", ""), 
+        }
+      })
+      return data
+    })
+
+    setMid_freq_env_y(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.mid_freq_env_y,
+          extraValue: item.file.replace("uploads/", ""), 
+        }
+      })
+      return data
+    })
+
+    setMid_freq_env_z(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.mid_freq_env_z,
+          extraValue: item.file.replace("uploads/", ""), 
+        }
+      })
+      return data
+    })
+
+    setInclination_x(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.inclination_x,
+          extraValue: item.file.replace("uploads/", ""), 
+        }
+      })
+      return data
+    })
+
+    setInclination_y(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.inclination_y,
+          extraValue: item.file.replace("uploads/", ""), 
+        }
+      })
+      return data
+    })
+
+    setInclination_z(() => {
+      const data = rawData.map((item) => {
+        return {
+          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+          y: item.inclination_z,
+          extraValue: item.file.replace("uploads/", ""), 
+        }
+      })
+      return data
+    })
+
+
+
+    // setHorizontalData(() => {
+    //   const data = rawData.map((item) => {
+    //     return {
+    //       x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //       y: item.mid_freq_displacement_x
+    //     }
+    //   })
+    //   return data
+    // })
+    // setVerticalData(() => {
+    //   const data = rawData.map((item) => {
+    //     return {
+    //       x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //       y: item.mid_freq_displacement_y
+    //     }
+    //   })
+    //   return data
+    // })
+    // setAxialData(() => {
+    //   const data = rawData.map((item) => {
+    //     return {
+    //       x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //       y: item.mid_freq_displacement_z
+    //     }
+    //   })
+    //   return data
+    // })
+
+
     setMotorServiceTemperature(() => {
       const data = rawData.map((item) => {
         return {
@@ -286,48 +572,51 @@ const MachineDetails = () => {
   }
 
   const fetchEventsData = async () => {
-    const response = await axiosInstance.get(`api/admin/life-cycle-event/list`);
-    console.log(response.data.items)
-    let data = response.data.items;
-    if(data) {
-      setEventsData([
-        ...data
-      ])
+    const response = await axiosInstance.get(`api/admin/life-cycle-event/list?machine_id=${id}`);
+    // console.log(response.data.items)
+    let events_data = response.data.items?.reverse();
+    if (events_data) {
+      setEventsData(events_data)
     }
   }
 
   const fetchReportsData = async () => {
-    const response = await axiosInstance.get(`api/admin/reports/list`);
+    setIsReportsLoading(true)
+    const response = await axiosInstance.get(`api/admin/reports/list?machine_id=${id}`);
     let data = response.data.items;
-    for(let i=0; i< data.length; i++) {
-      if(data[i].report_type == 'Service') {
-        data[i] = {...data[i], srNo: serviceReportList.length+1}
-        console.log(data[i])
-        let serv_data = serviceReportList;
-        serv_data.push(data[i])
-        setServiceReportList(serv_data)
-        setServiceReportListOriginal(serv_data)
+    // console.log(data)
+    let service_arr = [];
+    let repair_arr = [];
+    let failure_arr = [];
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].report_type == 'Service') {
+        data[i] = { ...data[i], srNo: service_arr.length + 1 }
+        service_arr.push(data[i])
       }
-      if(data[i].report_type == 'Repair') {
-        data[i] = {...data[i], srNo: repairReportList.length+1}
-        let repr_data = repairReportList;
-        repr_data.push(data[i])
-        setRepairReportList(repr_data)
-        setRepairReportListOriginal(repr_data)
+      if (data[i].report_type == 'Repair') {
+        data[i] = { ...data[i], srNo: repair_arr.length + 1 }
+        repair_arr.push(data[i])
       }
-      if(data[i].report_type == 'Failure Prediction') {
-        data[i] = {...data[i], srNo: failurePredictionReportList.length+1}
-        let fail_data = failurePredictionReportList;
-        fail_data.push(data[i])
-        setFailurePredictionReportList(fail_data)
-        setFailurePredictionReportListOriginal(fail_data)
+      if (data[i].report_type == 'Failure Prediction') {
+        data[i] = { ...data[i], srNo: failure_arr.length + 1 }
+        failure_arr.push(data[i])
       }
     }
+
+    setServiceReportList(service_arr)
+    setServiceReportListOriginal(service_arr)
+    setIsReportsLoading(false)
+    setRepairReportList(repair_arr)
+    setRepairReportListOriginal(repair_arr)
+    setIsReportsLoading(false)
+    setFailurePredictionReportList(failure_arr)
+    setFailurePredictionReportListOriginal(failure_arr)
+    setIsReportsLoading(false)
   }
 
 
   const fetchAlarmsData = async () => {
-    const response = await axiosInstance.get(`api/admin/alarms/list?machine_id=${id}`);
+    const response = await axiosInstance.get(`api/admin/machines/${id}/sensors`);
     let data = response.data.items;
     console.log(data);
     setAlarmList(data);
@@ -341,8 +630,20 @@ const MachineDetails = () => {
     fetchData();
     fetchEventsData();
     fetchReportsData();
-    fetchSensorData();
-    fetchAlarmsData();
+
+    // fetchAlarmsData();
+    if (localStorage.getItem('tab') == 'analysis') {
+      setTabKey("7")
+      localStorage.removeItem('tab')
+    }
+    if(localStorage.getItem("tab")=="life-cycle"){
+      setTabKey("3")
+      localStorage.removeItem("tab")
+    }
+    if (localStorage.getItem("graphType")) {
+      setGraphType(localStorage.getItem("graphType"))
+      localStorage.removeItem("graphType")
+    }
     // fetchMachineHealthData();
   }, [])
 
@@ -383,7 +684,7 @@ const MachineDetails = () => {
       dataIndex: "id",
       key: "id",
     },
-   
+
     {
       title: "Sensor ID",
       dataIndex: "machineSensor",
@@ -433,158 +734,159 @@ const MachineDetails = () => {
   };
 
   const handleAnalysisChange = (e) => {
-    if (e === 'mid_freq_displacement') {
-      setHorizontalData(() => {
-        const data = rawData.map((item) => {
-          return {
-            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-            y: item.mid_freq_displacement_x
-          }
-        })
-        return data
-      })
+    setGraphType(e);
+    // if (e === 'mid_freq_displacement') {
+    //   setHorizontalData(() => {
+    //     const data = rawData.map((item) => {
+    //       return {
+    //         x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //         y: item.mid_freq_displacement_x
+    //       }
+    //     })
+    //     return data
+    //   })
 
-      setVerticalData(() => {
-        const data = rawData.map((item) => {
-          return {
-            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-            y: item.mid_freq_displacement_y
-          }
-        })
-        return data
-      })
+    //   setVerticalData(() => {
+    //     const data = rawData.map((item) => {
+    //       return {
+    //         x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //         y: item.mid_freq_displacement_y
+    //       }
+    //     })
+    //     return data
+    //   })
 
-      setAxialData(() => {
-        const data = rawData.map((item) => {
-          return {
-            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-            y: item.mid_freq_displacement_z
-          }
-        })
-        return data
-      })
-    } else if (e === 'mid_freq_velocity') {
-      setHorizontalData(() => {
-        const data = rawData.map((item) => {
-          return {
-            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-            y: item.mid_freq_velocity_x
-          }
-        })
-        return data
-      })
+    //   setAxialData(() => {
+    //     const data = rawData.map((item) => {
+    //       return {
+    //         x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //         y: item.mid_freq_displacement_z
+    //       }
+    //     })
+    //     return data
+    //   })
+    // } else if (e === 'mid_freq_velocity') {
+    //   setHorizontalData(() => {
+    //     const data = rawData.map((item) => {
+    //       return {
+    //         x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //         y: item.mid_freq_velocity_x
+    //       }
+    //     })
+    //     return data
+    //   })
 
-      setVerticalData(() => {
-        const data = rawData.map((item) => {
-          return {
-            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-            y: item.mid_freq_velocity_y
-          }
-        })
-        return data
-      })
+    //   setVerticalData(() => {
+    //     const data = rawData.map((item) => {
+    //       return {
+    //         x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //         y: item.mid_freq_velocity_y
+    //       }
+    //     })
+    //     return data
+    //   })
 
-      setAxialData(() => {
-        const data = rawData.map((item) => {
-          return {
-            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-            y: item.mid_freq_velocity_z
-          }
-        })
-        return data
-      })
-    } else if (e === 'mid_freq_env') {
-      setHorizontalData(() => {
-        const data = rawData.map((item) => {
-          return {
-            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-            y: item.mid_freq_env_x
-          }
-        })
-        return data
-      })
+    //   setAxialData(() => {
+    //     const data = rawData.map((item) => {
+    //       return {
+    //         x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //         y: item.mid_freq_velocity_z
+    //       }
+    //     })
+    //     return data
+    //   })
+    // } else if (e === 'mid_freq_env') {
+    //   setHorizontalData(() => {
+    //     const data = rawData.map((item) => {
+    //       return {
+    //         x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //         y: item.mid_freq_env_x
+    //       }
+    //     })
+    //     return data
+    //   })
 
-      setVerticalData(() => {
-        const data = rawData.map((item) => {
-          return {
-            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-            y: item.mid_freq_env_y
-          }
-        })
-        return data
-      })
+    //   setVerticalData(() => {
+    //     const data = rawData.map((item) => {
+    //       return {
+    //         x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //         y: item.mid_freq_env_y
+    //       }
+    //     })
+    //     return data
+    //   })
 
-      setAxialData(() => {
-        const data = rawData.map((item) => {
-          return {
-            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-            y: item.mid_freq_env_z
-          }
-        })
-        return data
-      })
-    }
-    else if (e === 'inclination') {
-      setHorizontalData(() => {
-        const data = rawData.map((item) => {
-          return {
-            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-            y: item.inclination_x
-          }
-        })
-        return data
-      })
+    //   setAxialData(() => {
+    //     const data = rawData.map((item) => {
+    //       return {
+    //         x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //         y: item.mid_freq_env_z
+    //       }
+    //     })
+    //     return data
+    //   })
+    // }
+    // else if (e === 'inclination') {
+    //   setHorizontalData(() => {
+    //     const data = rawData.map((item) => {
+    //       return {
+    //         x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //         y: item.inclination_x
+    //       }
+    //     })
+    //     return data
+    //   })
 
-      setVerticalData(() => {
-        const data = rawData.map((item) => {
-          return {
-            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-            y: item.inclination_y
-          }
-        })
-        return data
-      })
+    //   setVerticalData(() => {
+    //     const data = rawData.map((item) => {
+    //       return {
+    //         x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //         y: item.inclination_y
+    //       }
+    //     })
+    //     return data
+    //   })
 
-      setAxialData(() => {
-        const data = rawData.map((item) => {
-          return {
-            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-            y: item.inclination_z
-          }
-        })
-        return data
-      })
-    } else if (e === 'mid_freq_acceleration_p2p') {
-      setHorizontalData(() => {
-        const data = rawData.map((item) => {
-          return {
-            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-            y: item.mid_freq_acceleration_p2p_x
-          }
-        })
-        return data
-      })
+    //   setAxialData(() => {
+    //     const data = rawData.map((item) => {
+    //       return {
+    //         x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //         y: item.inclination_z
+    //       }
+    //     })
+    //     return data
+    //   })
+    // } else if (e === 'mid_freq_acceleration_p2p') {
+    //   setHorizontalData(() => {
+    //     const data = rawData.map((item) => {
+    //       return {
+    //         x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //         y: item.mid_freq_acceleration_p2p_x
+    //       }
+    //     })
+    //     return data
+    //   })
 
-      setVerticalData(() => {
-        const data = rawData.map((item) => {
-          return {
-            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-            y: item.mid_freq_acceleration_p2p_y
-          }
-        })
-        return data
-      })
+    //   setVerticalData(() => {
+    //     const data = rawData.map((item) => {
+    //       return {
+    //         x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //         y: item.mid_freq_acceleration_p2p_y
+    //       }
+    //     })
+    //     return data
+    //   })
 
-      setAxialData(() => {
-        const data = rawData.map((item) => {
-          return {
-            x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-            y: item.mid_freq_acceleration_p2p_z
-          }
-        })
-        return data
-      })
-    }
+    //   setAxialData(() => {
+    //     const data = rawData.map((item) => {
+    //       return {
+    //         x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
+    //         y: item.mid_freq_acceleration_p2p_z
+    //       }
+    //     })
+    //     return data
+    //   })
+    // }
   }
   const columns_events = [
     {
@@ -637,7 +939,7 @@ const MachineDetails = () => {
       key: 'enabled_fields',
       render: (text, record) => (
         <>
-          {record.enabled_fields.map((e,i) => <span>{i>0 ? ', ':''}{e}</span>)}
+          {record.enabled_fields.map((e, i) => <span>{i > 0 ? ', ' : ''}{e}</span>)}
         </>
       ),
     },
@@ -657,7 +959,7 @@ const MachineDetails = () => {
       key: 'created_by',
       render: (text, record) => (
         <>
-          <div>User #{record.created_by}</div>
+          <div>{record.created_by?.name}</div>
         </>
       ),
     },
@@ -686,7 +988,7 @@ const MachineDetails = () => {
       key: 'enabled_fields',
       render: (text, record) => (
         <>
-          {record.enabled_fields.map((e,i) => <span>{i>0 ? ', ':''}{e}</span>)}
+          {record.enabled_fields.map((e, i) => <span>{i > 0 ? ', ' : ''}{e}</span>)}
         </>
       ),
     },
@@ -706,7 +1008,7 @@ const MachineDetails = () => {
       key: 'created_by',
       render: (text, record) => (
         <>
-          <div>User #{record.created_by}</div>
+          <div>{record.created_by?.name}</div>
         </>
       ),
     },
@@ -735,7 +1037,7 @@ const MachineDetails = () => {
       key: 'enabled_fields',
       render: (text, record) => (
         <>
-          {record.enabled_fields.map((e,i) => <span>{i>0 ? ', ':''}{e}</span>)}
+          {record.enabled_fields.map((e, i) => <span>{i > 0 ? ', ' : ''}{e}</span>)}
         </>
       ),
     },
@@ -755,7 +1057,7 @@ const MachineDetails = () => {
       key: 'created_by',
       render: (text, record) => (
         <>
-          <div>User #{record.created_by}</div>
+        <div>{record.created_by?.name}</div>
         </>
       ),
     },
@@ -801,7 +1103,7 @@ const MachineDetails = () => {
                   >
                     <Button
                       className="px-4 font-weight-semibold"
-                      onClick={() => { 
+                      onClick={() => {
                         history.push(`/app/machine-and-sensors/sensor-list/${id}`)
                       }}
                     >
@@ -839,14 +1141,14 @@ const MachineDetails = () => {
                     <h5 className="m-0 py-1 px-2">Serial No</h5>
                     <div>{serialNumber}</div>
                   </div>
-                  <div className="d-flex mb-3 justify-content-between align-items-center">
+                  {/* <div className="d-flex mb-3 justify-content-between align-items-center">
                     <h5 className="m-0 py-1 px-2">Machine Model</h5>
                     <div>{machineModel}</div>
                   </div>
                   <div className="d-flex mb-3 justify-content-between align-items-center bg-grey">
                     <h5 className="m-0 py-1 px-2">Manufacturer</h5>
                     <div>{manufacturer}</div>
-                  </div>
+                  </div> */}
                   <div className="d-flex mb-3 justify-content-between align-items-center">
                     <h5 className="m-0 py-1 px-2">Kw/Hp </h5>
                     <div>{kwHp}</div>
@@ -936,7 +1238,11 @@ const MachineDetails = () => {
           <div className="">
             <div className="d-flex justify-content-between">
               <div className="d-flex" style={{ gap: "10px" }}>
-                <Button className="bg-primary text-white">
+                <Button className="bg-primary text-white"
+                  onClick={() => {
+                    localStorage.setItem('tab', 'life-cycle')
+                  }}
+                >
                   <Link
                     to={`/app/machine-and-sensors/machine-details/life-cycle-management/add-new-life-cycle-event/${id}`}
                   >
@@ -958,7 +1264,7 @@ const MachineDetails = () => {
                   </Link>
                 </Button>}
               </div>
-              <div className="d-flex justify-content-end">
+              {/* <div className="d-flex justify-content-end">
                 <Select
                   showSearch
                   style={{ width: 200 }}
@@ -971,58 +1277,58 @@ const MachineDetails = () => {
                     </Option>
                   ))}
                 </Select>
-              </div>
+              </div> */}
             </div>
             <div className="mt-3 bg-white rounded pt-4" >
               <div style={{ width: "100%", overflowX: "auto", paddingBottom: "10px" }}>
-              <Steps
-                current={currentStep}
-                style={{ marginTop: "50px",width:"1000px" }}
-                progressDot={customDot}
-              >
-                <Step
-                  title="Start of Machine LifeCycle"
-                  icon={<UserOutlined />}
-                  description={<div className="d-flex flex-column">
-                  <div>{moment(data.created_at).format('DD-MM-YYYY')}</div>
-                  <div>{moment(data.created_at).format('hh:mm A')}</div>
-                </div>}
-                  onClick={() => {
-                    setCurrentStep(0);
-                    setCurrentEventsData([])
-                    setAlarmsPage(false)
-                  }}
-                />
-                <Step
-                  title="Alarms"
-                  icon={<UserOutlined />}
-                  description={<div className="d-flex flex-column">
-                  <div>{moment(data.created_at).format('DD-MM-YYYY')}</div>
-                  <div>{moment(data.created_at).format('hh:mm A')}</div>
-                </div>}
-                  onClick={() => {
-                    setCurrentStep(1);
-                    // setCurrentEventsData([])
-                    setAlarmsPage(true)
-                  }}
-                />
-                  
-                {eventsData.map((event, index) => (
+                <Steps
+                  current={currentStep}
+                  style={{ marginTop: "50px", width: "1000px" }}
+                  progressDot={customDot}
+                >
                   <Step
-                    title={'Event #'+event.id}
+                    title="Start of Machine LifeCycle"
                     icon={<UserOutlined />}
                     description={<div className="d-flex flex-column">
-                      <div>{moment(event.created_at).format('DD-MM-YYYY')}</div>
-                      <div>{moment(event.created_at).format('hh:mm A')}</div>
+                      <div>{moment(data.created_at).format('DD-MM-YYYY')}</div>
+                      <div>{moment(data.created_at).format('hh:mm A')}</div>
                     </div>}
                     onClick={() => {
-                      setCurrentStep(index+2);
-                      setCurrentEventsData([eventsData[index]])
+                      setCurrentStep(0);
+                      setCurrentEventsData([])
                       setAlarmsPage(false)
                     }}
                   />
-                )) }
-                {/* <Step
+                  <Step
+                    title="Alarms"
+                    icon={<UserOutlined />}
+                    description={<div className="d-flex flex-column">
+                      <div>{moment(data.created_at).format('DD-MM-YYYY')}</div>
+                      <div>{moment(data.created_at).format('hh:mm A')}</div>
+                    </div>}
+                    onClick={() => {
+                      setCurrentStep(1);
+                      // setCurrentEventsData([])
+                      setAlarmsPage(true)
+                    }}
+                  />
+
+                  {eventsData.map((event, index) => (
+                    <Step
+                      title={'Event #' + event.id}
+                      icon={<UserOutlined />}
+                      description={<div className="d-flex flex-column">
+                        <div>{moment(event.created_at).format('DD-MM-YYYY')}</div>
+                        <div>{moment(event.created_at).format('hh:mm A')}</div>
+                      </div>}
+                      onClick={() => {
+                        setCurrentStep(index + 2);
+                        setCurrentEventsData([eventsData[index]])
+                        setAlarmsPage(false)
+                      }}
+                    />
+                  ))}
+                  {/* <Step
                   title="Lifecycle"
                   icon={<SolutionOutlined />}
                   description="2nd Jan 2023,  4:00 pm"
@@ -1052,14 +1358,14 @@ const MachineDetails = () => {
                   icon={<LoadingOutlined />}
                   description="12th Feb 2023 4:00 pm"
                 /> */}
-              </Steps>
+                </Steps>
               </div>
               <div className="p-2 mt-2">
                 {alarmsPage ? (
                   <>
-                   <div className="">
-            <Table dataSource={alarmList} columns={columns} />
-          </div>
+                    <div className="">
+                      <Table dataSource={alarmList} columns={columns} />
+                    </div>
                   </>
                 ) : (
                   <Table dataSource={currentEventsData} columns={columns_events} />
@@ -1088,19 +1394,21 @@ const MachineDetails = () => {
                     placeholder="Search"
                     allowClear
                     value={serviceReportSearch}
-                    onChange={(e) => { 
+                    onChange={(e) => {
                       let search_value = e.target.value;
                       setServiceReportSearch(search_value);
-                      // if(search_value) {
-                      //   setServiceReportList(serviceReportListOriginal.filter(elem => {
-                      //     for(let item of elem.enabled_fields) {
-                      //       if(item.toUpperCase().includes(search_value.toUpperCase())) return true
-                      //       else return false
-                      //     }
-                      //   }))
-                      // } else {
-                      //   setServiceReportList(serviceReportListOriginal);
-                      // }
+                      if (search_value) {
+                        let reports = serviceReportListOriginal;
+                        reports = reports.filter(elem => {
+                          for (let item of elem.enabled_fields) {
+                            if (item.toUpperCase().includes(search_value.toUpperCase())) return true
+                            else return false
+                          }
+                        })
+                        setServiceReportList(reports)
+                      } else {
+                        setServiceReportList(serviceReportListOriginal);
+                      }
                     }}
                     style={{
                       width: 200,
@@ -1118,7 +1426,7 @@ const MachineDetails = () => {
                 </Button>
               </div>
             </div>
-            <div className="mt-3 bg-white rounded ">
+            <div className="mt-3 bg-white rounded p-2">
               <div className="mt-2">
                 {false ? (
                   <>
@@ -1126,7 +1434,7 @@ const MachineDetails = () => {
                     <Empty />
                   </>
                 ) : (
-                  <Table dataSource={serviceReportList} columns={columnsServiceReports} />
+                  <Table loading={isReportsLoading} dataSource={serviceReportList} columns={columnsServiceReports} />
                 )}
               </div>
             </div>
@@ -1152,19 +1460,21 @@ const MachineDetails = () => {
                     placeholder="Search"
                     allowClear
                     value={repairReportSearch}
-                    onChange={(e) => { 
+                    onChange={(e) => {
                       let search_value = e.target.value;
                       setRepaireReportSearch(search_value);
-                      // if(search_value) {
-                      //   setServiceReportList(serviceReportListOriginal.filter(elem => {
-                      //     for(let item of elem.enabled_fields) {
-                      //       if(item.toUpperCase().includes(search_value.toUpperCase())) return true
-                      //       else return false
-                      //     }
-                      //   }))
-                      // } else {
-                      //   setServiceReportList(serviceReportListOriginal);
-                      // }
+                      if (search_value) {
+                        let reports = repairReportListOriginal;
+                        reports = reports.filter(elem => {
+                          for (let item of elem.enabled_fields) {
+                            if (item.toUpperCase().includes(search_value.toUpperCase())) return true
+                            else return false
+                          }
+                        })
+                        setRepairReportList(reports)
+                      } else {
+                        setRepairReportList(repairReportListOriginal);
+                      }
                     }}
                     style={{
                       width: 200,
@@ -1184,7 +1494,7 @@ const MachineDetails = () => {
                 </Button>
               </div>
             </div>
-            <div className="mt-3 bg-white rounded ">
+            <div className="mt-3 bg-white rounded p-2">
               <div className="mt-2">
                 {false ? (
                   <>
@@ -1192,7 +1502,7 @@ const MachineDetails = () => {
                     <Empty />
                   </>
                 ) : (
-                  <Table dataSource={repairReportList} columns={columnsRepairReports} />
+                  <Table loading={isReportsLoading} dataSource={repairReportList} columns={columnsRepairReports} />
                 )}
               </div>
             </div>
@@ -1218,19 +1528,21 @@ const MachineDetails = () => {
                     placeholder="Search"
                     allowClear
                     value={failurePredictionReportSearch}
-                    onChange={(e) => { 
+                    onChange={(e) => {
                       let search_value = e.target.value;
                       setFailurePredictionReportSearch(search_value);
-                      // if(search_value) {
-                      //   setServiceReportList(serviceReportListOriginal.filter(elem => {
-                      //     for(let item of elem.enabled_fields) {
-                      //       if(item.toUpperCase().includes(search_value.toUpperCase())) return true
-                      //       else return false
-                      //     }
-                      //   }))
-                      // } else {
-                      //   setServiceReportList(serviceReportListOriginal);
-                      // }
+                      if (search_value) {
+                        let reports = failurePredictionReportListOriginal;
+                        reports = reports.filter(elem => {
+                          for (let item of elem.enabled_fields) {
+                            if (item.toUpperCase().includes(search_value.toUpperCase())) return true
+                            else return false
+                          }
+                        })
+                        setFailurePredictionReportList(reports);
+                      } else {
+                        setFailurePredictionReportList(failurePredictionReportListOriginal);
+                      }
                     }}
                     style={{
                       width: 200,
@@ -1250,7 +1562,7 @@ const MachineDetails = () => {
                 </Button>
               </div>
             </div>
-            <div className="mt-3 bg-white rounded ">
+            <div className="mt-3 bg-white rounded p-2">
               <div className="mt-2">
                 {false ? (
                   <>
@@ -1258,7 +1570,7 @@ const MachineDetails = () => {
                     <Empty />
                   </>
                 ) : (
-                  <Table dataSource={failurePredictionReportList} columns={columnsFailurePredictionReports} />
+                  <Table loading={isReportsLoading} dataSource={failurePredictionReportList} columns={columnsFailurePredictionReports} />
                 )}
               </div>
             </div>
@@ -1288,18 +1600,23 @@ const MachineDetails = () => {
                 fontWeight: 'bold',
                 fontSize: '16px'
               }}>Analysis</div>
-              <div>{moment().format("DD MMM YYYY HH:mm a")}</div>
-              <div >
+              {/* <div>{moment().format("DD MMM YYYY HH:mm a")}</div> */}
+              {/* <div >
                 <Button type="primary" ghost onClick={() => { }}>Status Update</Button>
-              </div>
+              </div> */}
               <div >
-                <Button type="primary" onClick={() => { }}>Accquire Raw Data</Button>
+                <Button type="primary" disabled={rawData.length==0} loading={loading} onClick={() => {
+                  download(selectedAlarm, start_date, end_date)
+                }}>Accquire Raw Data</Button>
               </div>
               <div style={{
                 width: '300px'
               }}><Select onChange={handleAnalysisChange} style={{
                 width: '100%'
-              }} defaultValue="mid_freq_displacement">
+              }}
+                value={graphType}
+
+              >
                   <Option value="mid_freq_displacement">Displacement</Option>
                   <Option value="mid_freq_acceleration_p2p">Acceleration</Option>
                   <Option value="mid_freq_velocity">Velocity</Option>
@@ -1310,11 +1627,38 @@ const MachineDetails = () => {
               <div style={{
                 width: '200px'
               }}>
-                <Select defaultValue={"1"} onChange={(e) => {
-                  console.log(e)
+                <Select value={selectorDate} onChange={(e) => {
                   if (e === "Date Range") {
-                    setDateRangeModal(true)
+                    if (selectorDate == "Date-Range") {
+                      setDateRangeModal(true)
+                    } else {
+                      setDateRangeModal(true)
+                      setModalStartDate(null);
+                      setModalEndDate(null);
+                    }
+                    return;
+
                   }
+                  setSelectorDate(e)
+                  if (e === "1") {
+                    fetchSensorData(selectedAlarm, moment().subtract(1, 'days').format('YYYY-MM-DD hh:mm:ss'), moment().format('YYYY-MM-DD hh:mm:ss'))
+                    setEndDate(moment().format('YYYY-MM-DD hh:mm:ss'))
+                    setStartDate(moment().subtract(1, 'days').format('YYYY-MM-DD hh:mm:ss'))
+
+                  } else if (e === "7") {
+                    fetchSensorData(selectedAlarm, moment().subtract(7, 'days').format('YYYY-MM-DD hh:mm:ss'), moment().format('YYYY-MM-DD hh:mm:ss'))
+                    setEndDate(moment().format('YYYY-MM-DD hh:mm:ss'))
+                    setStartDate(moment().subtract(7, 'days').format('YYYY-MM-DD hh:mm:ss'))
+                  } else if (e === "30") {
+                    fetchSensorData(selectedAlarm, moment().subtract(30, 'days').format('YYYY-MM-DD hh:mm:ss'), moment().format('YYYY-MM-DD hh:mm:ss'))
+                    setEndDate(moment().format('YYYY-MM-DD hh:mm:ss'))
+                    setStartDate(moment().subtract(30, 'days').format('YYYY-MM-DD hh:mm:ss'))
+                  } else if (e === "60") {
+                    fetchSensorData(selectedAlarm, moment().subtract(60, 'days').format('YYYY-MM-DD hh:mm:ss'), moment().format('YYYY-MM-DD hh:mm:ss'))
+                    setEndDate(moment().format('YYYY-MM-DD hh:mm:ss'))
+                    setStartDate(moment().subtract(60, 'days').format('YYYY-MM-DD hh:mm:ss'))
+                  }
+
                 }} style={{
                   width: '100%'
                 }} >
@@ -1327,29 +1671,85 @@ const MachineDetails = () => {
               </div>
             </div>
             <div style={{
-              width:"300px",
-              marginBottom:"30px"
+              width: "300px",
+              marginBottom: "30px"
             }}>
-                  <Select  defaultValue={alarmList[0]?.id} style={{
-                    width:"100%"
-                  }}>
-                    {
-                      alarmList.map((item) => {
-                        return (
-                          <Option value={item.id}>{item.sensor_type + " #"+ item.sensor_id}</Option>
-                        )
-                      })
-                    }
-                  </Select>
+              <Select value={selectedAlarm}
+                placeholder="Select Sensor"
+                onChange={(e) => {
+                  setSelectedAlarm(e)
+                  // getSensorData(e)
+                  localStorage.setItem('deviceId2', e)
+                  fetchSensorData(e, start_date, end_date)
+                }}
+                style={{
+                  width: "100%"
+                }}>
+                {
+                  sensorsData.map((item) => {
+                    return (
+                      <Option value={item.sensor_id}>{item.sensor_type + " #" + (item.sensor_id_label!==null?item.sensor_id_label:item.sensor_id)}</Option>
+                    )
+                  })
+                }
+              </Select>
             </div>
-            <LineChart title="Horizontal Data" series={horizontalData} label={"Amplitude VS Time"} />
+            {/* <LineChart title="Horizontal Data" series={horizontalData} label={"Amplitude VS Time"} />
             <LineChart title="Vertical Data" series={verticalData} label={"Amplitude VS Time"} />
-            <LineChart title="Axial Data" series={axialData} label={"Amplitude VS Time"} />
+            <LineChart title="Axial Data" series={axialData} label={"Amplitude VS Time"} /> */}
+            {
+              graphType === 'mid_freq_acceleration_p2p' && (
+                <>
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"Mid Frequency Acceleration P2P X"} series={mid_freq_acceleration_p2p_x} label={"Amplitude VS Time"} />
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"Mid Frequency Acceleration P2P Y"} series={mid_freq_acceleration_p2p_y} label={"Amplitude VS Time"} />
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"Mid Frequency Acceleration P2P Z"} series={mid_freq_acceleration_p2p_z} label={"Amplitude VS Time"} />
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"High Frequency Acceleration P2P Z"} series={high_freq_acceleration_p2p_x} label={"Amplitude VS Time"} />
+                </>
+
+              )
+            }
+            {
+              graphType === 'mid_freq_displacement' && (
+                <>
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"Mid Frequency Displacement X"} series={mid_freq_displacement_x} label={"Amplitude VS Time"} />
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"Mid Frequency Displacement Y"} series={mid_freq_displacement_y} label={"Amplitude VS Time"} />
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"Mid Frequency Displacement Z"} series={mid_freq_displacement_z} label={"Amplitude VS Time"} />
+                </>
+              )
+            }
+            {
+              graphType === 'mid_freq_velocity' && (
+                <>
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"Mid Frequency Velocity X"} series={mid_freq_velocity_x} label={"Amplitude VS Time"} />
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"Mid Frequency Velocity Y"} series={mid_freq_velocity_y} label={"Amplitude VS Time"} />
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"Mid Frequency Velocity Z"} series={mid_freq_velocity_z} label={"Amplitude VS Time"} />
+                </>
+              )
+            }
+            {
+              graphType === 'inclination' && (
+                <>
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"Inclination X"} series={inclination_x} label={"Amplitude VS Time"} />
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"Inclination Y"} series={inclination_y} label={"Amplitude VS Time"} />
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"Inclination Z"} series={inclination_z} label={"Amplitude VS Time"} />
+                </>
+              )
+            }
+            {
+              graphType === 'mid_freq_env' && (
+                <>
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"Mid Frequency Env X"} series={mid_freq_env_x} label={"Amplitude VS Time"} />
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"Mid Frequency Env Y"} series={mid_freq_env_y} label={"Amplitude VS Time"} />
+                  <LineChart graphType={graphType} dateSelector={selectorDate} disabled={rawData.length==0} deviceId={selectedAlarm} start_date={start_date} end_date={end_date} title={"Mid Frequency Env Z"} series={mid_freq_env_z} label={"Amplitude VS Time"} />
+                </>
+              )
+            }
+
           </Card>
-          <LineChart title="Motor Service Temperature " series={motorServiceTemperature} label={"Celsius VS Time"} />
-          <LineChart title="Voltage" series={batteryVoltage} label={"Voltage (v) VS Time"} />
-          <LineChart title="Battery %" series={batteryPercentage} label={"Battery % VS Time"} />
-          <LineChart title="RSSI (Received Signal Strength Indicator)" series={rssi} label={"RSSI (dBm) VS Time"} />
+          <LineChart dateSelector={selectorDate} title="Motor Service Temperature " series={motorServiceTemperature} label={"Celsius VS Time"} />
+          <LineChart dateSelector={selectorDate} title="Voltage" series={batteryVoltage} label={"Voltage (v) VS Time"} />
+          <LineChart dateSelector={selectorDate} title="Battery %" series={batteryPercentage} label={"Battery % VS Time"} />
+          <LineChart dateSelector={selectorDate} title="RSSI (Received Signal Strength Indicator)" series={rssi} label={"RSSI (dBm) VS Time"} />
           {/* <BarChart title="Analysis (Frequency) - X Axis" series={AnalysisXData} label={"Amplitude VS Frequency (Hz)"} />
             <BarChart title="Analysis (Frequency) - Y Axis" series={AnalysisYData} label={"Amplitude VS Frequency (Hz)"} />
             <BarChart title="Analysis (Frequency) - Z Axis" series={AnalysisZData} label={"Amplitude VS Frequency (Hz)"} /> */}
@@ -1384,7 +1784,7 @@ const MachineDetails = () => {
     );
     console.log(response.data.items)
     let data = response.data;
-    if(data.status) {
+    if (data.status) {
       message.success("Event deleted successfully")
       fetchData();
     } else {
@@ -1394,67 +1794,72 @@ const MachineDetails = () => {
 
   const generateServiceReport = async () => {
     let enabled_fields = [];
-    if(serviceReportData.job_reference) enabled_fields.push('Job Reference');
-    if(serviceReportData.receiving_and_delivery) enabled_fields.push('Receiving & Delivery');
+    if (serviceReportData.job_reference) enabled_fields.push('Job Reference');
+    if (serviceReportData.receiving_and_delivery) enabled_fields.push('Receiving & Delivery');
     const response = await axiosInstance.post(`api/admin/reports/invoke`
-      , { 
+      , {
         user_id: localStorage.getItem("user_id"),
         life_cycle_event_id: serviceReportData.event_id,
         machine_id: +id,
         report_type: 'Service',
         enabled_fields: enabled_fields,
         pdf_url: '',
-       }
+      }
     );
-    // if(response.data.status) {
+    if (response.data.status) {
       message.success("Service Report generated successfully")
       fetchReportsData();
-    // } else {
-      // message.success("Event cannot be deleted")
-    // }
+      setGenerateReportModal(false);
+    } else {
+      message.error("Service Report cannot be generated");
+    }
   }
 
   const generateRepairReport = async () => {
     let enabled_fields = []
-    if(repairReportData.job_reference) enabled_fields.push('Job Reference');
-    if(repairReportData.receiving_and_delivery) enabled_fields.push('Receiving & Delivery');
+    if (repairReportData.job_reference) enabled_fields.push('Job Reference');
+    if (repairReportData.receiving_and_delivery) enabled_fields.push('Receiving & Delivery');
     const response = await axiosInstance.post(`api/admin/reports/invoke`
-      , { 
+      , {
         user_id: localStorage.getItem("user_id"),
         life_cycle_event_id: repairReportData.event_id,
         machine_id: +id,
         report_type: 'Repair',
         enabled_fields: enabled_fields,
         pdf_url: '',
-       }
+      }
     );
-    if(data.status) {
+    if (response.data.status) {
       message.success("Repair Report generated successfully")
       fetchReportsData();
+      setRepairReportModal(false);
     } else {
-      message.success("Event cannot be deleted")
+      message.error("Repair Report cannot be generated")
     }
   }
 
   const generateFailurePredictionReport = async () => {
     let enabled_fields = []
-    if(failurePredictionReportData.job_reference) enabled_fields.push('Job Reference');
-    if(failurePredictionReportData.receiving_and_delivery) enabled_fields.push('Receiving & Delivery');
+    if (failurePredictionReportData.job_reference) enabled_fields.push('Job Reference');
+    if (failurePredictionReportData.receiving_and_delivery) enabled_fields.push('Receiving & Delivery');
     const response = await axiosInstance.post(`api/admin/reports/invoke`
-      , { 
+      , {
         user_id: localStorage.getItem("user_id"),
         life_cycle_event_id: failurePredictionReportData.event_id,
         machine_id: +id,
         report_type: 'Failure Prediction',
         enabled_fields: enabled_fields,
         pdf_url: '',
-       }
+      }
     );
-    if(data.status) {
+    console.log(response)
+    console.log(response.data)
+    if (response.data.status) {
       message.success("Failure Prediction Report generated successfully")
       fetchReportsData();
+      setFailureReportModal(false);
     } else {
-      message.success("Event cannot be deleted")
+      message.error("Failure Prediction Report cannot be generated")
     }
   }
 
@@ -1501,23 +1906,25 @@ const MachineDetails = () => {
                     {data.user?.company_name || "NA"} | {data.job_site?.jobsite_name}
                   </div>
                 </div>
-                <div>
+                {/* <div>
                   <span className={`text-success`}>&#x2022; Online </span>
-                </div>
+                </div> */}
               </div>
               <div className="mt-3">
                 <h5
                   className="d-flex align-items-center"
                   style={{ gap: "8px" }}
                 >
-                  <SensorIcon /> { sensorsData.length } Sensors
+                  <SensorIcon /> {sensorsData.length} Sensors
                 </h5>
                 <h5
                   className="d-flex align-items-center"
                   style={{ gap: "8px" }}
                 >
                   <MachineIcon />
-                   Serial no:
+                  M/C Id:{" "}
+                  <span className="font-weight-300">{data.id}</span> |
+                  Serial no:
                   <span className="font-weight-300"> {data.serial_no} </span>{" "}
                 </h5>
                 <h5
@@ -1651,12 +2058,12 @@ const MachineDetails = () => {
           </Button>
         </div>
       </Modal>
-      
+
       <Modal
         title={
           <div className="d-flex align-items-center">
             <ServiceReportIcon />{" "}
-            <span className="d-block ml-2"> Service Report </span>
+            <span className="d-block ml-2">Service Report</span>
           </div>
         }
         visible={generateReportModal}
@@ -1689,7 +2096,7 @@ const MachineDetails = () => {
             </Select>
           </div>
           <div className="d-flex justify-content-between report-modal-boxes">
-            <Checkbox value={serviceReportData.job_reference} onChange={()=>{
+            <Checkbox value={serviceReportData.job_reference} onChange={() => {
               setServiceReportData((prevData) => {
                 return {
                   ...prevData,
@@ -1703,7 +2110,7 @@ const MachineDetails = () => {
             </Checkbox>
           </div>
           <div className="d-flex justify-content-between report-modal-boxes">
-            <Checkbox value={serviceReportData.receiving_and_delivery} onChange={()=>{
+            <Checkbox value={serviceReportData.receiving_and_delivery} onChange={() => {
               setServiceReportData((prevData) => {
                 return {
                   ...prevData,
@@ -1763,7 +2170,7 @@ const MachineDetails = () => {
         title={
           <div className="d-flex align-items-center">
             <RepairReportIcon />{" "}
-            <span className="d-block ml-2"> Repair Report </span>
+            <span className="d-block ml-2">Repair Report</span>
           </div>
         }
         visible={repairReportModal}
@@ -1772,7 +2179,7 @@ const MachineDetails = () => {
         width={1000}
       >
         <div>
-        <div className="d-flex justify-content-start align-items-center">
+          <div className="d-flex justify-content-start align-items-center">
             <h5 className="mr-2">Event Id</h5>
             <Select
               id="dates"
@@ -1796,7 +2203,7 @@ const MachineDetails = () => {
             </Select>
           </div>
           <div className="d-flex justify-content-between report-modal-boxes">
-            <Checkbox value={repairReportData.job_reference} onChange={()=>{
+            <Checkbox value={repairReportData.job_reference} onChange={() => {
               setRepairReportData((prevData) => {
                 return {
                   ...prevData,
@@ -1810,7 +2217,7 @@ const MachineDetails = () => {
             </Checkbox>
           </div>
           <div className="d-flex justify-content-between report-modal-boxes">
-            <Checkbox value={repairReportData.receiving_and_delivery} onChange={()=>{
+            <Checkbox value={repairReportData.receiving_and_delivery} onChange={() => {
               setRepairReportData((prevData) => {
                 return {
                   ...prevData,
@@ -1982,7 +2389,7 @@ const MachineDetails = () => {
         title={
           <div className="d-flex align-items-center">
             <RepairReportIcon />{" "}
-            <span className="d-block ml-2"> Failure Prediction Report </span>
+            <span className="d-block ml-2">Failure Prediction Report</span>
           </div>
         }
         visible={failureReportModal}
@@ -1991,7 +2398,7 @@ const MachineDetails = () => {
         width={1000}
       >
         <div>
-        <div className="d-flex justify-content-start align-items-center">
+          <div className="d-flex justify-content-start align-items-center">
             <h5 className="mr-2">Event Id</h5>
             <Select
               id="dates"
@@ -2015,7 +2422,7 @@ const MachineDetails = () => {
             </Select>
           </div>
           <div className="d-flex justify-content-between report-modal-boxes">
-            <Checkbox value={failurePredictionReportData.job_reference} onChange={()=>{
+            <Checkbox value={failurePredictionReportData.job_reference} onChange={() => {
               setFailurePredictionReportData((prevData) => {
                 return {
                   ...prevData,
@@ -2029,7 +2436,7 @@ const MachineDetails = () => {
             </Checkbox>
           </div>
           <div className="d-flex justify-content-between report-modal-boxes">
-            <Checkbox value={failurePredictionReportData.receiving_and_delivery} onChange={()=>{
+            <Checkbox value={failurePredictionReportData.receiving_and_delivery} onChange={() => {
               setFailurePredictionReportData((prevData) => {
                 return {
                   ...prevData,
@@ -2198,7 +2605,7 @@ const MachineDetails = () => {
       </Modal>
 
       <div className="customTableBackground">
-        <Tabs>
+        <Tabs activeKey={tabKey} onChange={(key) => setTabKey(key)}>
           {items.map((item) => (
             <Tabs.TabPane tab={item.label} key={item.key}>
               {item.children}
@@ -2207,9 +2614,49 @@ const MachineDetails = () => {
         </Tabs>
       </div>
 
-      <Modal title="Date Range" visible={dateRangeModal} onCancel={() => setDateRangeModal(false)} >
-        <div>
-          <DatePicker.RangePicker />
+      <Modal title="Date Range" onOk={() => {
+        if (modalStartDate && modalEndDate) {
+          setDateRangeModal(false);
+          fetchSensorData(selectedAlarm, modalStartDate, modalEndDate);
+          setSelectorDate('Date-Range');
+          setStartDate(modalStartDate);
+          setEndDate(modalEndDate);
+        } else {
+          message.error("Please select date range")
+        }
+      }} visible={dateRangeModal} onCancel={() => {
+        setDateRangeModal(false)
+        if (selectorDate === 'Date-Range') {
+
+        } else {
+          setModalStartDate(null);
+          setModalEndDate(null);
+        }
+      }} >
+        <div style={{
+          display: "flex",
+          // flexDirection: "column",
+          gap: "10px"
+        }}>
+
+          <DatePicker
+            format={"DD-MM-YYYY"}
+            style={{ width: "100%" }}
+            onChange={(date, dateString) => {
+              setModalStartDate(date ? moment(date).format("YYYY-MM-DD HH:mm:ss") : null);
+            }}
+            value={modalStartDate ? moment(modalStartDate, "YYYY-MM-DD hh:mm:ss") : null}
+          />
+
+          <DatePicker
+            style={{ width: "100%" }}
+            format={"DD-MM-YYYY"}
+            onChange={(date, dateString) => {
+              setModalEndDate(date ? moment(date).format("YYYY-MM-DD HH:mm:ss") : null);
+            }}
+            value={modalEndDate ? moment(modalEndDate, "YYYY-MM-DD HH:mm:ss") : null}
+          />
+
         </div>
       </Modal>
     </div>
@@ -2217,3 +2664,5 @@ const MachineDetails = () => {
 };
 
 export default MachineDetails;
+
+

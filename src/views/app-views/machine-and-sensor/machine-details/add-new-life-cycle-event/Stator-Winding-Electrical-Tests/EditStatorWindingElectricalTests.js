@@ -30,7 +30,7 @@ const EditStatorWindingElectricalTests = ({ modalName, setEditStatus, editStatus
     }, [])
 
     const getSuffixIndex = (data) => {
-        console.log("check-1", data);
+        // console.log("check-1", data);
         let sf_name_found =  Object.keys(suffixData).find((e) => e == data.name);
 
         if(sf_name_found) {

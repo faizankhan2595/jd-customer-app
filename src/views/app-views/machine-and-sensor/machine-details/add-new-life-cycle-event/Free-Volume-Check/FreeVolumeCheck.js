@@ -46,6 +46,20 @@ const FreeVolumeCheck = ({
         },
     );
 
+
+    const getSuffixSplitValue = (internalData) => {
+        if(suffixData[internalData?.name]) {
+            if(internalData.value?.includes('-')) {
+                let value = internalData.value?.split('-')
+                return value[value.length-1]
+            } else {
+                return suffixData[internalData?.name]
+            }
+        } else {
+            return ''
+        }
+    }
+
     const convertImageToBase64 = async (imageUrl, markings) => {
         try {
             const response = await fetch(imageUrl, { mode: "cors" }); // Ensure CORS is allowed
@@ -64,19 +78,6 @@ const FreeVolumeCheck = ({
         }
     };
 
-    const getSuffixSplitValue = (internalData) => {
-        if(suffixData[internalData?.name]) {
-            if(internalData.value?.includes('-')) {
-                let value = internalData.value?.split('-')
-                return value[value.length-1]
-            } else {
-                return suffixData[internalData?.name]
-            }
-        } else {
-            return ''
-        }
-    }
-
     return (
         <div className="normal-header-color">
             {editStatus && <EditFreeVolumeCheck modalName={modalName} editStatus={editStatus} setEditStatus={setEditStatus} 
@@ -93,7 +94,7 @@ const FreeVolumeCheck = ({
                         <Collapse
                             key={i} // Added key prop to Collapse component
                             expandIconPosition={"end"}
-                            onChange={(data) => console.log(data)}
+                            // onChange={(data) => console.log(data)}
                             className="mb-3"
                         >
                             <Panel
@@ -175,7 +176,7 @@ const FreeVolumeCheck = ({
                                 <div className="mt-5">
                                     <h5>Uploaded Photos</h5>
                                     <div className="dashed-border p-2">
-                                        {item.photos.map((image, index) => (
+                                        {item?.photos.map((image, index) => (
                                             <div className='mb-2 w-100 d-flex justify-content-start' key={index}>
                                                 <div className='w-75 d-flex flex-column align-items-start'>
                                                     <img
@@ -206,19 +207,19 @@ const FreeVolumeCheck = ({
                                                             Edit Photo
                                                         </Button>
 
-                                                        {/* <Button className='mt-2 ml-2' onClick={() => {
+                                                        <Button className='mt-2 ml-2' onClick={() => {
                                                                 delSubUploadedPhoto(index, `Free-Volume ~ ${item?.title}`)
                                                             }}>
                                                             {" "}
                                                             Delete Photo
-                                                        </Button> */}
+                                                        </Button>
                                                     </div>
                                                 </div>
                                                 <div>
                                                     <h4>Markings</h4>
                                                     {image.image_markings.length > 0 ?
                                                         image.image_markings.map((marking, index) => (
-                                                            <div>
+                                                            marking.text && <div>
                                                                 <b>{index+1}. </b>{marking.text}
                                                             </div>
                                                         ))

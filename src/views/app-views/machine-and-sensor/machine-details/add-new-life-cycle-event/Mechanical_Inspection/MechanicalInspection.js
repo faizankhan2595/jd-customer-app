@@ -51,6 +51,7 @@ const MechanicalInspection = ({
             return ''
         }
     }
+
     const convertImageToBase64 = async (imageUrl, markings) => {
         try {
             const response = await fetch(imageUrl, { mode: "cors" }); // Ensure CORS is allowed
@@ -68,7 +69,6 @@ const MechanicalInspection = ({
           console.error("Error fetching image:", error);
         }
     };
-
     
     return (
         <div className="normal-header-color">
@@ -83,11 +83,11 @@ const MechanicalInspection = ({
                         <Collapse
                             key={i} // Added key prop to Collapse component
                             expandIconPosition={"end"}
-                            onChange={(data) => console.log(data)}
+                            // onChange={(data) => console.log(data)}
                             className="mb-3"
                         >
                             <Panel
-                                key={i}
+                                key={i+1}
                                 header={
                                     <>
                                         <span className="d-flex align-items-centr" style={{ gap: "5px" }}>
@@ -196,19 +196,19 @@ const MechanicalInspection = ({
                                                             Edit Photo
                                                         </Button>
 
-                                                        {/* <Button className='mt-2 ml-2' onClick={() => {
+                                                        <Button className='mt-2 ml-2' onClick={() => {
                                                                 delSubUploadedPhoto(index, `Mechanical-Inspection ~ ${item?.title}`)
                                                             }}>
                                                             {" "}
                                                             Delete Photo
-                                                        </Button> */}
+                                                        </Button>
                                                     </div>
                                                 </div>
                                                 <div>
                                                     <h4>Markings</h4>
                                                     {image.image_markings.length > 0 ?
                                                         image.image_markings.map((marking, index) => (
-                                                            <div>
+                                                            marking.text && <div>
                                                                 <b>{index+1}. </b>{marking.text}
                                                             </div>
                                                         ))
