@@ -246,7 +246,7 @@ const AddNewLifeCycleEvent = () => {
   const [auxileryChecksBrake, setAuxileryChecksBrake] = useState({})
   const [auxileryChecksOther, setAuxileryChecksOther] = useState({})
   const [initialeditModal, setInitialeditModal] = useState(false);
-
+  const {Option} = Select;
   //inital and physical inspection
   const [initialModalForm, setInitialModalForm] = useState({});
   const [initialModalFormdata, setInitialModalFormdata] = useState({});
