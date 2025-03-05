@@ -1,23 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Select, Row, Col, Button, Switch, message } from 'antd';
+import { Form, Input, Select, Row, Col, Button, Switch, message, Modal } from 'antd';
 import { MachineSensorIcon, UploadFileIcon } from 'assets/svg/icon';
 import { CloseCircleOutlined } from '@ant-design/icons';
 import { useHistory, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { axiosInstance } from 'App';
 import { UploadImage } from 'utils/Upload';
+import { set } from 'lodash';
 
 const { Option } = Select;
 
 const AddNewSensor = () => {
   const history = useHistory();
   const { id } = useParams();
+  const [visible, setVisible] = useState(false);
+  const [sensorId, setSensorId] = useState('');
   const query = new URLSearchParams(history.location.search);
   const machineName = query.get('machine_name');
   const [form] = Form.useForm();
   const [machineStatus, setMachineStatus] = useState(false);
+  const [generateSensorId, setGenerateSensorId] = useState('');
+  const [generatedSensorId, setGeneratedSensorId] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
-
+  const [loading, setLoading] = useState(false);
   const styles = {
     files: {
       listStyle: "none",
@@ -69,7 +74,9 @@ const AddNewSensor = () => {
           return item.url;
         }
       })
+      setLoading(true);
       file = await Promise.all(uploadPromise);
+      // setLoading(false);
       console.log(file);
     }
     file = [...file, ...temp2.map((item) => {
@@ -78,7 +85,8 @@ const AddNewSensor = () => {
 
     const payload = {
       sensor_type: values.sensor_type,
-      sensor_id: values.sensor_id,
+      sensor_id: generatedSensorId,
+      sensor_id_label: form.getFieldValue('sensor_id_label'),
       sensor_name: values.sensor_name,
       sensor_location: values.sensor_location,
       sensor_details: values.sensor_details,
@@ -94,6 +102,7 @@ const AddNewSensor = () => {
       message.error('Failed to add sensor. Please try again.');
       console.error('Error:', error);
     }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -117,6 +126,42 @@ const AddNewSensor = () => {
   const handleBackClick = () => {
     history.goBack();
   };
+
+  const generateHexString = (id) => {
+    try {
+      // Parse the input to an integer
+      const sensorIdInt = parseInt(id, 10);
+
+      if (isNaN(sensorIdInt) || sensorIdInt < 0) {
+        return '';
+      }
+
+      // Convert to hex format as specified:
+      // LSB of sensor ID (3 bytes) + sensor type (1 byte)
+      // The sensor type is always 24 (0x24)
+
+      // Create a Buffer-like array for the sensor ID (3 bytes, LSB first)
+      const bytes = new Uint8Array(4);
+
+      // Set the sensor ID bytes (3 bytes, LSB first)
+      bytes[0] = sensorIdInt & 0xFF;         // First byte (LSB)
+      bytes[1] = (sensorIdInt >> 8) & 0xFF;  // Second byte
+      bytes[2] = (sensorIdInt >> 16) & 0xFF; // Third byte (MSB)
+
+      // Set the sensor type (always 0x24)
+      bytes[3] = 0x24;
+
+      // Convert to hex string
+      const hexString = Array.from(bytes)
+        .map(byte => byte.toString(16).padStart(2, '0'))
+        .join('');
+
+      return hexString.toUpperCase();
+    } catch (err) {
+      return '';
+    }
+  };
+
 
   return (
     <div>
@@ -153,11 +198,24 @@ const AddNewSensor = () => {
             </Col>
             <Col span={12}>
               <Form.Item
-                label="Sensor ID"
-                name="sensor_id"
+                label={
+                  <span>
+                    Sensor ID&nbsp;
+                    <Button
+                      onClick={() => {
+                        setVisible(true);
+                        setSensorId(form.getFieldValue('sensor_id_label'));
+                        setGenerateSensorId(generatedSensorId);
+                      }}
+                      type="link" style={{ padding: '0' }}>
+                      Generate ID
+                    </Button>
+                  </span>
+                }
+                name="sensor_id_label"
                 rules={[{ required: true, message: 'Please enter Sensor ID' }]}
               >
-                <Input />
+                <Input disabled />
               </Form.Item>
             </Col>
           </Row>
@@ -213,7 +271,7 @@ const AddNewSensor = () => {
                     style={styles.uploadFile}
                     className="uploadFile"
                     type="file"
-                      accept="image/*"
+                    accept="image/*"
                     multiple
                     onChange={handleFileSelect}
                   />
@@ -243,12 +301,63 @@ const AddNewSensor = () => {
             <Button className="px-4 font-weight-semibold" htmlType="button" onClick={handleBackClick}>
               Back
             </Button>
-            <Button className="px-4 font-weight-semibold text-white bg-primary" htmlType="submit">
+            <Button className="px-4 font-weight-semibold text-white bg-primary"
+              loading={loading}
+              htmlType="submit">
               Save
             </Button>
           </div>
         </Form.Item>
       </Form>
+
+      <Modal title="Generate Sensor ID" visible={visible} onOk={() => {
+        if(sensorId === ''){
+          message.error('Please enter a Sensor ID');
+          return;
+        }
+        if(isNaN(sensorId)){
+          message.error('Please enter a valid Sensor ID');
+          return;
+        }
+
+        setVisible(false);
+        form.setFieldsValue({ sensor_id_label: sensorId });
+        setGeneratedSensorId(generateSensorId);
+      }} onCancel={() => {
+        setVisible(false);
+      }}>
+        <Form
+          layout='vertical'>
+          <Form.Item label="Sensor ID"
+
+          >
+            <Input
+              value={sensorId}
+              onChange={(e) => {
+                if(isNaN(e.target.value)){
+                  message.error('Please enter a valid Sensor ID');
+                  return;
+                }
+                setSensorId(e.target.value);
+                const temp = generateHexString(e.target.value);
+                
+                setGenerateSensorId(temp);
+              }
+              }
+            />
+          </Form.Item>
+          <Form.Item
+            label="Generate Sensor ID"
+
+          >
+            <Input disabled
+              value={generateSensorId}
+
+            />
+          </Form.Item>
+
+        </Form>
+      </Modal>
     </div>
   );
 };

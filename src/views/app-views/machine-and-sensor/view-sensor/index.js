@@ -39,7 +39,7 @@ const ViewSensor = () => {
       return {
         id: item.id,
         image: item.image,
-        sensor_id: item.sensor_id,
+        sensor_id: item.sensor_id_label,
         sensor_type: item.sensor_type,
         sensor_name: item.sensor_name,
         sensor_location: item.sensor_location,
@@ -60,7 +60,7 @@ const ViewSensor = () => {
       key: value.id,
       id: value.id,
       image: value.image,
-      sensor_id: value.sensor_id,
+      sensor_id: value.sensor_id_label,
       sensor_type: value.sensor_type,
       sensor_name: value.sensor_name,
       location: value.sensor_location,

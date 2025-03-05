@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Select, Row, Col, Button, Switch, message } from 'antd';
+import { Form, Input, Select, Row, Col, Button, Switch, message, Modal } from 'antd';
 import { MachineSensorIcon, UploadFileIcon } from 'assets/svg/icon';
 import { CloseCircleOutlined, EyeOutlined } from '@ant-design/icons';
 import { useHistory, useParams } from 'react-router-dom';
@@ -12,13 +12,17 @@ const { Option } = Select;
 const AddNewSensor = () => {
   const history = useHistory();
   const { id } = useParams();
+  const [loading, setLoading] = useState(false);
   const query = new URLSearchParams(history.location.search);
   const machineName = query.get('machine_name');
   const { editId } = useParams();
   const [form] = Form.useForm();
   const [machineStatus, setMachineStatus] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
-
+  const [visible, setVisible] = useState(false);
+  const [sensorId, setSensorId] = useState('');
+  const [generateSensorId, setGenerateSensorId] = useState('');
+  const [generatedSensorId, setGeneratedSensorId] = useState('');
   const styles = {
     files: {
       listStyle: "none",
@@ -54,32 +58,35 @@ const AddNewSensor = () => {
   };
 
   const onFinish = async (values) => {
-       let file = [];
-        const temp = selectedFiles.filter((item) => {
-          return item.url === undefined;
-        })
-        const temp2 = selectedFiles.filter((item) => {
-          return item.url !== undefined;
-        })
-        if (temp.length !== 0) {
-          const uploadPromise = temp.map(async (item) => {
-            if (item.url === undefined) {
-              const url = await UploadImage(item);
-              return url;
-            } else {
-              return item.url;
-            }
-          })
-          file = await Promise.all(uploadPromise);
-          console.log(file);
+    let file = [];
+    const temp = selectedFiles.filter((item) => {
+      return item.url === undefined;
+    })
+    const temp2 = selectedFiles.filter((item) => {
+      return item.url !== undefined;
+    })
+    if (temp.length !== 0) {
+      const uploadPromise = temp.map(async (item) => {
+        if (item.url === undefined) {
+          const url = await UploadImage(item);
+          return url;
+        } else {
+          return item.url;
         }
-        file = [...file, ...temp2.map((item) => {
-          return item.url
-        })];
-    
+      })
+      setLoading(true);
+      file = await Promise.all(uploadPromise);
+      // setLoading(false);
+      console.log(file);
+    }
+    file = [...file, ...temp2.map((item) => {
+      return item.url
+    })];
+
     const payload = {
       sensor_type: values.sensor_type,
-      sensor_id: values.sensor_id,
+      sensor_id: generatedSensorId,
+      sensor_id_label: form.getFieldValue('sensor_id_label'),
       sensor_name: values.sensor_name,
       sensor_location: values.sensor_location,
       sensor_details: values.sensor_details,
@@ -88,12 +95,49 @@ const AddNewSensor = () => {
     };
 
     try {
-      const response = await axiosInstance.put(`/api/web/machines/${id}/sensors/${editId}`, payload);
+      setLoading(true);
+      const response = await axiosInstance.put(`/api/admin/machines/${id}/sensors/${editId}`, payload);
       message.success('Sensor updated successfully!');
+      setLoading(false);
       history.goBack(); // Navigate to the sensors list page
     } catch (error) {
       message.error('Failed to add sensor. Please try again.');
+      setLoading(false);
       console.error('Error:', error);
+    }
+  };
+  const generateHexString = (id) => {
+    try {
+      // Parse the input to an integer
+      const sensorIdInt = parseInt(id, 10);
+
+      if (isNaN(sensorIdInt) || sensorIdInt < 0) {
+        return '';
+      }
+
+      // Convert to hex format as specified:
+      // LSB of sensor ID (3 bytes) + sensor type (1 byte)
+      // The sensor type is always 24 (0x24)
+
+      // Create a Buffer-like array for the sensor ID (3 bytes, LSB first)
+      const bytes = new Uint8Array(4);
+
+      // Set the sensor ID bytes (3 bytes, LSB first)
+      bytes[0] = sensorIdInt & 0xFF;         // First byte (LSB)
+      bytes[1] = (sensorIdInt >> 8) & 0xFF;  // Second byte
+      bytes[2] = (sensorIdInt >> 16) & 0xFF; // Third byte (MSB)
+
+      // Set the sensor type (always 0x24)
+      bytes[3] = 0x24;
+
+      // Convert to hex string
+      const hexString = Array.from(bytes)
+        .map(byte => byte.toString(16).padStart(2, '0'))
+        .join('');
+
+      return hexString.toUpperCase();
+    } catch (err) {
+      return '';
     }
   };
 
@@ -116,36 +160,39 @@ const AddNewSensor = () => {
   };
   const getSensor = async () => {
     try {
-        const response = await axiosInstance.get(`api/web/machines/${id}/sensors/${editId}`);
-        // message.success('Sensor added successfully!');
-        console.log(response.data.item);
-        const data = response.data.item;
-        // history.goBack(); 
-        form.setFieldsValue({
-            machineName:data.machine_id,
-            sensor_type:data.sensor_type,
-            sensor_id:data.sensor_id,
-            sensor_name:data.sensor_name,
-            sensor_location:data.sensor_location,
-            sensor_details:data.sensor_details,
-            machineName:machineName,
-        })
-        setSelectedFiles(data?.pictures.map((item,index) => {
-          return {
-              url: item?.file_url,
-              name: `Picture ${index+1}`
-          }
+      const response = await axiosInstance.get(`api/admin/machines/${id}/sensors/${editId}`);
+      // message.success('Sensor added successfully!');
+      console.log(response.data.item);
+      const data = response.data.item;
+      // history.goBack(); 
+      form.setFieldsValue({
+        machineName: data.machine_id,
+        sensor_type: data.sensor_type,
+        sensor_id_label: data.sensor_id_label,
+        sensor_name: data.sensor_name,
+        sensor_location: data.sensor_location,
+        sensor_details: data.sensor_details,
+        machineName: machineName,
+      })
+
+      setGeneratedSensorId(data.sensor_id);
+
+      setSelectedFiles(data?.pictures.map((item, index) => {
+        return {
+          url: item?.file_url,
+          name: `Picture ${index + 1}`
+        }
       }))
-        setMachineStatus(data.sensor_status)
-      } catch (error) {
-        message.error('Failed to edit sensor. Please try again.');
-        console.error('Error:', error);
-      }
+      setMachineStatus(data.sensor_status)
+    } catch (error) {
+      message.error('Failed to edit sensor. Please try again.');
+      console.error('Error:', error);
+    }
   }
   useEffect(() => {
     getSensor()
   }, [])
-  
+
   return (
     <div>
       <h4>
@@ -181,11 +228,24 @@ const AddNewSensor = () => {
             </Col>
             <Col span={12}>
               <Form.Item
-                label="Sensor ID"
-                name="sensor_id"
+                label={
+                  <span>
+                    Sensor ID&nbsp;
+                    <Button
+                      onClick={() => {
+                        setVisible(true);
+                        setSensorId(form.getFieldValue('sensor_id_label'));
+                        setGenerateSensorId(generatedSensorId);
+                      }}
+                      type="link" style={{ padding: '0' }}>
+                      Generate ID
+                    </Button>
+                  </span>
+                }
+                name="sensor_id_label"
                 rules={[{ required: true, message: 'Please enter Sensor ID' }]}
               >
-                <Input />
+                <Input disabled />
               </Form.Item>
             </Col>
           </Row>
@@ -247,41 +307,41 @@ const AddNewSensor = () => {
                   />
                 </div>
                 <div className="mt-4">
-                            {selectedFiles.length > 0 && (
-                                <ul className="p-0" style={{ width: "100%" }}>
-                                    {selectedFiles.map((file, i) => (
-                                        <li key={file.name} className="my-3" style={styles.files}>
-                                            {" "}
-                                            <div className="d-flex align-items-center">
-                                                <UploadFileIcon />{" "}
-                                                <span className="ml-2">{file.name} </span>{" "}
-                                                {/* <span className="ml-5">
+                  {selectedFiles.length > 0 && (
+                    <ul className="p-0" style={{ width: "100%" }}>
+                      {selectedFiles.map((file, i) => (
+                        <li key={file.name} className="my-3" style={styles.files}>
+                          {" "}
+                          <div className="d-flex align-items-center">
+                            <UploadFileIcon />{" "}
+                            <span className="ml-2">{file.name} </span>{" "}
+                            {/* <span className="ml-5">
                                                     {file.url ? (  <EyeOutlined style={{ cursor: "pointer" }} onClick={() => window.open(file.url)} />) : null}
                                                 </span> */}
-                                            </div>
-                                            <div>
-                        {
-                          file.url && <span className="ml-3 " style={{
-                            cursor: "pointer"
-                          }} onClick={() => {
-                            window.open(file.url, '_blank')
-                          }}>
-                            <EyeOutlined />
-                          </span>
-                        }
-                        <span
-                          style={{ cursor: "pointer" }}
-                          onClick={() => delUplFile(i)}
-                        >
-                          {" "}
-                          <CloseCircleOutlined />{" "}
-                        </span>
-                      </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
+                          </div>
+                          <div>
+                            {
+                              file.url && <span className="ml-3 " style={{
+                                cursor: "pointer"
+                              }} onClick={() => {
+                                window.open(file.url, '_blank')
+                              }}>
+                                <EyeOutlined />
+                              </span>
+                            }
+                            <span
+                              style={{ cursor: "pointer" }}
+                              onClick={() => delUplFile(i)}
+                            >
+                              {" "}
+                              <CloseCircleOutlined />{" "}
+                            </span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
             </Col>
           </Row>
@@ -297,6 +357,55 @@ const AddNewSensor = () => {
           </div>
         </Form.Item>
       </Form>
+
+      <Modal title="Generate Sensor ID" visible={visible} onOk={() => {
+        if (sensorId === '') {
+          message.error('Please enter a Sensor ID');
+          return;
+        }
+        if (isNaN(sensorId)) {
+          message.error('Please enter a valid Sensor ID');
+          return;
+        }
+
+        setVisible(false);
+        form.setFieldsValue({ sensor_id_label: sensorId });
+        setGeneratedSensorId(generateSensorId);
+      }} onCancel={() => {
+        setVisible(false);
+      }}>
+        <Form
+          layout='vertical'>
+          <Form.Item label="Sensor ID"
+
+          >
+            <Input
+              value={sensorId}
+              onChange={(e) => {
+                if (isNaN(e.target.value)) {
+                  message.error('Please enter a valid Sensor ID');
+                  return;
+                }
+                setSensorId(e.target.value);
+                const temp = generateHexString(e.target.value);
+
+                setGenerateSensorId(temp);
+              }
+              }
+            />
+          </Form.Item>
+          <Form.Item
+            label="Generate Sensor ID"
+
+          >
+            <Input disabled
+              value={generateSensorId}
+
+            />
+          </Form.Item>
+
+        </Form>
+      </Modal>
     </div>
   );
 };
