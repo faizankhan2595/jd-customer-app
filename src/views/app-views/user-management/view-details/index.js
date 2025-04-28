@@ -869,7 +869,7 @@ export default function AddNewAdminAccount() {
                     name="nric_fin_number"
                     label="NRIC/FIN"
                     rules={[
-                      { required: true, message: "Please enter NRIC/FIN" },
+                      { required: false, message: "Please enter NRIC/FIN" },
                     ]}
                   >
                     <Input disabled style={{ width: "100%" }} placeholder="NRIC/FIN" />

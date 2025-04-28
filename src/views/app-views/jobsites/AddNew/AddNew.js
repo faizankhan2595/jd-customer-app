@@ -184,7 +184,7 @@ function AddNew() {
             <h4> <UserSwitchOutlined /><span style={{
                 color: '#6a6a6a',
                 fontWeight: '300'
-            }}> Operation Mastrer / Jobsite</span> / {id ?
+            }}> Operation Master / Jobsite</span> / {id ?
                 "Edit" : "Add New"
                 } </h4>
             <Card>

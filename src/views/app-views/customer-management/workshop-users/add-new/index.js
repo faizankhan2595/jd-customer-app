@@ -315,7 +315,7 @@ export default function AddNewWorkshopUser() {
                     name="nric"
                     label="NRIC/FIN"
                     rules={[
-                      { required: true, message: "Please enter NRIC/FIN" },
+                      { required: false, message: "Please enter NRIC/FIN" },
                     ]}
                   >
                     <Input style={{ width: "100%" }} placeholder="NRIC/FIN" />

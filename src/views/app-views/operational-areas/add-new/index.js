@@ -21,7 +21,7 @@ function AddNew() {
                     status: status
                 }).then(response => {
                     if (response.status === 200) {
-                        message.success("Updated Successfully");
+                        message.success("Area Updated Successfully");
                         history.push('/app/operator-master/operational-areas')
                     }
                 })
@@ -36,7 +36,7 @@ function AddNew() {
                     status: status
                 }).then(response => {
                     if (response.status === 200) {
-                        message.success("Added Successfully");
+                        message.success("Area Added Successfully");
                         history.push('/app/operator-master/operational-areas')
                     }
                 })
@@ -74,7 +74,7 @@ function AddNew() {
             <h4> <UserSwitchOutlined /><span style={{
                 color: '#6a6a6a',
                 fontWeight: '300'
-            }}> Operational Mastrer / Area</span> / {
+            }}> Operational Master / Area</span> / {
                 id ? "Edit" : "Add New"
             } </h4>
             <Card>

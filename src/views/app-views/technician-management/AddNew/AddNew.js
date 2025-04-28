@@ -514,7 +514,7 @@ export default function AddNewTechnician() {
                                         name="nric_fin_number"
                                         label="NRIC/FIN"
                                         rules={[
-                                            { required: true, message: "Please enter NRIC/FIN" },
+                                            { required: false, message: "Please enter NRIC/FIN" },
                                         ]}
                                     >
                                         <Input style={{ width: "100%" }} placeholder="NRIC/FIN" />

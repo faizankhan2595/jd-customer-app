@@ -140,7 +140,7 @@ export default function AddNewAdminAccount() {
         let profile_pic = imageUrl
 
         console.log(fileList);
-      if(profile_pic.includes('base64')){
+      if(profile_pic?.includes('base64')){
          profile_pic = await UploadImage(fileList);
      }
 
@@ -196,7 +196,7 @@ export default function AddNewAdminAccount() {
                 history.goBack();
             } catch (error) {
                 setLoading(false);
-                const errorResponse = error.response.data.data;
+                const errorResponse = error?.response?.data?.data;
                 if (errorResponse && errorResponse.error) {
                     const errorMessage = errorResponse.error[0];
 
@@ -508,7 +508,7 @@ export default function AddNewAdminAccount() {
                                         name="nric_fin_number"
                                         label="NRIC/FIN"
                                         rules={[
-                                            { required: true, message: "Please enter NRIC/FIN" },
+                                            { required: false, message: "Please enter NRIC/FIN" },
                                         ]}
                                     >
                                         <Input style={{ width: "100%" }} placeholder="NRIC/FIN" />
