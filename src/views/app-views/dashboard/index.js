@@ -279,7 +279,7 @@ const Dashboard = () => {
 							label={["Online", "Offline"]}
 							colors={["#6467F0", "#38B4EC"]}
 							value={[onlineMachines,offlineMachines]} />
-						<Divider />
+						{/* <Divider />
 						<LineChart title="Incident Counts-Unavailability" colors={["#38B4EC"]} series={[
 							lineUnCountSeries
 						]} categories={
@@ -291,7 +291,7 @@ const Dashboard = () => {
 							uncountSeries
 						]} categories={
 							uncountCategories
-						} />
+						} /> */}
 					</div>
 
 
@@ -303,7 +303,7 @@ const Dashboard = () => {
 						<PieChartWidget title="Alert Status" label={["Healthy", "With Alert"]}
 							colors={["#6467F0", "#B666C3"]}
 							value={[health, unhealthy]} />
-						<Divider />
+						{/* <Divider />
 						<LineChart title="Incident Counts-Alert Status" colors={["#B666C3"]} series={
 							[lineAlertSeries]
 						} categories={
@@ -314,7 +314,7 @@ const Dashboard = () => {
 							alertSeries	
 						]} categories={
 							alertCategories
-						} />
+						} /> */}
 					</div>
 
 					<div style={{
@@ -326,7 +326,7 @@ const Dashboard = () => {
 							colors={["#00A843", "#FFCB21", "#FB8920", "#FF4646"]}
 							value={[green, yellow, orange, red]}
 						/>
-						<Divider />
+						{/* <Divider />
 						<LineChart
 							title="Incident Counts-Vibration Status"
 							colors={["#FB8920", "#FF4646"]}
@@ -342,7 +342,7 @@ const Dashboard = () => {
 							vibrationSeries
 						]} categories={
 							vibrationCategories
-						} />
+						} /> */}
 					</div>
 
 					<div style={{
@@ -355,7 +355,7 @@ const Dashboard = () => {
 								[goodBattery, badBattery]
 							}
 						/>
-						<Divider />
+						{/* <Divider />
 						<LineChart title="Incident Counts-Battery Status" colors={["#B666C3"]} series={[ 
 							lineBatterySeries
 						]} categories={
@@ -366,7 +366,7 @@ const Dashboard = () => {
 							batterySer
 						]} categories={
 							batteryCategories
-						} />
+						} /> */}
 					</div>
 				</div>
 			</Card>

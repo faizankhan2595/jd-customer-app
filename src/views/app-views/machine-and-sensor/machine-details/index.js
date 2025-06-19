@@ -20,6 +20,7 @@ import {
 import {
   AlarmIcon,
   CCTVIcon,
+  KW,
   CsvIcon,
   ErrorOutlineIcon,
   ImagesIcon,
@@ -61,7 +62,7 @@ import ReactApexChart from "react-apexcharts";
 import LineChart from "components/shared-components/ChartWidget/LineChart";
 import BarChart from "components/shared-components/ChartWidget/BarChart";
 import { API_BASE_URL } from "constants/ApiConstant";
-
+import MachineSensorComponent from "./MachineSensorComponent";
 
 const { Option } = Select;
 const options = [
@@ -215,7 +216,7 @@ const MachineDetails = () => {
   const fetchData = async () => {
     const response = await axiosInstance.get(`api/admin/machines/${id}`);
     const res2 = await axiosInstance.get(`api/admin/machines/${id}/sensors`);
-    setSensorsData(res2.data.items);
+    setSensorsData([...res2.data.items]);
     // setSelectedAlarm(res2.data.items[0]?.sensor_id)
     let tempDeviceId = ''
     if(localStorage.getItem('deviceId')){
@@ -280,7 +281,7 @@ const MachineDetails = () => {
   }
 
   const download = async (sensor_id, start_date, end_date) => {
-    if(rawData.length == 0){
+    if (rawData.length == 0) {
       message.error("No data found")
       return
     }
@@ -299,7 +300,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.mid_freq_acceleration_p2p_x,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -311,7 +312,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.mid_freq_acceleration_p2p_y,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -323,7 +324,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.mid_freq_acceleration_p2p_z,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -334,7 +335,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.high_freq_acceleration_p2p_x,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -346,7 +347,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.mid_freq_displacement_x,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -358,7 +359,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.mid_freq_displacement_y,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -369,7 +370,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.mid_freq_displacement_z,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -380,7 +381,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.mid_freq_velocity_x,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -391,7 +392,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.mid_freq_velocity_y,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -403,7 +404,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.mid_freq_velocity_z,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -414,7 +415,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.mid_freq_env_x,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -425,7 +426,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.mid_freq_env_y,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -436,7 +437,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.mid_freq_env_z,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -447,7 +448,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.inclination_x,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -458,7 +459,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.inclination_y,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -469,7 +470,7 @@ const MachineDetails = () => {
         return {
           x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
           y: item.inclination_z,
-          extraValue: item.file.replace("uploads/", ""), 
+          extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
       return data
@@ -1057,7 +1058,7 @@ const MachineDetails = () => {
       key: 'created_by',
       render: (text, record) => (
         <>
-        <div>{record.created_by?.name}</div>
+          <div>{record.created_by?.name}</div>
         </>
       ),
     },
@@ -1079,136 +1080,155 @@ const MachineDetails = () => {
       label: (
         <div className="d-flex align-items-center">
           <MachineIcon color={"#3CA6C1"} />
-          <span className="ml-2">Machine Details</span>
+          <span className="ml-2">Sensors</span>
         </div>
       ),
       key: 1,
       children: (
         <>
-          <div className="d-flex">
-            <div className="p-2" style={{ width: "60%" }}>
-              <div
-                className="bg-white rounded border p-2"
-                style={{ minHeight: "500px" }}
-              >
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h5 className="m-0 d-flex" style={{ gap: "4px" }}>
-                      <MachineDetailIcon /> Machine Details
-                    </h5>
-                  </div>
-                  <div
-                    style={{ gap: "10px" }}
-                    className="d-flex justify-content-end"
-                  >
-                    <Button
-                      className="px-4 font-weight-semibold"
-                      onClick={() => {
-                        history.push(`/app/machine-and-sensors/sensor-list/${id}`)
-                      }}
-                    >
-                      View Sensors
-                    </Button>
-                    {/* <Button className="px-4 font-weight-semibold" htmlType="button">
-                            Save Draft
-                        </Button> */}
-                    {/* <Button
-                      className="px-4 font-weight-semibold text-white bg-primary"
-                      onClick={() => {
-                        setAlarmModal(true);
-                      }}
-                    >
-                      Set Alarm Range
-                    </Button> */}
-                  </div>
-                </div>
-
-
-
-
-
-
-                <div className="pb-3 mt-5">
-                  <div className="d-flex mb-3 justify-content-between align-items-center bg-grey">
-                    <h5 className="m-0 py-1 px-2">Machine ID</h5>
-                    <div>{machineId}</div>
-                  </div>
-                  <div className="d-flex mb-3 justify-content-between align-items-center">
-                    <h5 className="m-0 py-1 px-2">Machine Name</h5>
-                    <div>{machineName}</div>
-                  </div>
-                  <div className="d-flex mb-3 justify-content-between align-items-center bg-grey">
-                    <h5 className="m-0 py-1 px-2">Serial No</h5>
-                    <div>{serialNumber}</div>
-                  </div>
-                  {/* <div className="d-flex mb-3 justify-content-between align-items-center">
-                    <h5 className="m-0 py-1 px-2">Machine Model</h5>
-                    <div>{machineModel}</div>
-                  </div>
-                  <div className="d-flex mb-3 justify-content-between align-items-center bg-grey">
-                    <h5 className="m-0 py-1 px-2">Manufacturer</h5>
-                    <div>{manufacturer}</div>
-                  </div> */}
-                  <div className="d-flex mb-3 justify-content-between align-items-center">
-                    <h5 className="m-0 py-1 px-2">Kw/Hp </h5>
-                    <div>{kwHp}</div>
-                  </div>
-                  <div className="d-flex mb-3 justify-content-between align-items-center bg-grey">
-                    <h5 className="m-0 py-1 px-2">Frequency (Hz)</h5>
-                    <div>{frequency}</div>
-                  </div>
-                  <div className="d-flex mb-3 justify-content-between align-items-center">
-                    <h5 className="m-0 py-1 px-2">RPM</h5>
-                    <div>{rpm}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div style={{ width: "40%" }}>
-              <div style={{ height: "50%" }} className="p-2">
-                <div className="bg-white rounded border p-2 ">
-                  <div>
-                    <h5 className="m-0 d-flex" style={{ gap: "4px" }}>
-                      <ImagesIcon /> Machine Pictures
-                    </h5>
-                  </div>
-                  {/* <div className="customDashedBorder">
-                    <img
-                      src={
-                        "https://images.unsplash.com/photo-1524514587686-e2909d726e9b?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                      }
-                      alt="..."
-                    />
-                  </div> */}
-                  {
-                    machinePictures.map((item, index) => {
-                      return (
-                        <div className="customDashedBorder" key={index}>
-                          <img
-                            src={item.file_url}
-                            alt="..."
-                          />
-                        </div>
-                      )
-                    })
-                  }
-                </div>
-              </div>
-              {/* <div style={{ height: "50%" }} className="p-2">
-                <div className="bg-white rounded border p-2 h-100">
-                  <div>
-                    <h5 className="m-0 d-flex" style={{ gap: "4px" }}>
-                      <CCTVIcon /> IP Camera
-                    </h5>
-                  </div>
-                  <div className="customDashedBorder"></div>
-                </div>
-              </div> */}
-            </div>
-          </div>
+          <MachineSensorComponent data={
+            sensorsData
+          }
+          id={id}
+          machine_name={machineName}
+          />
         </>
       ),
     },
+    // {
+    //   label: (
+    //     <div className="d-flex align-items-center">
+    //       <MachineIcon color={"#3CA6C1"} />
+    //       <span className="ml-2">Machine Details</span>
+    //     </div>
+    //   ),
+    //   key: 1,
+    //   children: (
+    //     <>
+    //       <div className="d-flex">
+    //         <div className="p-2" style={{ width: "60%" }}>
+    //           <div
+    //             className="bg-white rounded border p-2"
+    //             style={{ minHeight: "500px" }}
+    //           >
+    //             <div className="d-flex justify-content-between align-items-center">
+    //               <div>
+    //                 <h5 className="m-0 d-flex" style={{ gap: "4px" }}>
+    //                   <MachineDetailIcon /> Machine Details
+    //                 </h5>
+    //               </div>
+    //               <div
+    //                 style={{ gap: "10px" }}
+    //                 className="d-flex justify-content-end"
+    //               >
+    //                 <Button
+    //                   className="px-4 font-weight-semibold"
+    //                   onClick={() => {
+    //                     history.push(`/app/machine-and-sensors/sensor-list/${id}`)
+    //                   }}
+    //                 >
+    //                   View Sensors
+    //                 </Button>
+    //                 {/* <Button className="px-4 font-weight-semibold" htmlType="button">
+    //                         Save Draft
+    //                     </Button> */}
+    //                 {/* <Button
+    //                   className="px-4 font-weight-semibold text-white bg-primary"
+    //                   onClick={() => {
+    //                     setAlarmModal(true);
+    //                   }}
+    //                 >
+    //                   Set Alarm Range
+    //                 </Button> */}
+    //               </div>
+    //             </div>
+
+
+
+
+
+
+    //             <div className="pb-3 mt-5">
+    //               <div className="d-flex mb-3 justify-content-between align-items-center bg-grey">
+    //                 <h5 className="m-0 py-1 px-2">Machine ID</h5>
+    //                 <div>{machineId}</div>
+    //               </div>
+    //               <div className="d-flex mb-3 justify-content-between align-items-center">
+    //                 <h5 className="m-0 py-1 px-2">Machine Name</h5>
+    //                 <div>{machineName}</div>
+    //               </div>
+    //               <div className="d-flex mb-3 justify-content-between align-items-center bg-grey">
+    //                 <h5 className="m-0 py-1 px-2">Serial No</h5>
+    //                 <div>{serialNumber}</div>
+    //               </div>
+    //               {/* <div className="d-flex mb-3 justify-content-between align-items-center">
+    //                 <h5 className="m-0 py-1 px-2">Machine Model</h5>
+    //                 <div>{machineModel}</div>
+    //               </div>
+    //               <div className="d-flex mb-3 justify-content-between align-items-center bg-grey">
+    //                 <h5 className="m-0 py-1 px-2">Manufacturer</h5>
+    //                 <div>{manufacturer}</div>
+    //               </div> */}
+    //               <div className="d-flex mb-3 justify-content-between align-items-center">
+    //                 <h5 className="m-0 py-1 px-2">Kw/Hp </h5>
+    //                 <div>{kwHp}</div>
+    //               </div>
+    //               <div className="d-flex mb-3 justify-content-between align-items-center bg-grey">
+    //                 <h5 className="m-0 py-1 px-2">Frequency (Hz)</h5>
+    //                 <div>{frequency}</div>
+    //               </div>
+    //               <div className="d-flex mb-3 justify-content-between align-items-center">
+    //                 <h5 className="m-0 py-1 px-2">RPM</h5>
+    //                 <div>{rpm}</div>
+    //               </div>
+    //             </div>
+    //           </div>
+    //         </div>
+    //         <div style={{ width: "40%" }}>
+    //           <div style={{ height: "50%" }} className="p-2">
+    //             <div className="bg-white rounded border p-2 ">
+    //               <div>
+    //                 <h5 className="m-0 d-flex" style={{ gap: "4px" }}>
+    //                   <ImagesIcon /> Machine Pictures
+    //                 </h5>
+    //               </div>
+    //               {/* <div className="customDashedBorder">
+    //                 <img
+    //                   src={
+    //                     "https://images.unsplash.com/photo-1524514587686-e2909d726e9b?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    //                   }
+    //                   alt="..."
+    //                 />
+    //               </div> */}
+    //               {
+    //                 machinePictures.map((item, index) => {
+    //                   return (
+    //                     <div className="customDashedBorder" key={index}>
+    //                       <img
+    //                         src={item.file_url}
+    //                         alt="..."
+    //                       />
+    //                     </div>
+    //                   )
+    //                 })
+    //               }
+    //             </div>
+    //           </div>
+    //           {/* <div style={{ height: "50%" }} className="p-2">
+    //             <div className="bg-white rounded border p-2 h-100">
+    //               <div>
+    //                 <h5 className="m-0 d-flex" style={{ gap: "4px" }}>
+    //                   <CCTVIcon /> IP Camera
+    //                 </h5>
+    //               </div>
+    //               <div className="customDashedBorder"></div>
+    //             </div>
+    //           </div> */}
+    //         </div>
+    //       </div>
+    //     </>
+    //   ),
+    // },
     {
       label: (
         <div className="d-flex align-items-center">
@@ -1252,6 +1272,9 @@ const MachineDetails = () => {
                 <Button>
                   <Link
                     to={`/app/machine-and-sensors/machine-details/sensor/view-past-event/${id}`}
+                    onClick={() => {
+                      localStorage.setItem('tab', 'life-cycle')
+                    }}
                   >
                     View Past Event
                   </Link>
@@ -1865,7 +1888,9 @@ const MachineDetails = () => {
 
   return (
     <div>
-      <div className="bg-white p-3">
+      <div className="bg-white p-3" style={{
+        height:"35vh"
+      }}>
         <h4 className="d-flex align-items-center m-0">
           {" "}
           <MachineIcon color={"#72849A"} />
@@ -1886,9 +1911,9 @@ const MachineDetails = () => {
         >
           <div
             style={{ gap: "5px", width: "100%" }}
-            className="d-flex align-items-start p-3 w-100 justify-content-between"
+            className="d-flex align-items-start w-100 justify-content-between"
           >
-            <div style={{ width: "45%" }}>
+            <div style={{ width: "30%" }}>
               <div style={{ gap: "10px" }} className="d-flex align-items-top">
                 <div>
                   {/* <img
@@ -1936,23 +1961,55 @@ const MachineDetails = () => {
                   Manufacturer:{" "}
                   <span className="font-weight-300">{data.manufacturer}</span>
                 </h5>
+                <h5
+                  className="d-flex align-items-center"
+                  style={{ gap: "8px" }}
+                >
+                  <KW />
+                  Kw/Hp:{" "}
+                  <span className="font-weight-300">
+                    {data.kw_hp ? data.kw_hp : "N/A"}
+                  </span>{" "}
+                  | Frequency: (Hz){" "}
+                  <span className="font-weight-300">
+                    {data.frequency ? data.frequency : "N/A"}
+                  </span>{" "}
+                  | RPM:{" "}
+                  <span className="font-weight-300">
+                    {data.rpm ? data.rpm : "N/A"}
+                  </span>
+                </h5>
+
+
+                {/* <div className="d-flex mb-3 justify-content-between align-items-center">
+                    <h5 className="m-0 py-1 px-2">Kw/Hp </h5>
+                    <div>{kwHp}</div>
+                  </div>
+                  <div className="d-flex mb-3 justify-content-between align-items-center bg-grey">
+                    <h5 className="m-0 py-1 px-2">Frequency (Hz)</h5>
+                    <div>{frequency}</div>
+                  </div>
+                  <div className="d-flex mb-3 justify-content-between align-items-center">
+                    <h5 className="m-0 py-1 px-2">RPM</h5>
+                    <div>{rpm}</div>
+                  </div> */}
               </div>
             </div>
             <Divider style={{ height: "150px" }} type="vertical" />
-            <div className="ml-4" style={{ width: "50%" }}>
+            <div className="ml-4" style={{ width: "30%" }}>
               <div className="mt-2">
                 <h5 className="mb-1">Machine Status (ISO)</h5>
-                <ProgressBar progress={data.health_iso} />
+                <ProgressBar progress={data.health_iso} statusRanges={data.status_ranges_iso}/>
               </div>
               <div className="mt-2">
                 <h5 className="mb-1">Machine Status (User Defined)</h5>
-                <ProgressBar progress={data.health} />
+                <ProgressBar progress={data.health} statusRanges={data.status_ranges_user_defined} />
               </div>
               {/* <div className="mt-2">
                 <h5 className="mb-1">Machine Status (AI)</h5>
                 <ProgressBar progress={10} />
               </div> */}
-              <div className="mt-4 d-flex justify-content-between px-5">
+              <div className="mt-4 d-flex justify-content-between pr-5">
                 <div className="d-flex align-items-center">
                   <span
                     className="d-flex align-items-center justify-content-center mr-2"
@@ -1964,7 +2021,7 @@ const MachineDetails = () => {
                       height: "20px",
                     }}
                   >
-                    10
+                
                   </span>{" "}
                   Good
                 </div>
@@ -1979,7 +2036,7 @@ const MachineDetails = () => {
                       height: "20px",
                     }}
                   >
-                    7
+                 
                   </span>{" "}
                   Satisfactory
                 </div>
@@ -1994,7 +2051,7 @@ const MachineDetails = () => {
                       height: "20px",
                     }}
                   >
-                    5
+                 
                   </span>{" "}
                   Warning
                 </div>
@@ -2009,11 +2066,59 @@ const MachineDetails = () => {
                       height: "20px",
                     }}
                   >
-                    2
+                 
                   </span>{" "}
                   Critical
                 </div>
               </div>
+            </div>
+            <div style={{ width: "40%" }}>
+              <div style={{ height: "50%" }} className="p-2">
+                <div className="bg-white rounded border p-2 ">
+                  <div>
+                    <h5 className="m-0 d-flex" style={{ gap: "4px" }}>
+                      <ImagesIcon /> Machine Pictures
+                    </h5>
+                  </div>
+                  {/* <div className="customDashedBorder">
+                    <img
+                      src={
+                        "https://images.unsplash.com/photo-1524514587686-e2909d726e9b?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                      }
+                      alt="..."
+                    />
+                  </div> */}
+                  <div style={{
+                    height: "200px",
+                    overflowY: "auto",
+                  }}>
+                    {
+                      machinePictures.map((item, index) => {
+                        return (
+                          <>
+                            <div className="customDashedBorder" key={index}>
+                              <img
+                                src={item.file_url}
+                                alt="..."
+                              />
+                            </div>
+                          </>
+                        )
+                      })
+                    }
+                  </div>
+                </div>
+              </div>
+              {/* <div style={{ height: "50%" }} className="p-2">
+                <div className="bg-white rounded border p-2 h-100">
+                  <div>
+                    <h5 className="m-0 d-flex" style={{ gap: "4px" }}>
+                      <CCTVIcon /> IP Camera
+                    </h5>
+                  </div>
+                  <div className="customDashedBorder"></div>
+                </div>
+              </div> */}
             </div>
           </div>
         </div>

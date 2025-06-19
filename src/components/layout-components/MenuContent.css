@@ -1,0 +1,26 @@
+.overriteCss{
+    color: rgb(69, 85, 96) !important;
+    background-color: unset !important;
+}
+
+.ant-menu-item{
+    /* background-color: transparent !important; */
+    background: transparent !important;
+    color: rgb(69, 85, 96) !important;
+}
+
+@media (min-width: 992px) {
+    .toggle-icon{
+        display: none !important;
+    }
+  
+}
+
+@media (max-width:992px){
+      .logo{
+        background-image: none !important;
+    }
+}
+.ant-drawer-wrapper-body{
+    background-image: linear-gradient(187deg, #5264F9 -68%, #3FAAC6 90%) !important
+}

@@ -8,6 +8,8 @@ import NavSearch  from './NavSearch';
 import { toggleCollapsedNav, onMobileNavToggle } from 'redux/actions/Theme';
 import { NAV_TYPE_TOP, SIDE_NAV_COLLAPSED_WIDTH, SIDE_NAV_WIDTH } from 'constants/ThemeConstant';
 import utils from 'utils'
+import "./MenuContent.css"
+
 
 const { Header } = Layout;
 
@@ -58,7 +60,7 @@ export const HeaderNav = props => {
         <Logo logoType={navMode}/>
         <div className="nav" style={{width: `calc(100% - ${getNavWidth()})`}}>
           <div className="nav-left">
-            {/* <ul className="ant-menu ant-menu-root ant-menu-horizontal">          
+            <ul className="ant-menu ant-menu-root ant-menu-horizontal toggle-icon">          
               {
                 isNavTop && !isMobile ?
                 null
@@ -67,7 +69,7 @@ export const HeaderNav = props => {
                   {navCollapsed || isMobile ? <MenuUnfoldOutlined className="nav-icon" /> : <MenuFoldOutlined className="nav-icon" />}
                 </li>
               }
-            </ul> */}
+            </ul>
           </div>
           <div className="nav-right">
             {/* <NavPanel direction={direction} /> */}

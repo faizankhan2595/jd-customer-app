@@ -44,7 +44,7 @@ function TravelerRemarksLabel({ id, remarksArray, getRemarks, hide, remarksModal
                                         <div style={{
                                             fontSize: '12px',
                                             color: 'gray'
-                                        }}>{moment(item.createdAt).format('DD MMM YYYY hh:mm a')}</div>
+                                        }}>{moment(item.created_at).format('DD MMM YYYY hh:mm a')}</div>
                                     </div>
                                     {/* {item.filePath ?
                                         <div style={{

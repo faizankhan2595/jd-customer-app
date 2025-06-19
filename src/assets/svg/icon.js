@@ -725,6 +725,28 @@ export const MachineSensorIcon = ({ color }) => (
     </defs>
   </svg>
 );
+
+export const KW = ({color}) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+  <g clip-path="url(#clip0)">
+    <rect x="5.25" y="7.5" width="13.5" height="9" rx="1.5" stroke={color ? color : "#3CA6C1"} stroke-width="1.2" fill="none"/>
+    <circle cx="12" cy="12" r="2.25" fill={color ? color : "#3CA6C1"}/>
+    <line x1="1.5" y1="10.5" x2="5.25" y2="10.5" stroke={color ? color : "#3CA6C1"} stroke-width="1.2"/>
+    <line x1="1.5" y1="13.5" x2="5.25" y2="13.5" stroke={color ? color : "#3CA6C1"} stroke-width="1.2"/>
+    <line x1="18.75" y1="10.5" x2="22.5" y2="10.5" stroke={color ? color : "#3CA6C1"} stroke-width="1.2"/>
+    <line x1="18.75" y1="13.5" x2="22.5" y2="13.5" stroke={color ? color : "#3CA6C1"} stroke-width="1.2"/>
+    <rect x="9" y="5.25" width="6" height="2.25" rx="0.75" stroke={color ? color : "#3CA6C1"} stroke-width="1.2" fill="none"/>
+    <line x1="12" y1="5.25" x2="12" y2="3" stroke={color ? color : "#3CA6C1"} stroke-width="1.2"/>
+  </g>
+  <defs>
+    <clipPath id="clip0">
+      <rect width="20" height="20" fill="white"/>
+    </clipPath>
+  </defs>
+</svg>
+
+
+)
 export const SensorIcon = ({ color }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"

@@ -199,7 +199,7 @@ ul.ant-menu.ant-menu-root.ant-menu-inline.ant-menu-light {
 } */
 .logo {
   height: 110px!important;
-  background-image: linear-gradient(187deg, #4683e5 50%, #4684e5)!important;
+  background-image: linear-gradient(187deg, #4683e5 50%, #4684e5);
 }
 
 aside ul.customSideNav {
