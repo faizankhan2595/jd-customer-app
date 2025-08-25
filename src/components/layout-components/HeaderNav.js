@@ -66,7 +66,7 @@ export const HeaderNav = props => {
                 null
                 :
                 <li className="ant-menu-item ant-menu-item-only-child" onClick={() => {onToggle()}}>
-                  {navCollapsed || isMobile ? <MenuUnfoldOutlined className="nav-icon" /> : <MenuFoldOutlined className="nav-icon" />}
+                  {navCollapsed || isMobile ? <MenuUnfoldOutlined className="nav-icon" style={{ color: 'white' }} /> : <MenuFoldOutlined className="nav-icon" style={{ color: 'white' }} />}
                 </li>
               }
             </ul>

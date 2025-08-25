@@ -9,12 +9,6 @@
     color: rgb(69, 85, 96) !important;
 }
 
-@media (min-width: 992px) {
-    .toggle-icon{
-        display: none !important;
-    }
-  
-}
 
 @media (max-width:992px){
       .logo{

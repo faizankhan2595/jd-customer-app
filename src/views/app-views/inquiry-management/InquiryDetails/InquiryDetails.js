@@ -569,7 +569,7 @@ function InquiryDetails() {
                           gap:"5px"
                         }}>
                           <div style={{fontWeight:"bold"}}>{item.text}</div>
-                          <div>{moment(item.created_at).format("DD-MM-YYYY hh:mm a")}</div>
+                          <div>{moment(item.created_at).format("DD MMM YYYY, hh:mm A")}</div>
                         </div>
                       </Timeline.Item>
                     })
