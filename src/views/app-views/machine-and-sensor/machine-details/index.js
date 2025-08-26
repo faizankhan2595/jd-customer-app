@@ -111,6 +111,10 @@ const dataSource1 = [
   },
 ];
 const MachineDetails = () => {
+  // Check if current user is a free user (role id 5)
+  const userRole = parseInt(localStorage.getItem("role"));
+  const isFreeUser = userRole === 5;
+  
   const [alarmModal, setAlarmModal] = useState(false);
   const [range, setRange] = useState([25, 56]);
   const [generateReportModal, setGenerateReportModal] = useState(false);
@@ -1601,7 +1605,8 @@ const MachineDetails = () => {
         </>
       ),
     },
-    {
+    // Only show Analysis Report tab for non-free users
+    ...(!isFreeUser ? [{
       label: (
         <div className="d-flex align-items-center">
           <img src={AnalysisReport} alt="Analysis Report" />
@@ -1778,7 +1783,7 @@ const MachineDetails = () => {
             <BarChart title="Analysis (Frequency) - Z Axis" series={AnalysisZData} label={"Amplitude VS Frequency (Hz)"} /> */}
         </>
       ),
-    },
+    }] : []),
   ];
   const handleSliderChange = (value) => {
     setRange(value);

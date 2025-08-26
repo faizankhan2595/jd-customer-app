@@ -105,7 +105,8 @@ export default function AddNewAdminAccount() {
     { title: "Machine Reports", key: "machine_reports", check: true },
     { title: "Life Cycle Management", key: "life_cycle_management", check: true },
     { title: "Order Management", key: "order_management", check: true },
-    { title: "Inquiry Management", key: "inquiry_management", check: true }]
+    { title: "Inquiry Management", key: "inquiry_management", check: true },
+    { title: "Operational Areas", key: "operational_areas", check: false }]
   )
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [alertModal, setAlertModal] = useState(false);
@@ -209,6 +210,10 @@ export default function AddNewAdminAccount() {
   const [operationMaster, setOperationMaster] = useState(false);
   const [orderManagementCheck, setOrderManagementCheck] = useState([
     {
+      label: 'View Orders',
+      check: false
+    },
+    {
       label: 'Create New Orders',
       check: true
     },
@@ -217,11 +222,15 @@ export default function AddNewAdminAccount() {
       check: false
     },
     {
-      label: 'View Orders',
+      label: 'Delete Orders',
       check: false
     }
   ])
   const [InquirymanagementCheck, setInquirymanagementCheck] = useState([
+    {
+      label: 'View Inquiry',
+      check: false
+    },
     {
       label: 'Create New Inquiry',
       check: true
@@ -231,7 +240,7 @@ export default function AddNewAdminAccount() {
       check: true
     },
     {
-      label: 'View Inquiry',
+      label: 'Delete Inquiry',
       check: false
     }
   ])
@@ -249,6 +258,10 @@ export default function AddNewAdminAccount() {
       check: false
     },
     {
+      label: 'Delete Jobsites',
+      check: false
+    },
+    {
       label: 'View Machine and sensor',
       check: true
     },
@@ -258,6 +271,30 @@ export default function AddNewAdminAccount() {
     },
     {
       label: 'Edit Machine and sensor',
+      check: false
+    },
+    {
+      label: 'Delete Machine and sensor',
+      check: false
+    }
+  ])
+
+  // New Operational Areas state
+  const [operationalAreasCheck, setOperationalAreasCheck] = useState([
+    {
+      label: 'View Operational Areas',
+      check: false
+    },
+    {
+      label: 'Create New Operational Areas',
+      check: false
+    },
+    {
+      label: 'Edit Operational Areas',
+      check: false
+    },
+    {
+      label: 'Delete Operational Areas',
       check: false
     }
   ])
@@ -278,6 +315,35 @@ export default function AddNewAdminAccount() {
     "Create New Inquiry",
     "View Inquiry",
   ]);
+
+  // Select All/Deselect All Functions for Individual Cards
+  const handleOrderManagementSelectAll = (selectAll) => {
+    setOrderManagementCheck(prev => prev.map(item => ({ ...item, check: selectAll })));
+  };
+
+  const handleInquiryManagementSelectAll = (selectAll) => {
+    setInquirymanagementCheck(prev => prev.map(item => ({ ...item, check: selectAll })));
+  };
+
+  const handleOperationMasterSelectAll = (selectAll) => {
+    setOperationMasterCheck(prev => prev.map(item => ({ ...item, check: selectAll })));
+  };
+
+  const handleOperationalAreasSelectAll = (selectAll) => {
+    setOperationalAreasCheck(prev => prev.map(item => ({ ...item, check: selectAll })));
+  };
+
+  const handleMobileAppSelectAll = (selectAll) => {
+    setDataMobileAppPer(prev => prev.map(item => ({ ...item, check: selectAll })));
+  };
+
+  // Global Select All/Deselect All Functions
+  const handleWebAppGlobalSelectAll = (selectAll) => {
+    handleOrderManagementSelectAll(selectAll);
+    handleInquiryManagementSelectAll(selectAll);
+    handleOperationMasterSelectAll(selectAll);
+    handleOperationalAreasSelectAll(selectAll);
+  };
 
   // Handling Web App Checkbox Check All
   const onWebAppCheckAllChange = (e) => {
@@ -417,7 +483,8 @@ export default function AddNewAdminAccount() {
       web_app: {
         order_management: orderManagementCheck,
         inquiry_management: InquirymanagementCheck,
-        operation_master: operationMasterCheck
+        operation_master: operationMasterCheck,
+        operational_areas: operationalAreasCheck
       },
       mobile_app: dataMobileAppPer
     }
@@ -621,10 +688,21 @@ export default function AddNewAdminAccount() {
       setCountryCode(data.phone_code)
       const can_access = data.can_access 
       if (Object.keys(can_access).length !== 0) {
-        setOrderManagementCheck(can_access?.web_app?.order_management)
-        setInquirymanagementCheck(can_access?.web_app?.inquiry_management)
-        setOperationMasterCheck(can_access?.web_app?.operation_master)
-        setDataMobileAppPer(can_access?.mobile_app)
+        if (can_access?.web_app?.order_management) {
+          setOrderManagementCheck(can_access.web_app.order_management)
+        }
+        if (can_access?.web_app?.inquiry_management) {
+          setInquirymanagementCheck(can_access.web_app.inquiry_management)
+        }
+        if (can_access?.web_app?.operation_master) {
+          setOperationMasterCheck(can_access.web_app.operation_master)
+        }
+        if (can_access?.web_app?.operational_areas) {
+          setOperationalAreasCheck(can_access.web_app.operational_areas)
+        }
+        if (can_access?.mobile_app) {
+          setDataMobileAppPer(can_access.mobile_app)
+        }
       }
       
 
@@ -1125,19 +1203,23 @@ export default function AddNewAdminAccount() {
               <TabPane
                 tab={
                   <div className="d-flex align-items-center justify-content-center" style={{ gap: '5px' }}>
-                    {/* <Checkbox
-                      onChange={onWebAppCheckAllChange}
-                      checked={webAppChecked}
-                    >
-                    </Checkbox> */}
                     Web App
                   </div>
                 }
                 key="1"
               >
+                {/* Global Web App Select All Controls */}
+                <Row justify="end" style={{ marginBottom: '16px' }}>
+                  <Col>
+                    <Button.Group size="small">
+                      <Button onClick={() => handleWebAppGlobalSelectAll(true)}>Select All</Button>
+                      <Button onClick={() => handleWebAppGlobalSelectAll(false)}>Deselect All</Button>
+                    </Button.Group>
+                  </Col>
+                </Row>
                 <Row gutter={[16, 24]}>
                   {/* Order Management */}
-                  <Col span={8}>
+                  <Col span={6}>
                     <div
                       style={{
                         border: "1px solid #d9d9d9",
@@ -1203,7 +1285,7 @@ export default function AddNewAdminAccount() {
                   </Col>
 
                   {/* Inquiry Management */}
-                  <Col span={8}>
+                  <Col span={6}>
                     <div
                       style={{
                         border: "1px solid #d9d9d9",
@@ -1214,31 +1296,14 @@ export default function AddNewAdminAccount() {
                     >
                       <Row justify="space-between" align="middle">
                         <Title level={5}>Inquiry Management</Title>
-                        {/* <Switch
-                          checked={inquiryManagement}
-                          onChange={(checked) => {
-                            setInquiryManagement(checked)
-                            if(checked){
-                              setInquirymanagementCheck((previos) => {
-                                return previos.map((elm) => {
-                                  return {
-                                    ...elm,
-                                    check: true
-                                  }
-                                })
-                              })
-                            }else{
-                              setInquirymanagementCheck((previos) => {
-                                return previos.map((elm) => {
-                                  return {
-                                    ...elm,
-                                    check: false
-                                  }
-                                })
-                              })
-                            }
-                          }}
-                        /> */}
+                      </Row>
+                      <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
+                        <Col>
+                          <Button.Group size="small">
+                            <Button onClick={() => handleInquiryManagementSelectAll(true)}>All</Button>
+                            <Button onClick={() => handleInquiryManagementSelectAll(false)}>None</Button>
+                          </Button.Group>
+                        </Col>
                       </Row>
                       <Divider />
                       <div className="d-flex flex-column">
@@ -1270,7 +1335,7 @@ export default function AddNewAdminAccount() {
                   </Col>
 
                   {/* Operation Master */}
-                  <Col span={8}>
+                  <Col span={6}>
                     <div
                       style={{
                         border: "1px solid #d9d9d9",
@@ -1281,31 +1346,14 @@ export default function AddNewAdminAccount() {
                     >
                       <Row justify="space-between" align="middle">
                         <Title level={5}>Operation Master</Title>
-                        {/* <Switch
-                          checked={operationMaster}
-                          onChange={(checked) =>{
-                            setOperationMaster(checked)
-                            if(checked){
-                              setOperationMasterCheck((previos) => {
-                                return previos.map((elm) => {
-                                  return {
-                                    ...elm,
-                                    check: true
-                                  }
-                                })
-                              })
-                            }else{
-                              setOperationMasterCheck((previos) => {
-                                return previos.map((elm) => {
-                                  return {
-                                    ...elm,
-                                    check: false
-                                  }
-                                })
-                              })
-                            }
-                          }}
-                        /> */}
+                      </Row>
+                      <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
+                        <Col>
+                          <Button.Group size="small">
+                            <Button onClick={() => handleOperationMasterSelectAll(true)}>All</Button>
+                            <Button onClick={() => handleOperationMasterSelectAll(false)}>None</Button>
+                          </Button.Group>
+                        </Col>
                       </Row>
                       <Divider />
                       <div className="d-flex flex-column">
@@ -1332,23 +1380,67 @@ export default function AddNewAdminAccount() {
                       </div>
                     </div>
                   </Col>
-                </Row>
+
+                  {/* Operational Areas - NEW */}
+                  <Col span={6}>
+                      <div
+                          style={{
+                              border: "1px solid #d9d9d9",
+                              borderRadius: "8px",
+                              padding: "20px",
+                              minHeight: '300px'
+                          }}
+                      >
+                          <Row justify="space-between" align="middle">
+                              <Title level={5}>Operational Areas</Title>
+                          </Row>
+                          <Divider />
+                          <div className="d-flex flex-column">
+                              {operationalAreasCheck.map((element, index) => (
+                                  <Checkbox
+                                      key={index}
+                                      style={{ margin: '0' }}
+                                      checked={element.check}
+                                      onChange={(val) => setOperationalAreasCheck((previous) => {
+                                          return previous.map((elm, i) => {
+                                              if (i === index) {
+                                                  return {
+                                                      ...elm,
+                                                      check: val.target.checked,
+                                                  }
+                                              } else {
+                                                  return elm
+                                              }
+                                          })
+                                      })}
+                                  >
+                                      {element.label}
+                                  </Checkbox>
+                              ))}
+                          </div>
+                      </div>
+                  </Col>
+              </Row>
               </TabPane>
 
               {/* Mobile App Tab */}
               <TabPane
                 tab={
                   <div className="d-flex align-items-center justify-content-center" style={{ gap: '5px' }}>
-                    {/* <Checkbox
-                      onChange={onMobileAppCheckAllChange}
-                      checked={mobileAppChecked}
-                    >
-                    </Checkbox> */}
                     Mobile App
                   </div>
                 }
                 key="2"
               >
+                {/* Global Mobile App Select All Controls */}
+                <Row justify="end" style={{ marginBottom: '16px' }}>
+                  <Col>
+                    <Button.Group size="small">
+                      <Button onClick={() => handleMobileAppSelectAll(true)}>Select All</Button>
+                      <Button onClick={() => handleMobileAppSelectAll(false)}>Deselect All</Button>
+                    </Button.Group>
+                  </Col>
+                </Row>
                 <Row gutter={[24, 24]} style={{ padding: '20px' }}>
                   {dataMobileAppPer.map((item) => (
                     <Col xs={24} sm={12} key={item.key}>

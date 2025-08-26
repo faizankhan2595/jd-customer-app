@@ -17,6 +17,19 @@ import { axiosInstance } from "App";
 import { UploadFile, UploadImage } from "utils/Upload";
 import CountrySelector from "utils/CountrySelector";
 import PhoneCode from "utils/PhoneCode";
+import { Row, Col, Avatar, Typography, Card } from "antd";
+import {
+  Table,
+  Tag,
+  Space,
+  Dropdown,
+  Menu,
+  Checkbox,
+  Switch,
+  Divider,
+} from "antd";
+
+const { Title, Text } = Typography;
 export default function AddNewAdminAccount() {
     const { TabPane } = Tabs;
     const {id } = useParams();
@@ -41,6 +54,52 @@ export default function AddNewAdminAccount() {
         {
             country: "India",
         }
+    ]);
+
+    // Add can_access state management
+    const [orderManagementCheck, setOrderManagementCheck] = useState([
+        { label: 'View Orders', check: false },
+        { label: 'Create New Orders', check: false },
+        { label: 'Edit Orders', check: false },
+        { label: 'Delete Orders', check: false }
+    ]);
+
+    const [InquirymanagementCheck, setInquirymanagementCheck] = useState([
+        { label: 'View Inquiry', check: false },
+        { label: 'Create New Inquiry', check: false },
+        { label: 'Edit Inquiry', check: false },
+        { label: 'Delete Inquiry', check: false }
+    ]);
+
+    const [jobSitesCheck, setJobSitesCheck] = useState([
+        { label: 'View Jobsites', check: false },
+        { label: 'Create New Jobsites', check: false },
+        { label: 'Edit Jobsites', check: false },
+        { label: 'Delete Jobsites', check: false }
+    ]);
+
+    const [machinesAndSensorsCheck, setMachinesAndSensorsCheck] = useState([
+        { label: 'View Machines and Sensors', check: false },
+        { label: 'Create New Machines and Sensors', check: false },
+        { label: 'Edit Machines and Sensors', check: false },
+        { label: 'Delete Machines and Sensors', check: false }
+    ]);
+
+    const [operationalAreasCheck, setOperationalAreasCheck] = useState([
+        { label: 'View Operational Areas', check: false },
+        { label: 'Create New Operational Areas', check: false },
+        { label: 'Edit Operational Areas', check: false },
+        { label: 'Delete Operational Areas', check: false }
+    ]);
+
+    const [dataMobileAppPer, setDataMobileAppPer] = useState([
+        { title: "Jobsites", key: "jobsites", check: false },
+        { title: "Machines", key: "machines", check: false },
+        { title: "Machine Reports", key: "machine_reports", check: false },
+        { title: "Life Cycle Management", key: "life_cycle_management", check: false },
+        { title: "Order Management", key: "order_management", check: false },
+        { title: "Inquiry Management", key: "inquiry_management", check: false },
+        { title: "Operational Areas", key: "operational_areas", check: false }
     ]);
 
     let styles = {
@@ -87,7 +146,7 @@ export default function AddNewAdminAccount() {
     });
 
     function handleTabClick(key) {
-        handleNext(key);
+        setActiveTab(key);
     }
     const successOk = () => {
         setSuccessModal(false);
@@ -118,18 +177,21 @@ export default function AddNewAdminAccount() {
 
     const handleNext = (active) => {
         if (active === "1") {
-
             form1.validateFields().then(() => {
                 setActiveTab("2");
+            }).catch(() => {
+                // Stay on current tab if validation fails
             })
         } else if (active === "2") {
             form2.validateFields().then(() => {
                 setActiveTab("3");
+            }).catch(() => {
+                // Stay on current tab if validation fails
             })
+        } else if (active === "3") {
+            setActiveTab("4");
         } else {
-
             onFinish();
-
         }
     }
 
@@ -137,6 +199,21 @@ export default function AddNewAdminAccount() {
     const [form2] = Form.useForm();
     const [form3] = Form.useForm();
     const onFinish = async (values) => {
+        // Prepare can_access object
+        const can_access = {
+            web_app: {
+                order_management: orderManagementCheck,
+                inquiry_management: InquirymanagementCheck,
+                job_sites: jobSitesCheck,
+                machines_and_sensors: machinesAndSensorsCheck,
+                operational_areas: operationalAreasCheck
+            },
+            mobile_app: dataMobileAppPer
+        };
+        
+        // Debug: Log the permissions being sent
+        console.log('Permissions being sent:', JSON.stringify(can_access, null, 2));
+
         let profile_pic = imageUrl
 
         console.log(fileList);
@@ -183,24 +260,25 @@ export default function AddNewAdminAccount() {
                     phone_code: countryCode,
                     profile_pic,
                     documents: file,
-                    // documents: file,
+                    can_access: JSON.stringify(can_access)
                 })
+                setLoading(false);
                 if(resp.data.message=="Invalid phone number format. Please provide a valid phone number."){
                     message.error("Invalid phone number format. Please provide a valid phone number.");
                     return;
                 }
                 else{
                     message.success("Admin Account Updated Successfully");
+                    history.goBack();
                 }
-                setLoading(false);
-                history.goBack();
             } catch (error) {
                 setLoading(false);
                 const errorResponse = error?.response?.data?.data;
                 if (errorResponse && errorResponse.error) {
                     const errorMessage = errorResponse.error[0];
-
                     message.warn(errorMessage);
+                } else {
+                    message.error("Something went wrong. Please try again.");
                 }
             }
         } else {
@@ -216,28 +294,28 @@ export default function AddNewAdminAccount() {
                     parent_id:localStorage.getItem("parent_id"),
                     profile_pic,
                     dob: form1.getFieldValue('dob').format('YYYY-MM-DD'),
-
+                    can_access: JSON.stringify(can_access)
                 })
+                setLoading(false);
                 if(resp.data.message=="Invalid phone number format. Please provide a valid phone number."){
                     message.error("Invalid phone number format. Please provide a valid phone number.");
                     return;
                 }
                 handleCloseAlert()
                 message.success("Admin Account Created Successfully");
-                setLoading(false);
                 setTimeout(() => {
                     history.goBack()
                 }, 1000)
-                // history.goBack();
 
             } catch (error) {
                 setLoading(false);
-                const errorResponse = error.response.data.data;
+                const errorResponse = error?.response?.data?.data;
 
                 if (errorResponse && errorResponse.error) {
                     const errorMessage = errorResponse.error[0];
-
                     message.warn(errorMessage);
+                } else {
+                    message.error("Something went wrong. Please try again.");
                 }
             }
         }
@@ -354,6 +432,29 @@ export default function AddNewAdminAccount() {
                 }
             }))
             setCountryCode(data.phone_code)
+            
+            // Load can_access permissions
+            const can_access = data.can_access;
+            if (can_access && Object.keys(can_access).length !== 0) {
+                if (can_access?.web_app?.order_management) {
+                    setOrderManagementCheck(can_access.web_app.order_management);
+                }
+                if (can_access?.web_app?.inquiry_management) {
+                    setInquirymanagementCheck(can_access.web_app.inquiry_management);
+                }
+                if (can_access?.web_app?.job_sites) {
+                    setJobSitesCheck(can_access.web_app.job_sites);
+                }
+                if (can_access?.web_app?.machines_and_sensors) {
+                    setMachinesAndSensorsCheck(can_access.web_app.machines_and_sensors);
+                }
+                if (can_access?.web_app?.operational_areas) {
+                    setOperationalAreasCheck(can_access.web_app.operational_areas);
+                }
+                if (can_access?.mobile_app) {
+                    setDataMobileAppPer(can_access.mobile_app);
+                }
+            }
         } catch (error) {
             // console.error(error);
             message.error(error.response.data.message);
@@ -388,7 +489,6 @@ export default function AddNewAdminAccount() {
 
             <Tabs activeKey={activeTab} onTabClick={handleTabClick} >
                 <TabPane
-                    disabled
                     tab={
                         <div className="d-flex justify-content-center">
                             <BasicDetail /> <span className="ml-2">Basic Details</span>
@@ -563,7 +663,7 @@ export default function AddNewAdminAccount() {
                     </Form>
                 </TabPane>
                 <TabPane
-                    disabled
+                    disabled={activeTab < "2"}
                     tab={
                         <div className="d-flex justify-content-center">
                             <LocationIcon /> <span className="ml-2">Address Details</span>
@@ -648,7 +748,7 @@ export default function AddNewAdminAccount() {
                     </Form>
                 </TabPane>
                 <TabPane
-                    disabled={true}
+                    disabled={activeTab < "3"}
                     tab={
                         <div className="d-flex justify-content-center">
                             <UploadDocument />{" "}
@@ -744,6 +844,281 @@ export default function AddNewAdminAccount() {
                         </div>
                     </div>
                 </TabPane>
+                <TabPane
+                    disabled={activeTab < "4"}
+                    tab={
+                        <div className="d-flex justify-content-center">
+                            <UploadDocument /> <span className="ml-2">Access</span>
+                        </div>
+                    }
+                    key="4"
+                >
+                    <div className="border bg-white rounded p-3">
+                        {/* Tabs for Web App and Mobile App */}
+                        <Tabs defaultActiveKey="1">
+                            {/* Web App Tab */}
+                            <TabPane
+                                tab={
+                                    <div className="d-flex align-items-center justify-content-center" style={{ gap: '5px' }}>
+                                        Web App
+                                    </div>
+                                }
+                                key="1"
+                            >
+                                <Row gutter={[16, 24]}>
+                                    {/* Order Management */}
+                                    <Col span={6}>
+                                        <div
+                                            style={{
+                                                border: "1px solid #d9d9d9",
+                                                borderRadius: "8px",
+                                                padding: "20px",
+                                                minHeight: '300px'
+                                            }}
+                                        >
+                                            <Row justify="space-between" align="middle">
+                                                <Title level={5}>Order Management</Title>
+                                            </Row>
+                                            <Divider />
+                                            <div className="d-flex flex-column">
+                                                {orderManagementCheck.map((element, index) => (
+                                                    <Checkbox
+                                                        key={index}
+                                                        style={{ margin: '0' }}
+                                                        checked={element.check}
+                                                        onChange={(val) => setOrderManagementCheck((previous) => {
+                                                            return previous.map((elm, i) => {
+                                                                if (i === index) {
+                                                                    return {
+                                                                        ...elm,
+                                                                        check: val.target.checked,
+                                                                    }
+                                                                } else {
+                                                                    return elm
+                                                                }
+                                                            })
+                                                        })}
+                                                    >
+                                                        {element.label}
+                                                    </Checkbox>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </Col>
+
+                                    {/* Inquiry Management */}
+                                    <Col span={6}>
+                                        <div
+                                            style={{
+                                                border: "1px solid #d9d9d9",
+                                                borderRadius: "8px",
+                                                padding: "20px",
+                                                minHeight: '300px'
+                                            }}
+                                        >
+                                            <Row justify="space-between" align="middle">
+                                                <Title level={5}>Inquiry Management</Title>
+                                            </Row>
+                                            <Divider />
+                                            <div className="d-flex flex-column">
+                                                {InquirymanagementCheck.map((element, index) => (
+                                                    <Checkbox
+                                                        key={index}
+                                                        style={{ margin: '0' }}
+                                                        checked={element.check}
+                                                        onChange={(val) => setInquirymanagementCheck((previous) => {
+                                                            return previous.map((elm, i) => {
+                                                                if (i === index) {
+                                                                    return {
+                                                                        ...elm,
+                                                                        check: val.target.checked,
+                                                                    }
+                                                                } else {
+                                                                    return elm
+                                                                }
+                                                            })
+                                                        })}
+                                                    >
+                                                        {element.label}
+                                                    </Checkbox>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </Col>
+
+                                    {/* Job Sites */}
+                                    <Col span={6}>
+                                        <div
+                                            style={{
+                                                border: "1px solid #d9d9d9",
+                                                borderRadius: "8px",
+                                                padding: "20px",
+                                                minHeight: '300px'
+                                            }}
+                                        >
+                                            <Row justify="space-between" align="middle">
+                                                <Title level={5}>Job Sites</Title>
+                                            </Row>
+                                            <Divider />
+                                            <div className="d-flex flex-column">
+                                                {jobSitesCheck.map((element, index) => (
+                                                    <Checkbox
+                                                        key={index}
+                                                        style={{ margin: '0' }}
+                                                        checked={element.check}
+                                                        onChange={(val) => setJobSitesCheck((previous) => {
+                                                            return previous.map((elm, i) => {
+                                                                if (i === index) {
+                                                                    return {
+                                                                        ...elm,
+                                                                        check: val.target.checked,
+                                                                    }
+                                                                } else {
+                                                                    return elm
+                                                                }
+                                                            })
+                                                        })}
+                                                    >
+                                                        {element.label}
+                                                    </Checkbox>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </Col>
+
+                                    {/* Machines and Sensors */}
+                                    <Col span={6}>
+                                        <div
+                                            style={{
+                                                border: "1px solid #d9d9d9",
+                                                borderRadius: "8px",
+                                                padding: "20px",
+                                                minHeight: '300px'
+                                            }}
+                                        >
+                                            <Row justify="space-between" align="middle">
+                                                <Title level={5}>Machines and Sensors</Title>
+                                            </Row>
+                                            <Divider />
+                                            <div className="d-flex flex-column">
+                                                {machinesAndSensorsCheck.map((element, index) => (
+                                                    <Checkbox
+                                                        key={index}
+                                                        style={{ margin: '0' }}
+                                                        checked={element.check}
+                                                        onChange={(val) => setMachinesAndSensorsCheck((previous) => {
+                                                            return previous.map((elm, i) => {
+                                                                if (i === index) {
+                                                                    return {
+                                                                        ...elm,
+                                                                        check: val.target.checked,
+                                                                    }
+                                                                } else {
+                                                                    return elm
+                                                                }
+                                                            })
+                                                        })}
+                                                    >
+                                                        {element.label}
+                                                    </Checkbox>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </Col>
+                                </Row>
+
+                                {/* Second Row */}
+                                <Row gutter={[16, 24]} style={{ marginTop: '24px' }}>
+                                    {/* Operational Areas */}
+                                    <Col span={6}>
+                                        <div
+                                            style={{
+                                                border: "1px solid #d9d9d9",
+                                                borderRadius: "8px",
+                                                padding: "20px",
+                                                minHeight: '300px'
+                                            }}
+                                        >
+                                            <Row justify="space-between" align="middle">
+                                                <Title level={5}>Operational Areas</Title>
+                                            </Row>
+                                            <Divider />
+                                            <div className="d-flex flex-column">
+                                                {operationalAreasCheck.map((element, index) => (
+                                                    <Checkbox
+                                                        key={index}
+                                                        style={{ margin: '0' }}
+                                                        checked={element.check}
+                                                        onChange={(val) => setOperationalAreasCheck((previous) => {
+                                                            return previous.map((elm, i) => {
+                                                                if (i === index) {
+                                                                    return {
+                                                                        ...elm,
+                                                                        check: val.target.checked,
+                                                                    }
+                                                                } else {
+                                                                    return elm
+                                                                }
+                                                            })
+                                                        })}
+                                                    >
+                                                        {element.label}
+                                                    </Checkbox>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </Col>
+                                </Row>
+                            </TabPane>
+
+                            {/* Mobile App Tab */}
+                            <TabPane
+                                tab={
+                                    <div className="d-flex align-items-center justify-content-center" style={{ gap: '5px' }}>
+                                        Mobile App
+                                    </div>
+                                }
+                                key="2"
+                            >
+                                <Row gutter={[24, 24]} style={{ padding: '20px' }}>
+                                    {dataMobileAppPer.map((item) => (
+                                        <Col xs={24} sm={12} key={item.key}>
+                                            <Card>
+                                                <div style={{
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between'
+                                                }}>
+                                                    <div>
+                                                        {item.title}
+                                                    </div>
+                                                    <div>
+                                                        <Switch
+                                                            checked={item.check}
+                                                            onChange={(checked) => {
+                                                                setDataMobileAppPer((prev) => {
+                                                                    return prev.map((elm) => {
+                                                                        if (elm.key === item.key) {
+                                                                            return {
+                                                                                ...elm,
+                                                                                check: checked
+                                                                            }
+                                                                        } else {
+                                                                            return elm
+                                                                        }
+                                                                    })
+                                                                })
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </Card>
+                                        </Col>
+                                    ))}
+                                </Row>
+                            </TabPane>
+                        </Tabs>
+                    </div>
+                </TabPane>
             </Tabs>
             <Form.Item>
                 <div
@@ -768,7 +1143,7 @@ export default function AddNewAdminAccount() {
                             handleNext(activeTab)
                         }}
                     >
-                        {activeTab === "3" ? "Save" : "Next"}
+                        {activeTab === "4" ? "Save" : "Next"}
                     </Button>
                 </div>
             </Form.Item>

@@ -7,6 +7,9 @@ import { CsvIcon, FilterIcon } from 'assets/svg/icon'
 import CalendarIcon from "assets/calendar.png"
 import { Link } from 'react-router-dom/cjs/react-router-dom.min'
 function Reports() {
+    // Check if current user is a free user (role id 5)
+    const userRole = parseInt(localStorage.getItem("role"));
+    const isFreeUser = userRole === 5;
     const [data, setData] = React.useState([
         {
             id: 1,
@@ -176,7 +179,9 @@ function Reports() {
                         <Select.Option value={"all"}>All</Select.Option>
                         <Select.Option value={"service_report"}>Service Report</Select.Option>
                         <Select.Option value={"repair_report"}>Repair Report</Select.Option>
-                        <Select.Option value={"analysis_report"}>Analysis Report</Select.Option>
+                        {!isFreeUser && (
+                            <Select.Option value={"analysis_report"}>Analysis Report</Select.Option>
+                        )}
                         <Select.Option value={"failure_prediction_report"}>Failure Prediction Report</Select.Option>
                     </Select>
                 </div>
