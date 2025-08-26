@@ -29,7 +29,6 @@ import OTPInput from "otp-input-react";
 import { axiosInstance } from "App";
 import { auth } from "auth/FirebaseOtp";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
-import { MailOutlined } from "@ant-design/icons";
 import PhoneCode from "utils/PhoneCode";
 const backgroundStyle = {
   backgroundImage: "url(/img/others/wave.svg)",
@@ -269,7 +268,6 @@ const LoginOne = (props) => {
           phoneNo: phoneNumber,
           name: values.name,
           company_name: searchValue,
-          email: values.email,
           // nric_fin_number: values.nric_fin_number
         })
 
@@ -281,7 +279,6 @@ const LoginOne = (props) => {
         phoneNo: phoneNumber,
         name: values.name,
         company_name: searchValue,
-        email: values.email,
         // nric_fin_number: values.nric_fin_number
       });
     }
@@ -571,6 +568,15 @@ const LoginOne = (props) => {
       >
         <Form layout="vertical" form={form} onFinish={onFinish}>
           <Form.Item
+            label="Phone Number"
+          >
+            <Input 
+              value={`${countryCode} ${phoneNumber}`} 
+              disabled 
+              style={{ backgroundColor: '#f5f5f5' }}
+            />
+          </Form.Item>
+          <Form.Item
             label="Name"
             name="name"
             rules={[{ required: true, message: "Please input your name!" },
@@ -596,22 +602,6 @@ const LoginOne = (props) => {
               <Input placeholder="Search or enter company name" />
             </AutoComplete>
             {loading && <Spin size="small" style={{ marginLeft: 10 }} />}
-          </Form.Item>
-          <Form.Item
-            name={"email"}
-            label="Email"
-            rules={[
-              {
-                required: true,
-                message: "Please input your email",
-              },
-              {
-                type: "email",
-                message: "Please enter a valid email!",
-              },
-            ]}
-          >
-            <Input prefix={<MailOutlined className="text-primary" />} />
           </Form.Item>
           {/* <Form.Item
             name="nric_fin_number"

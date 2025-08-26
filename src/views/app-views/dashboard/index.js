@@ -13,7 +13,31 @@ import BarChart from 'components/shared-components/BarChart/BarChart'
 import { axiosInstance } from 'App'
 import GoogleMapWithMarkers from 'components/shared-components/Map/googleMap'
 
+// Custom hook for responsive design
+const useWindowSize = () => {
+	const [windowSize, setWindowSize] = useState({
+		width: window.innerWidth,
+		height: window.innerHeight,
+	});
+
+	useEffect(() => {
+		const handleResize = () => {
+			setWindowSize({
+				width: window.innerWidth,
+				height: window.innerHeight,
+			});
+		};
+
+		window.addEventListener('resize', handleResize);
+		return () => window.removeEventListener('resize', handleResize);
+	}, []);
+
+	return windowSize;
+};
+
 const Dashboard = () => {
+	const { width } = useWindowSize();
+	const isMobile = width <= 768;
 	const [cardData, setCardData] = useState([
 		// {
 		// 	color: "#459ED8",
@@ -222,7 +246,7 @@ const Dashboard = () => {
 
 	return (
 		<div style={{
-			padding: "20px",
+			padding: isMobile ? "10px" : "20px",
 
 		}}>
 			<div style={{
@@ -254,7 +278,9 @@ const Dashboard = () => {
 			</div>
 			<div style={{
 				display: "flex",
-				justifyContent: "space-between",
+				flexWrap: "wrap",
+				justifyContent: isMobile ? "center" : "space-between",
+				gap: isMobile ? "15px" : "0",
 			}}>
 
 				{cardData.map((item, index) => (
@@ -264,14 +290,17 @@ const Dashboard = () => {
 
 			<Card style={{
 				marginTop: "20px",
+				overflow: "auto",
 			}}>
 				<div style={{
 					display: "flex",
+					flexDirection: isMobile ? "column" : "row",
 					justifyContent: "space-between",
 				}}>
 					<div style={{
-						width: "25%",
-						borderRight: "1px solid #F0F0F0",
+						width: isMobile ? "100%" : "25%",
+						borderRight: isMobile ? "none" : "1px solid #F0F0F0",
+						borderBottom: isMobile ? "1px solid #F0F0F0" : "none",
 						padding: "15px"
 					}}>
 						<PieChartWidget
@@ -296,8 +325,9 @@ const Dashboard = () => {
 
 
 					<div style={{
-						width: "25%",
-						borderRight: "1px solid #F0F0F0",
+						width: isMobile ? "100%" : "25%",
+						borderRight: isMobile ? "none" : "1px solid #F0F0F0",
+						borderBottom: isMobile ? "1px solid #F0F0F0" : "none",
 						padding: "15px"
 					}}>
 						<PieChartWidget title="Alert Status" label={["Healthy", "With Alert"]}
@@ -318,8 +348,9 @@ const Dashboard = () => {
 					</div>
 
 					<div style={{
-						width: "25%",
-						borderRight: "1px solid #F0F0F0",
+						width: isMobile ? "100%" : "25%",
+						borderRight: isMobile ? "none" : "1px solid #F0F0F0",
+						borderBottom: isMobile ? "1px solid #F0F0F0" : "none",
 						padding: "15px"
 					}}>
 						<PieChartWidget title={"Vibration Status"} label={["Green", "Yellow", "Orange", "Red"]}
@@ -346,10 +377,10 @@ const Dashboard = () => {
 					</div>
 
 					<div style={{
-						width: "25%",
+						width: isMobile ? "100%" : "25%",
 						padding: "15px"
 					}}>
-						<PieChartWidget title="Battery Status" l label={["Good", "Need to change within 3 months"]}
+						<PieChartWidget title="Battery Status" label={["Good", "Need to change within 3 months"]}
 							colors={["#6467F0", "#B666C3"]}
 							value={
 								[goodBattery, badBattery]
@@ -371,8 +402,16 @@ const Dashboard = () => {
 				</div>
 			</Card>
 
-			<Card title="Machine Locations">
-						<GoogleMapWithMarkers data={mapData}/>
+			<Card title="Machine Locations" style={{
+				marginTop: "20px",
+				overflow: "hidden"
+			}}>
+				<div style={{
+					height: isMobile ? "300px" : "400px",
+					width: "100%"
+				}}>
+					<GoogleMapWithMarkers data={mapData}/>
+				</div>
 			</Card>
 		</div>
 	)

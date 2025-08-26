@@ -24,4 +24,37 @@ JwtAuthService.signUp = function (data) {
 	})
 }
 
+JwtAuthService.phoneSignUp = function (data) {
+	return fetch({
+		url: '/api/app/auth/login',
+		method: 'post',
+		headers: {
+      'public-request': 'true'
+    },
+		data: data
+	})
+}
+
+JwtAuthService.checkPhoneNumber = function (data) {
+	return fetch({
+		url: '/api/app/auth/checkByNumber',
+		method: 'post',
+		headers: {
+      'public-request': 'true'
+    },
+		data: data
+	})
+}
+
+JwtAuthService.searchCompanies = function (data) {
+	return fetch({
+		url: '/api/app/auth/searchExistingCompanies',
+		method: 'post',
+		headers: {
+      'public-request': 'true'
+    },
+		data: data
+	})
+}
+
 export default JwtAuthService
