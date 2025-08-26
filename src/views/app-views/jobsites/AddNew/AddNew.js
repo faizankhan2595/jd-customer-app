@@ -10,6 +10,8 @@ import { useHistory, useParams } from 'react-router-dom/cjs/react-router-dom';
 import CountrySelector from 'utils/CountrySelector';
 import PhoneCode from 'utils/PhoneCode';
 import { UploadImage } from 'utils/Upload';
+import usePostalCodeLookup from 'hooks/usePostalCodeLookup';
+import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 
 
 function AddNew() {
@@ -22,6 +24,34 @@ function AddNew() {
     const { id } = useParams();
     const [selectedFiles, setSelectedFiles] = useState([]);
     const { countryList } = useContext(CountryContext);
+    const { lookupPostalCode, loading: postalLoading } = usePostalCodeLookup(form, countryList);
+
+    const { isLoaded } = useLoadScript({
+        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAP,
+    });
+
+    const mapContainerStyle = {
+        width: "100%",
+        height: "300px",
+        marginBottom: "20px"
+    };
+
+    const getMapCenter = () => {
+        const latitude = form.getFieldValue('latitude');
+        const longitude = form.getFieldValue('longitude');
+        
+        if (latitude && longitude) {
+            return {
+                lat: parseFloat(latitude),
+                lng: parseFloat(longitude)
+            };
+        }
+        
+        return {
+            lat: 1.3521, // Default to Singapore
+            lng: 103.8198
+        };
+    };
     const handleFileSelect = (event) => {
         const fileList = event.target.files;
         const newSelectedFiles = [];
@@ -120,44 +150,10 @@ function AddNew() {
             console.log(error);
         }
     }
-    // const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${API_KEY}`;
-    const getLatitudeLongitude = async (
-    ) => {
-        let address = "";
-        if(form.getFieldValue("postal_code")){
-            address += form.getFieldValue("postal_code") + " ";
-        }
-        if(form.getFieldValue("block_number")){
-            address += form.getFieldValue("block_number") + " ";
-        }
-        if(form.getFieldValue("street_number")){
-            address += form.getFieldValue("street_number") + " ";
-        }
-        if(form.getFieldValue("unit_number")){
-            address += form.getFieldValue("unit_number") + " ";
-        }
-        if(form.getFieldValue("level_number")){
-            address += form.getFieldValue("level_number") + " ";
-        }
-        if(form.getFieldValue("country")){
-            address += countryList.find((item) => item.id == form.getFieldValue("country"))?.name;
-        }
-
-
-        try {
-            const res = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-                address
-            )}&key=${process.env.REACT_APP_GOOGLE_MAP}`);
-
-            if (res.data.results.length > 0) {
-                const { lat, lng } = res.data.results[0].geometry.location;
-                form.setFieldsValue({
-                    latitude: lat+"",
-                    longitude: lng+""
-                })
-            }
-        } catch (error) {
-            console.log(error);
+    const handlePostalCodeChange = async (e) => {
+        const postalCode = e.target.value;
+        if (postalCode && postalCode.length === 6) {
+            await lookupPostalCode(postalCode);
         }
     }
     useEffect(() => {
@@ -279,11 +275,18 @@ function AddNew() {
                                     {
                                         pattern: new RegExp(/^[0-9\b]+$/),
                                         message: "Please enter valid postal code",
+                                    },
+                                    {
+                                        len: 6,
+                                        message: "Postal code must be exactly 6 digits",
                                     }
                                     ]}
                                 >
-                                    <Input placeholder="Postal Code" style={{ width: '100%' }}
-                                        onChange={getLatitudeLongitude}
+                                    <Input 
+                                        placeholder="Postal Code" 
+                                        style={{ width: '100%' }}
+                                        onChange={handlePostalCodeChange}
+                                        loading={postalLoading}
                                     />
                                 </Form.Item>
                                 <Form.Item style={{
@@ -293,7 +296,7 @@ function AddNew() {
                                     name="block_number"
                                     rules={[{ required: true, message: 'Please enter the block number!' }]}
                                 >
-                                    <InputNumber placeholder="Block Number" onChange={getLatitudeLongitude} style={{ width: '100%' }} />
+                                    <InputNumber placeholder="Block Number" style={{ width: '100%' }} />
                                 </Form.Item>
                             </div>
 
@@ -311,7 +314,7 @@ function AddNew() {
                                      
                                     ]}
                                 >
-                                    <Input onChange={getLatitudeLongitude} placeholder="Street Number" style={{ width: '100%' }} />
+                                    <Input placeholder="Street Number" style={{ width: '100%' }} />
                                 </Form.Item>
                                 <Form.Item style={{
                                     width: "45%"
@@ -320,7 +323,7 @@ function AddNew() {
                                     name="unit_number"
                                     rules={[{ required: true, message: 'Please enter the unit number!' }]}
                                 >
-                                    <Input onChange={getLatitudeLongitude} placeholder='Unit Number' style={{ width: '100%' }} />
+                                    <Input placeholder='Unit Number' style={{ width: '100%' }} />
                                 </Form.Item>
                             </div>
                             <div style={{
@@ -337,7 +340,7 @@ function AddNew() {
                                    
                                     ]}
                                 >
-                                    <Input onChange={getLatitudeLongitude} placeholder="Level Number" style={{ width: '100%' }} />
+                                    <Input placeholder="Level Number" style={{ width: '100%' }} />
                                 </Form.Item>
                                 <Form.Item style={{
                                     width: "45%"
@@ -351,7 +354,6 @@ function AddNew() {
                                             form.setFieldsValue({
                                                 country: e
                                             })
-                                            getLatitudeLongitude(); 
                                         }
                                     } 
                                     />
@@ -382,6 +384,41 @@ function AddNew() {
                                     <Input disabled placeholder='Longitude' style={{ width: '100%' }} />
                                 </Form.Item>
                             </div>
+
+                            {/* Google Map Section */}
+                            <Form.Item shouldUpdate={(prevValues, currentValues) => 
+                                prevValues.latitude !== currentValues.latitude || 
+                                prevValues.longitude !== currentValues.longitude
+                            }>
+                                {({ getFieldValue }) => {
+                                    const latitude = getFieldValue('latitude');
+                                    const longitude = getFieldValue('longitude');
+                                    
+                                    if (latitude && longitude && isLoaded) {
+                                        return (
+                                            <div style={{ marginBottom: "20px" }}>
+                                                <div style={{
+                                                    fontWeight: "bold",
+                                                    color: "#000",
+                                                    marginBottom: "10px"
+                                                }}>
+                                                    Location on Map
+                                                </div>
+                                                <GoogleMap 
+                                                    mapContainerStyle={mapContainerStyle} 
+                                                    center={getMapCenter()} 
+                                                    zoom={15}
+                                                >
+                                                    <Marker 
+                                                        position={getMapCenter()}
+                                                    />
+                                                </GoogleMap>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                }}
+                            </Form.Item>
 
                             <div style={{
                                 display: "flex",

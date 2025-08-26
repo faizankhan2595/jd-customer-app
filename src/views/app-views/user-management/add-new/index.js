@@ -1,7 +1,7 @@
 import { Button, Form, Input, Select, Modal, DatePicker, Upload, message, Radio, InputNumber } from "antd";
 import { BasicDetail, LocationIcon, SuccessTickIcon, UploadDocument, UploadFileIcon } from "assets/svg/icon";
 
-import React from "react";
+import React, { useContext } from "react";
 import { useState } from "react";
 import { Tabs } from "antd";
 import { CloseCircleOutlined, EnvironmentOutlined, EyeOutlined, PlusOutlined, TeamOutlined, UserSwitchOutlined } from "@ant-design/icons";
@@ -17,6 +17,8 @@ import { axiosInstance } from "App";
 import { UploadFile, UploadImage } from "utils/Upload";
 import CountrySelector from "utils/CountrySelector";
 import PhoneCode from "utils/PhoneCode";
+import usePostalCodeLookup from "hooks/usePostalCodeLookup";
+import { CountryContext } from "CountryContext";
 import { Row, Col, Avatar, Typography, Card } from "antd";
 import {
   Table,
@@ -198,6 +200,16 @@ export default function AddNewAdminAccount() {
     const [form1] = Form.useForm();
     const [form2] = Form.useForm();
     const [form3] = Form.useForm();
+    
+    const { countryList } = useContext(CountryContext);
+    const { lookupPostalCode, loading: postalLoading } = usePostalCodeLookup(form2, countryList);
+
+    const handlePostalCodeChange = async (e) => {
+        const postalCode = e.target.value;
+        if (postalCode && postalCode.length === 6) {
+            await lookupPostalCode(postalCode);
+        }
+    };
     const onFinish = async (values) => {
         // Prepare can_access object
         const can_access = {
@@ -688,9 +700,19 @@ export default function AddNewAdminAccount() {
                                         rules={[{ required: true, message: 'Please enter the postal code!' },{
                                                       pattern: new RegExp(/^[0-9\b]+$/),
                                                       message: "Please enter valid postal code",
+                                                    },
+                                                    {
+                                                        len: 6,
+                                                        message: "Postal code must be exactly 6 digits",
                                                     }]}
                                     >
-                                        <Input placeholder="Postal Code" style={{ width: '100%' }} />
+                                        <Input 
+                                            placeholder="Postal Code" 
+                                            style={{ width: '100%' }} 
+                                            onChange={handlePostalCodeChange}
+                                            loading={postalLoading}
+                                            maxLength={6}
+                                        />
                                     </Form.Item>
                                 </div><div style={{ width: "45%" }}>
                                     <Form.Item

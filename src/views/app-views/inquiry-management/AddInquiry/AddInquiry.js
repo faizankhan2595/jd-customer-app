@@ -20,10 +20,12 @@ import {
 import { axiosInstance } from "App";
 import { UploadFileIcon } from "assets/svg/icon";
 import { UploadImage } from "utils/Upload";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router-dom/cjs/react-router-dom";
 import CountrySelector from "utils/CountrySelector";
 import PhoneCode from "utils/PhoneCode";
+import usePostalCodeLookup from "hooks/usePostalCodeLookup";
+import { CountryContext } from "CountryContext";
 
 function AddInquiry() {
   const [form] = Form.useForm();
@@ -36,6 +38,15 @@ function AddInquiry() {
   const [machineData, setMachineData] = useState([]);
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
+  const { countryList } = useContext(CountryContext);
+  const { lookupPostalCode, loading: postalLoading } = usePostalCodeLookup(form, countryList);
+
+  const handlePostalCodeChange = async (e) => {
+    const postalCode = e.target.value;
+    if (postalCode && postalCode.length === 6) {
+      await lookupPostalCode(postalCode);
+    }
+  };
   const handleFileSelect = (event) => {
     const fileList = event.target.files;
     const newSelectedFiles = [];
@@ -259,9 +270,18 @@ function AddInquiry() {
                 pattern: new RegExp(/^[0-9\b]+$/),
                 message: "Please enter valid postal code",
               },
+              {
+                len: 6,
+                message: "Postal code must be exactly 6 digits",
+              }
             ]}
           >
-            <Input placeholder="Postal Code" style={{ width: "100%" }} />
+            <Input 
+              placeholder="Postal Code" 
+              style={{ width: "100%" }} 
+              onChange={handlePostalCodeChange}
+              loading={postalLoading}
+            />
           </Form.Item>
           <Form.Item
             style={{
