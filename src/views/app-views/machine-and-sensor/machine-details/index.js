@@ -302,8 +302,8 @@ const MachineDetails = () => {
     setMid_freq_acceleration_p2p_x(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.mid_freq_acceleration_p2p_x,
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.mid_freq_acceleration_p2p_x) || 0,
           extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
@@ -314,9 +314,9 @@ const MachineDetails = () => {
     setMid_freq_acceleration_p2p_y(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.mid_freq_acceleration_p2p_y,
-          extraValue: item.file_1?.replace("uploads/", ""),
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.mid_freq_acceleration_p2p_y) || 0,
+          extraValue: item.file_2?.replace("uploads/", ""),
         }
       })
       return data
@@ -326,9 +326,9 @@ const MachineDetails = () => {
     setMid_freq_acceleration_p2p_z(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.mid_freq_acceleration_p2p_z,
-          extraValue: item.file_1?.replace("uploads/", ""),
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.mid_freq_acceleration_p2p_z) || 0,
+          extraValue: item.file_0?.replace("uploads/", ""),
         }
       })
       return data
@@ -337,9 +337,9 @@ const MachineDetails = () => {
     setHigh_freq_acceleration_p2p_x(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.high_freq_acceleration_p2p_x,
-          extraValue: item.file_1?.replace("uploads/", ""),
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.high_freq_acceleration_p2p_z) || 0,
+          extraValue: item.file_0?.replace("uploads/", ""),
         }
       })
       return data
@@ -349,8 +349,8 @@ const MachineDetails = () => {
     setMid_freq_displacement_x(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.mid_freq_displacement_x,
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.mid_freq_displacement_x) || 0,
           extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
@@ -361,9 +361,9 @@ const MachineDetails = () => {
     setMid_freq_displacement_y(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.mid_freq_displacement_y,
-          extraValue: item.file_1?.replace("uploads/", ""),
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.mid_freq_displacement_y) || 0,
+          extraValue: item.file_2?.replace("uploads/", ""),
         }
       })
       return data
@@ -372,9 +372,9 @@ const MachineDetails = () => {
     setMid_freq_displacement_z(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.mid_freq_displacement_z,
-          extraValue: item.file_1?.replace("uploads/", ""),
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.mid_freq_displacement_z) || 0,
+          extraValue: item.file_0?.replace("uploads/", ""),
         }
       })
       return data
@@ -383,8 +383,8 @@ const MachineDetails = () => {
     setMid_freq_velocity_x(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.mid_freq_velocity_x,
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.mid_freq_velocity_x) || 0,
           extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
@@ -394,9 +394,9 @@ const MachineDetails = () => {
     setMid_freq_velocity_y(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.mid_freq_velocity_y,
-          extraValue: item.file_1?.replace("uploads/", ""),
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.mid_freq_velocity_y) || 0,
+          extraValue: item.file_2?.replace("uploads/", ""),
         }
       })
       return data
@@ -406,9 +406,9 @@ const MachineDetails = () => {
     setMid_freq_velocity_z(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.mid_freq_velocity_z,
-          extraValue: item.file_1?.replace("uploads/", ""),
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.mid_freq_velocity_z) || 0,
+          extraValue: item.file_0?.replace("uploads/", ""),
         }
       })
       return data
@@ -417,8 +417,8 @@ const MachineDetails = () => {
     setMid_freq_env_x(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.mid_freq_env_x,
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.mid_freq_env_x) || 0,
           extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
@@ -428,9 +428,9 @@ const MachineDetails = () => {
     setMid_freq_env_y(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.mid_freq_env_y,
-          extraValue: item.file_1?.replace("uploads/", ""),
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.mid_freq_env_y) || 0,
+          extraValue: item.file_2?.replace("uploads/", ""),
         }
       })
       return data
@@ -439,9 +439,9 @@ const MachineDetails = () => {
     setMid_freq_env_z(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.mid_freq_env_z,
-          extraValue: item.file_1?.replace("uploads/", ""),
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.mid_freq_env_z) || 0,
+          extraValue: item.file_0?.replace("uploads/", ""),
         }
       })
       return data
@@ -450,8 +450,8 @@ const MachineDetails = () => {
     setInclination_x(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.inclination_x,
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.inclination_x) || 0,
           extraValue: item.file_1?.replace("uploads/", ""),
         }
       })
@@ -461,9 +461,9 @@ const MachineDetails = () => {
     setInclination_y(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.inclination_y,
-          extraValue: item.file_1?.replace("uploads/", ""),
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.inclination_y) || 0,
+          extraValue: item.file_2?.replace("uploads/", ""),
         }
       })
       return data
@@ -472,9 +472,9 @@ const MachineDetails = () => {
     setInclination_z(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.inclination_z,
-          extraValue: item.file_1?.replace("uploads/", ""),
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.inclination_z) || 0,
+          extraValue: item.file_0?.replace("uploads/", ""),
         }
       })
       return data
@@ -514,8 +514,8 @@ const MachineDetails = () => {
     setMotorServiceTemperature(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.temperature
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.temperature) || 0
         }
       })
       return data
@@ -523,8 +523,8 @@ const MachineDetails = () => {
     setBatteryPercentage(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.battery_percentage
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.battery_percentage) || 0
         }
       })
       return data
@@ -532,8 +532,8 @@ const MachineDetails = () => {
     setBatteryVoltage(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.battery_voltage
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.battery_voltage) || 0
         }
       })
       return data
@@ -541,8 +541,8 @@ const MachineDetails = () => {
     setRssi(() => {
       const data = rawData.map((item) => {
         return {
-          x: moment(item.datetime, "YYYY-MM-DD HH:mm:ss").toDate(),
-          y: item.RSSI
+          x: moment(item.datetime).toDate(),
+          y: parseFloat(item.RSSI) || 0
         }
       })
       return data

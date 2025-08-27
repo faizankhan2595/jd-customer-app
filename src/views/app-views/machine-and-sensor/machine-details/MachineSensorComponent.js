@@ -1,7 +1,12 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom/cjs/react-router-dom';
+import { message } from 'antd';
 
 function MachineSensorComponent({ data,id,machine_name }) {
+    // Check if current user is a free user (role id 5)
+    const userRole = parseInt(localStorage.getItem("role"));
+    const isFreeUser = userRole === 5;
+    
     const totalSlots = Math.max(5, data.length);
     const emptySlots = totalSlots - data.length;
     const allSlots = [...data, ...Array(emptySlots).fill(null)];
@@ -60,33 +65,73 @@ function MachineSensorComponent({ data,id,machine_name }) {
                                 justifyContent: 'center',
                                 alignItems: 'center',
                                 marginBottom: '10px',
+                                gap: '5px'
                             }}
                         >
-                            <button
-                                // disabled={!isData}
-                                onClick={()=>{
-                                    if(!isData){
+                            {!isData ? (
+                                <button
+                                    onClick={()=>{
                                         history.push(`/app/machine-and-sensors/sensor-list/add-new/${id}?machine_name=${machine_name}`);
-                                    }else{
-
-                                        history.push(`/app/machine-and-sensors/sensor-list/edit-sensor/${id}/${item.id}?machine_name=${machine_name}`);
-                                    }
-                               
-                                }}
-                                style={{
-                                    backgroundColor: bgColor,
-                                    color: textColor,
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    padding: '6px 4px',
-                                    cursor:  'pointer',
-                                    marginTop: '10px',
-                                    width: '50%',
-                                    margin: 'auto',
-                                }}
-                            >
-                                Details
-                            </button>
+                                    }}
+                                    style={{
+                                        backgroundColor: bgColor,
+                                        color: textColor,
+                                        border: 'none',
+                                        borderRadius: '4px',
+                                        padding: '6px 4px',
+                                        cursor: 'pointer',
+                                        marginTop: '10px',
+                                        width: '90%',
+                                        margin: 'auto',
+                                    }}
+                                >
+                                    Add Sensor
+                                </button>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={()=>{
+                                            if (isFreeUser) {
+                                                message.info("Advanced sensor analysis is available for premium users. You can still access basic analysis through the chart data points.");
+                                            }
+                                            history.push(`/app/machine-and-sensors/sensor-analysis/${id}/${item.sensor_id}`);
+                                        }}
+                                        style={{
+                                            backgroundColor: isFreeUser ? '#f0f0f0' : bgColor,
+                                            color: isFreeUser ? '#999' : textColor,
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            padding: '4px 2px',
+                                            cursor: 'pointer',
+                                            marginTop: '10px',
+                                            width: '45%',
+                                            fontSize: '11px',
+                                            position: 'relative'
+                                        }}
+                                        title={isFreeUser ? "Limited features for free users" : "Access full sensor analysis"}
+                                    >
+                                        Analysis {isFreeUser && '⚠️'}
+                                    </button>
+                                    <button
+                                        onClick={()=>{
+                                            history.push(`/app/machine-and-sensors/sensor-list/edit-sensor/${id}/${item.id}?machine_name=${machine_name}`);
+                                        }}
+                                        style={{
+                                            backgroundColor: bgColor,
+                                            color: textColor,
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            padding: '4px 2px',
+                                            cursor: 'pointer',
+                                            marginTop: '10px',
+                                            width: '45%',
+                                            fontSize: '11px'
+                                        }}
+                                    >
+                                        Edit
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 );
@@ -144,7 +189,7 @@ function MachineSensorComponent({ data,id,machine_name }) {
                                     margin: 'auto',
                                 }}
                             >
-                                Details
+                                Add Sensor
                             </button>
                             </div>
                     </div>

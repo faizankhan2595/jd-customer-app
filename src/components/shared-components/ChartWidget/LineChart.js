@@ -45,6 +45,10 @@ function LineChart({ series, title, label, graphType, start_date, end_date, disa
     };
 
     const handleClick = (data, index) => {
+        // Check if current user is a free user (role id 5)
+        const userRole = parseInt(localStorage.getItem("role"));
+        const isFreeUser = userRole === 5;
+        
         if (!graphType) {
             return;
         }
@@ -66,14 +70,29 @@ function LineChart({ series, title, label, graphType, start_date, end_date, disa
         }
         console.log(data[index]);
 
+        // Free users have limited access to spectrum analysis
+        if (isFreeUser && !bin.includes("_1.bin")) {
+            message.error("Advanced spectrum analysis is available for premium users only");
+            return;
+        }
 
-        history.push(`analysisReport/${id}/${graphType}/${bin}/${data[index].x}/${data[index].y}`);
-        localStorage.setItem('graphType', graphType)
-        localStorage.setItem('tab', 'analysis');
-        localStorage.setItem('deviceId', localStorage.getItem('deviceId2'))
-        localStorage.setItem('start_date', start_date)
-        localStorage.setItem('end_date', end_date)
-        localStorage.setItem('dateSelector', dateSelector)
+        // Permission check for _1.bin files (similar to admin app)
+        if (bin.includes("_1.bin")) {
+            history.push(`analysisReport/${id}/${graphType}/${bin}/${data[index].x}/${data[index].y}`);
+            localStorage.setItem('graphType', graphType)
+            localStorage.setItem('tab', 'analysis');
+            localStorage.setItem('deviceId', localStorage.getItem('deviceId2'))
+            localStorage.setItem('start_date', start_date)
+            localStorage.setItem('end_date', end_date)
+            localStorage.setItem('dateSelector', dateSelector)
+        } else {
+            if (isFreeUser) {
+                message.error("This analysis feature is available for premium users only");
+            } else {
+                message.error("Permission Denied");
+            }
+            return;
+        }
     };
 
 
