@@ -73,7 +73,7 @@ const MachineAndSensor = () => {
     console.log(id);
     try {
       const response = await axiosInstance.delete(
-        `api/admin/machine/${id}/delete`
+        `api/admin/machines/${id}`
       );
       if (response.status === 200) {
         message.success("Machine deleted successfully");

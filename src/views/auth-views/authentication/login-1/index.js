@@ -163,9 +163,13 @@ const LoginOne = (props) => {
         phoneNo: phoneNumber,
       });
       if (res.data.item.success == true) {
-        sendUID({ phoneCode: countryCode, phoneNo: phoneNumber });
+        // Existing user - proceed with OTP verification
+        onCaptchVerify();
+        firebaseLogin();
       } else {
+        // New user - open signup modal
         setVisible(true);
+        setSignUp(true);
       }
       console.log(res.data);
       // if (res.data.item.exists == false) {
@@ -229,28 +233,45 @@ const LoginOne = (props) => {
     window.confirmationResult
       .confirm(otp)
       .then((result) => {
-        // User signed in successfully.
-        // console.log(result.user);
-        const user = result.user.uid;
-        sendUID(user);
-        // ...
+        // User signed in successfully with Firebase OTP
+        const user = result.user;
+        console.log("Firebase user authenticated:", user);
+        
+        // Check if this is a signup or login
+        if (window.signupData) {
+          // This is a new user signup - call backend with signup data
+          sendUID({ 
+            uid: user.uid,
+            ...window.signupData
+          });
+          // Clear signup data
+          window.signupData = null;
+          setSignUp(false);
+        } else {
+          // This is existing user login
+          sendUID({ 
+            uid: user.uid,
+            phoneCode: countryCode, 
+            phoneNo: phoneNumber 
+          });
+        }
       })
       .catch((error) => {
         message.error("Invalid OTP entered");
-        // User couldn't sign in (bad verification code?)
-        // ...
+        console.log("OTP verification error:", error);
       });
   };
 
   const onFinish = async (values) => {
     if (!searchValue) {
       message.error("Please select a company name");
+      return;
     }
     console.log(values, searchValue);
-    if(signUp){
+    
+    if (signUp) {
       try {
         const res = await axiosInstance.post("/api/app/auth/checkByNumber", {
-          // phoneNumber: countryCode + phoneNumber,
           phoneCode: countryCode,
           phoneNo: phoneNumber,
         });
@@ -259,30 +280,23 @@ const LoginOne = (props) => {
           message.error("Phone number already exists. Please login");
           return;
         }
-      
-        // }
       } catch (err) {
-        console.log(err);
-        sendUID({
-          phoneCode: countryCode,
-          phoneNo: phoneNumber,
-          name: values.name,
-          company_name: searchValue,
-          // nric_fin_number: values.nric_fin_number
-        })
-
+        console.log("Phone number not found, proceeding with signup");
       }
-    }
-    else{
-      sendUID({
+      
+      // Store signup data for after OTP verification
+      window.signupData = {
         phoneCode: countryCode,
         phoneNo: phoneNumber,
         name: values.name,
         company_name: searchValue,
-        // nric_fin_number: values.nric_fin_number
-      });
+      };
+      
+      // Close modal and proceed to OTP verification for new user
+      setVisible(false);
+      onCaptchVerify();
+      firebaseLogin();
     }
-   
   };
 
   return (

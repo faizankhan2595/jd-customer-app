@@ -158,7 +158,7 @@ function Notification() {
 
   const handleDelete = async (key) => {
     try {
-      await axiosInstance.delete(`/api/admin/notifications/${key}`);
+      await axiosInstance.delete(`/api/admin/notifications/${key}/delete`);
       setData((prevData) => prevData.filter((item, index) => index.toString() !== key));
     } catch (error) {
       console.error(`Error deleting notification with key ${key}:`, error);

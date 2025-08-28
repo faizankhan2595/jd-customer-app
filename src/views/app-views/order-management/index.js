@@ -52,7 +52,7 @@ function OrderManagement() {
       <Menu.Item key="edit" onClick={() => handleView(record.id)}>
         <EyeOutlined /> Order Detail
       </Menu.Item>
-      <Menu.Item key="delete" onClick={() => handleDelete(record.key)}>
+      <Menu.Item key="delete" onClick={() => handleDelete(record.id)}>
         <DeleteOutlined /> Delete
       </Menu.Item>
     </Menu>
@@ -113,9 +113,18 @@ function OrderManagement() {
     });
   };
 
-  const handleDelete = (key) => {
-    // Add logic for deleting a notification
-    console.log("Delete notification with key:", key);
+  const handleDelete = async (id) => {
+    try {
+      const response = await axiosInstance.delete(`api/web/orders/${id}`);
+      if (response.status === 200) {
+        message.success("Order deleted successfully");
+        getOrderList(searchText, selectedStatus=='active'?1:selectedStatus=='inactive'?2:selectedStatus=='closed'?3:'all', 
+          selectedWorkshop=='Onsite'?'Onsite':selectedWorkshop=='Workshop'?'Workshop':'all');
+      }
+    } catch (error) {
+      message.error("Failed to delete order. Please try again.");
+      console.error("Error deleting order:", error);
+    }
   };
   var timeout = ""
   const onSearch = (value) => {
