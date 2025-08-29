@@ -19,6 +19,7 @@ import CountrySelector from "utils/CountrySelector";
 import PhoneCode from "utils/PhoneCode";
 import usePostalCodeLookup from "hooks/usePostalCodeLookup";
 import { CountryContext } from "CountryContext";
+import { getAssignablePermissions, getParentPermissions } from "utils/permissionUtils";
 import { Row, Col, Avatar, Typography, Card } from "antd";
 import {
   Table,
@@ -62,15 +63,12 @@ export default function AddNewAdminAccount() {
     const [orderManagementCheck, setOrderManagementCheck] = useState([
         { label: 'View Orders', check: false },
         { label: 'Create New Orders', check: false },
-        { label: 'Edit Orders', check: false },
         { label: 'Delete Orders', check: false }
     ]);
 
     const [InquirymanagementCheck, setInquirymanagementCheck] = useState([
         { label: 'View Inquiry', check: false },
-        { label: 'Create New Inquiry', check: false },
-        { label: 'Edit Inquiry', check: false },
-        { label: 'Delete Inquiry', check: false }
+        { label: 'Create New Inquiry', check: false }
     ]);
 
     const [jobSitesCheck, setJobSitesCheck] = useState([
@@ -83,8 +81,6 @@ export default function AddNewAdminAccount() {
     const [machinesAndSensorsCheck, setMachinesAndSensorsCheck] = useState([
         { label: 'View Machines and Sensors', check: false },
         { label: 'Create New Machines and Sensors', check: false },
-        { label: 'Edit Machines and Sensors', check: false },
-        { label: 'Delete Machines and Sensors', check: false }
     ]);
 
     const [operationalAreasCheck, setOperationalAreasCheck] = useState([
@@ -94,14 +90,29 @@ export default function AddNewAdminAccount() {
         { label: 'Delete Operational Areas', check: false }
     ]);
 
+    const [userManagementCheck, setUserManagementCheck] = useState([
+        { label: 'View Users', check: false },
+        { label: 'Create New Users', check: false },
+        { label: 'Edit Users', check: false },
+        { label: 'Delete Users', check: false }
+    ]);
+
+    const [technicianManagementCheck, setTechnicianManagementCheck] = useState([
+        { label: 'View Technicians', check: false },
+        { label: 'Create New Technicians', check: false },
+        { label: 'Edit Technicians', check: false },
+        { label: 'Delete Technicians', check: false }
+    ]);
+
+    // Parent permissions for inheritance validation
+    const [parentPermissions, setParentPermissions] = useState({});
+
     const [dataMobileAppPer, setDataMobileAppPer] = useState([
         { title: "Jobsites", key: "jobsites", check: false },
         { title: "Machines", key: "machines", check: false },
-        { title: "Machine Reports", key: "machine_reports", check: false },
-        { title: "Life Cycle Management", key: "life_cycle_management", check: false },
-        { title: "Order Management", key: "order_management", check: false },
-        { title: "Inquiry Management", key: "inquiry_management", check: false },
-        { title: "Operational Areas", key: "operational_areas", check: false }
+        { title: "Sensors", key: "sensors", check: false },
+        { title: "Inquiries", key: "inquiries", check: false },
+        { title: "Orders", key: "orders", check: false }
     ]);
 
     let styles = {
@@ -210,6 +221,151 @@ export default function AddNewAdminAccount() {
             await lookupPostalCode(postalCode);
         }
     };
+
+    // Fetch parent customer permissions for inheritance validation
+    const fetchParentPermissions = async () => {
+        try {
+            const parentId = localStorage.getItem("parent_id");
+            if (parentId && parentId !== "null") {
+                const response = await axiosInstance.get(`/api/admin/customer-users/parent-permissions/${parentId}`);
+                if (response.data?.item?.can_access) {
+                    setParentPermissions(response.data.item.can_access);
+                    console.log('Parent permissions loaded:', response.data.item.can_access);
+                }
+            } else {
+                // For free users, get their own permissions as the limit
+                const storedParentPermissions = getParentPermissions();
+                setParentPermissions(storedParentPermissions);
+            }
+            
+            // Initialize default permissions after parent permissions are loaded
+            initializePermissionDefaults();
+        } catch (error) {
+            console.error('Error fetching parent permissions:', error);
+            // If we can't fetch parent permissions, show all options (fallback)
+            setParentPermissions({});
+            initializePermissionDefaults();
+        }
+    };
+    
+    // Initialize permission defaults based on assignable permissions
+    const initializePermissionDefaults = () => {
+        const assignablePermissions = getAssignablePermissions();
+        if (assignablePermissions?.web_app) {
+            if (assignablePermissions.web_app.order_management) {
+                setOrderManagementCheck(assignablePermissions.web_app.order_management);
+            }
+            if (assignablePermissions.web_app.inquiry_management) {
+                setInquirymanagementCheck(assignablePermissions.web_app.inquiry_management);
+            }
+            if (assignablePermissions.web_app.job_sites) {
+                setJobSitesCheck(assignablePermissions.web_app.job_sites);
+            }
+            if (assignablePermissions.web_app.machines_and_sensors) {
+                setMachinesAndSensorsCheck(assignablePermissions.web_app.machines_and_sensors);
+            }
+            if (assignablePermissions.web_app.operational_areas) {
+                setOperationalAreasCheck(assignablePermissions.web_app.operational_areas);
+            }
+            if (assignablePermissions.web_app.user_management) {
+                setUserManagementCheck(assignablePermissions.web_app.user_management);
+            }
+            if (assignablePermissions.web_app.technician_management) {
+                setTechnicianManagementCheck(assignablePermissions.web_app.technician_management);
+            }
+        }
+        if (assignablePermissions?.mobile_app) {
+            setDataMobileAppPer(assignablePermissions.mobile_app);
+        }
+    };
+
+    // Check if a specific permission is allowed by parent
+    const isPermissionAllowedByParent = (section, permissionLabel) => {
+        // If no parent permissions loaded, allow all (for backwards compatibility)
+        if (!parentPermissions?.web_app) return true;
+        
+        const parentSection = parentPermissions.web_app[section];
+        if (!parentSection || !Array.isArray(parentSection)) return true;
+        
+        // Find the permission in parent's permissions
+        const parentPermission = parentSection.find(perm => perm.label === permissionLabel);
+        return parentPermission ? parentPermission.check : false;
+    };
+
+    // Render a permission checkbox only if allowed by parent
+    const renderPermissionCheckbox = (element, index, section, setStateFunction) => {
+        const isAllowed = isPermissionAllowedByParent(section, element.label);
+        
+        if (!isAllowed) {
+            return null; // Don't render if parent doesn't have this permission
+        }
+        
+        return (
+            <Checkbox
+                key={index}
+                style={{ margin: '0' }}
+                checked={element.check}
+                onChange={(val) => setStateFunction((previous) => {
+                    return previous.map((elm, i) => {
+                        if (i === index) {
+                            return {
+                                ...elm,
+                                check: val.target.checked,
+                            }
+                        } else {
+                            return elm
+                        }
+                    })
+                })}
+            >
+                {element.label}
+            </Checkbox>
+        );
+    };
+
+    // Select All/Deselect All Functions for Individual Cards
+    const handleOrderManagementSelectAll = (selectAll) => {
+        setOrderManagementCheck(prev => prev.map(item => ({ ...item, check: selectAll })));
+    };
+
+    const handleInquiryManagementSelectAll = (selectAll) => {
+        setInquirymanagementCheck(prev => prev.map(item => ({ ...item, check: selectAll })));
+    };
+
+    const handleJobSitesSelectAll = (selectAll) => {
+        setJobSitesCheck(prev => prev.map(item => ({ ...item, check: selectAll })));
+    };
+
+    const handleMachinesAndSensorsSelectAll = (selectAll) => {
+        setMachinesAndSensorsCheck(prev => prev.map(item => ({ ...item, check: selectAll })));
+    };
+
+    const handleOperationalAreasSelectAll = (selectAll) => {
+        setOperationalAreasCheck(prev => prev.map(item => ({ ...item, check: selectAll })));
+    };
+
+    const handleUserManagementSelectAll = (selectAll) => {
+        setUserManagementCheck(prev => prev.map(item => ({ ...item, check: selectAll })));
+    };
+
+    const handleTechnicianManagementSelectAll = (selectAll) => {
+        setTechnicianManagementCheck(prev => prev.map(item => ({ ...item, check: selectAll })));
+    };
+
+    const handleMobileAppSelectAll = (selectAll) => {
+        setDataMobileAppPer(prev => prev.map(item => ({ ...item, check: selectAll })));
+    };
+
+    // Global Select All/Deselect All Functions
+    const handleWebAppGlobalSelectAll = (selectAll) => {
+        handleOrderManagementSelectAll(selectAll);
+        handleInquiryManagementSelectAll(selectAll);
+        handleJobSitesSelectAll(selectAll);
+        handleMachinesAndSensorsSelectAll(selectAll);
+        handleOperationalAreasSelectAll(selectAll);
+        handleUserManagementSelectAll(selectAll);
+        handleTechnicianManagementSelectAll(selectAll);
+    };
     const onFinish = async (values) => {
         // Prepare can_access object
         const can_access = {
@@ -218,7 +374,9 @@ export default function AddNewAdminAccount() {
                 inquiry_management: InquirymanagementCheck,
                 job_sites: jobSitesCheck,
                 machines_and_sensors: machinesAndSensorsCheck,
-                operational_areas: operationalAreasCheck
+                operational_areas: operationalAreasCheck,
+                user_management: userManagementCheck,
+                technician_management: technicianManagementCheck
             },
             mobile_app: dataMobileAppPer
         };
@@ -229,9 +387,9 @@ export default function AddNewAdminAccount() {
         let profile_pic = imageUrl
 
         console.log(fileList);
-      if(profile_pic?.includes('base64')){
-         profile_pic = await UploadImage(fileList);
-     }
+        if(profile_pic?.includes('base64')){
+            profile_pic = await UploadImage(fileList);
+        }
 
         let file = [];
 
@@ -299,15 +457,21 @@ export default function AddNewAdminAccount() {
             try {
                 // handleOpenAlert()
                 setLoading(true);
-                const resp = await axiosInstance.post(`/api/admin/customer-users/store`, {
+                
+                // Debug: Log the complete payload being sent to API
+                const payload = {
                     ...form1.getFieldsValue(),
                     ...form2.getFieldsValue(),
                     phone_code: countryCode,
                     parent_id:localStorage.getItem("parent_id"),
                     profile_pic,
-                    dob: form1.getFieldValue('dob').format('YYYY-MM-DD'),
+                    dob: form1.getFieldValue('dob') ? form1.getFieldValue('dob').format('YYYY-MM-DD') : null,
+                    documents: file,
                     can_access: JSON.stringify(can_access)
-                })
+                };
+                console.log('Complete API payload for CREATE USER:', payload);
+                
+                const resp = await axiosInstance.post(`/api/admin/customer-users/store`, payload);
                 setLoading(false);
                 if(resp.data.message=="Invalid phone number format. Please provide a valid phone number."){
                     message.error("Invalid phone number format. Please provide a valid phone number.");
@@ -408,6 +572,8 @@ export default function AddNewAdminAccount() {
             }
         };
         fetchCountry();
+        fetchParentPermissions(); // Load parent permissions and initialize defaults
+        
         if (id) {
             getData();
         }
@@ -462,6 +628,12 @@ export default function AddNewAdminAccount() {
                 }
                 if (can_access?.web_app?.operational_areas) {
                     setOperationalAreasCheck(can_access.web_app.operational_areas);
+                }
+                if (can_access?.web_app?.user_management) {
+                    setUserManagementCheck(can_access.web_app.user_management);
+                }
+                if (can_access?.web_app?.technician_management) {
+                    setTechnicianManagementCheck(can_access.web_app.technician_management);
                 }
                 if (can_access?.mobile_app) {
                     setDataMobileAppPer(can_access.mobile_app);
@@ -887,6 +1059,15 @@ export default function AddNewAdminAccount() {
                                 }
                                 key="1"
                             >
+                                {/* Global Web App Select All Controls */}
+                                <Row justify="end" style={{ marginBottom: '16px' }}>
+                                    <Col>
+                                        <Button.Group size="small">
+                                            <Button onClick={() => handleWebAppGlobalSelectAll(true)}>Select All</Button>
+                                            <Button onClick={() => handleWebAppGlobalSelectAll(false)}>Deselect All</Button>
+                                        </Button.Group>
+                                    </Col>
+                                </Row>
                                 <Row gutter={[16, 24]}>
                                     {/* Order Management */}
                                     <Col span={6}>
@@ -901,29 +1082,19 @@ export default function AddNewAdminAccount() {
                                             <Row justify="space-between" align="middle">
                                                 <Title level={5}>Order Management</Title>
                                             </Row>
+                                            <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
+                                                <Col>
+                                                    <Button.Group size="small">
+                                                        <Button onClick={() => handleOrderManagementSelectAll(true)}>All</Button>
+                                                        <Button onClick={() => handleOrderManagementSelectAll(false)}>None</Button>
+                                                    </Button.Group>
+                                                </Col>
+                                            </Row>
                                             <Divider />
                                             <div className="d-flex flex-column">
-                                                {orderManagementCheck.map((element, index) => (
-                                                    <Checkbox
-                                                        key={index}
-                                                        style={{ margin: '0' }}
-                                                        checked={element.check}
-                                                        onChange={(val) => setOrderManagementCheck((previous) => {
-                                                            return previous.map((elm, i) => {
-                                                                if (i === index) {
-                                                                    return {
-                                                                        ...elm,
-                                                                        check: val.target.checked,
-                                                                    }
-                                                                } else {
-                                                                    return elm
-                                                                }
-                                                            })
-                                                        })}
-                                                    >
-                                                        {element.label}
-                                                    </Checkbox>
-                                                ))}
+                                                {orderManagementCheck.map((element, index) => 
+                                                    renderPermissionCheckbox(element, index, 'order_management', setOrderManagementCheck)
+                                                )}
                                             </div>
                                         </div>
                                     </Col>
@@ -941,29 +1112,19 @@ export default function AddNewAdminAccount() {
                                             <Row justify="space-between" align="middle">
                                                 <Title level={5}>Inquiry Management</Title>
                                             </Row>
+                                            <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
+                                                <Col>
+                                                    <Button.Group size="small">
+                                                        <Button onClick={() => handleInquiryManagementSelectAll(true)}>All</Button>
+                                                        <Button onClick={() => handleInquiryManagementSelectAll(false)}>None</Button>
+                                                    </Button.Group>
+                                                </Col>
+                                            </Row>
                                             <Divider />
                                             <div className="d-flex flex-column">
-                                                {InquirymanagementCheck.map((element, index) => (
-                                                    <Checkbox
-                                                        key={index}
-                                                        style={{ margin: '0' }}
-                                                        checked={element.check}
-                                                        onChange={(val) => setInquirymanagementCheck((previous) => {
-                                                            return previous.map((elm, i) => {
-                                                                if (i === index) {
-                                                                    return {
-                                                                        ...elm,
-                                                                        check: val.target.checked,
-                                                                    }
-                                                                } else {
-                                                                    return elm
-                                                                }
-                                                            })
-                                                        })}
-                                                    >
-                                                        {element.label}
-                                                    </Checkbox>
-                                                ))}
+                                                {InquirymanagementCheck.map((element, index) => 
+                                                    renderPermissionCheckbox(element, index, 'inquiry_management', setInquirymanagementCheck)
+                                                )}
                                             </div>
                                         </div>
                                     </Col>
@@ -981,29 +1142,19 @@ export default function AddNewAdminAccount() {
                                             <Row justify="space-between" align="middle">
                                                 <Title level={5}>Job Sites</Title>
                                             </Row>
+                                            <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
+                                                <Col>
+                                                    <Button.Group size="small">
+                                                        <Button onClick={() => handleJobSitesSelectAll(true)}>All</Button>
+                                                        <Button onClick={() => handleJobSitesSelectAll(false)}>None</Button>
+                                                    </Button.Group>
+                                                </Col>
+                                            </Row>
                                             <Divider />
                                             <div className="d-flex flex-column">
-                                                {jobSitesCheck.map((element, index) => (
-                                                    <Checkbox
-                                                        key={index}
-                                                        style={{ margin: '0' }}
-                                                        checked={element.check}
-                                                        onChange={(val) => setJobSitesCheck((previous) => {
-                                                            return previous.map((elm, i) => {
-                                                                if (i === index) {
-                                                                    return {
-                                                                        ...elm,
-                                                                        check: val.target.checked,
-                                                                    }
-                                                                } else {
-                                                                    return elm
-                                                                }
-                                                            })
-                                                        })}
-                                                    >
-                                                        {element.label}
-                                                    </Checkbox>
-                                                ))}
+                                                {jobSitesCheck.map((element, index) => 
+                                                    renderPermissionCheckbox(element, index, 'job_sites', setJobSitesCheck)
+                                                )}
                                             </div>
                                         </div>
                                     </Col>
@@ -1021,29 +1172,19 @@ export default function AddNewAdminAccount() {
                                             <Row justify="space-between" align="middle">
                                                 <Title level={5}>Machines and Sensors</Title>
                                             </Row>
+                                            <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
+                                                <Col>
+                                                    <Button.Group size="small">
+                                                        <Button onClick={() => handleMachinesAndSensorsSelectAll(true)}>All</Button>
+                                                        <Button onClick={() => handleMachinesAndSensorsSelectAll(false)}>None</Button>
+                                                    </Button.Group>
+                                                </Col>
+                                            </Row>
                                             <Divider />
                                             <div className="d-flex flex-column">
-                                                {machinesAndSensorsCheck.map((element, index) => (
-                                                    <Checkbox
-                                                        key={index}
-                                                        style={{ margin: '0' }}
-                                                        checked={element.check}
-                                                        onChange={(val) => setMachinesAndSensorsCheck((previous) => {
-                                                            return previous.map((elm, i) => {
-                                                                if (i === index) {
-                                                                    return {
-                                                                        ...elm,
-                                                                        check: val.target.checked,
-                                                                    }
-                                                                } else {
-                                                                    return elm
-                                                                }
-                                                            })
-                                                        })}
-                                                    >
-                                                        {element.label}
-                                                    </Checkbox>
-                                                ))}
+                                                {machinesAndSensorsCheck.map((element, index) => 
+                                                    renderPermissionCheckbox(element, index, 'machines_and_sensors', setMachinesAndSensorsCheck)
+                                                )}
                                             </div>
                                         </div>
                                     </Col>
@@ -1064,29 +1205,79 @@ export default function AddNewAdminAccount() {
                                             <Row justify="space-between" align="middle">
                                                 <Title level={5}>Operational Areas</Title>
                                             </Row>
+                                            <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
+                                                <Col>
+                                                    <Button.Group size="small">
+                                                        <Button onClick={() => handleOperationalAreasSelectAll(true)}>All</Button>
+                                                        <Button onClick={() => handleOperationalAreasSelectAll(false)}>None</Button>
+                                                    </Button.Group>
+                                                </Col>
+                                            </Row>
                                             <Divider />
                                             <div className="d-flex flex-column">
-                                                {operationalAreasCheck.map((element, index) => (
-                                                    <Checkbox
-                                                        key={index}
-                                                        style={{ margin: '0' }}
-                                                        checked={element.check}
-                                                        onChange={(val) => setOperationalAreasCheck((previous) => {
-                                                            return previous.map((elm, i) => {
-                                                                if (i === index) {
-                                                                    return {
-                                                                        ...elm,
-                                                                        check: val.target.checked,
-                                                                    }
-                                                                } else {
-                                                                    return elm
-                                                                }
-                                                            })
-                                                        })}
-                                                    >
-                                                        {element.label}
-                                                    </Checkbox>
-                                                ))}
+                                                {operationalAreasCheck.map((element, index) => 
+                                                    renderPermissionCheckbox(element, index, 'operational_areas', setOperationalAreasCheck)
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Col>
+
+                                    {/* User Management */}
+                                    <Col span={6}>
+                                        <div
+                                            style={{
+                                                border: "1px solid #d9d9d9",
+                                                borderRadius: "8px",
+                                                padding: "20px",
+                                                minHeight: '300px'
+                                            }}
+                                        >
+                                            <Row justify="space-between" align="middle">
+                                                <Title level={5}>User Management</Title>
+                                            </Row>
+                                            <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
+                                                <Col>
+                                                    <Button.Group size="small">
+                                                        <Button onClick={() => handleUserManagementSelectAll(true)}>All</Button>
+                                                        <Button onClick={() => handleUserManagementSelectAll(false)}>None</Button>
+                                                    </Button.Group>
+                                                </Col>
+                                            </Row>
+                                            <Divider />
+                                            <div className="d-flex flex-column">
+                                                {userManagementCheck.map((element, index) => 
+                                                    renderPermissionCheckbox(element, index, 'user_management', setUserManagementCheck)
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Col>
+
+                                    {/* Technician Management */}
+                                    <Col span={6}>
+                                        <div
+                                            style={{
+                                                border: "1px solid #d9d9d9",
+                                                borderRadius: "8px",
+                                                padding: "20px",
+                                                minHeight: '300px'
+                                            }}
+                                        >
+                                            <Row justify="space-between" align="middle">
+                                                <Title level={5}>Technician Management</Title>
+                                            </Row>
+                                            <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
+                                                <Col>
+                                                    <Button.Group size="small">
+                                                        <Button onClick={() => handleTechnicianManagementSelectAll(true)}>All</Button>
+                                                        <Button onClick={() => handleTechnicianManagementSelectAll(false)}>None</Button>
+                                                    </Button.Group>
+                                                </Col>
+                                            </Row>
+                                            <Divider />
+                                            <div className="d-flex flex-column">
+                                                {technicianManagementCheck.map((element, index) => 
+                                                    renderPermissionCheckbox(element, index, 'technician_management', setTechnicianManagementCheck)
+                                                )}
                                             </div>
                                         </div>
                                     </Col>
@@ -1102,6 +1293,15 @@ export default function AddNewAdminAccount() {
                                 }
                                 key="2"
                             >
+                                {/* Global Mobile App Select All Controls */}
+                                <Row justify="end" style={{ marginBottom: '16px' }}>
+                                    <Col>
+                                        <Button.Group size="small">
+                                            <Button onClick={() => handleMobileAppSelectAll(true)}>Select All</Button>
+                                            <Button onClick={() => handleMobileAppSelectAll(false)}>Deselect All</Button>
+                                        </Button.Group>
+                                    </Col>
+                                </Row>
                                 <Row gutter={[24, 24]} style={{ padding: '20px' }}>
                                     {dataMobileAppPer.map((item) => (
                                         <Col xs={24} sm={12} key={item.key}>

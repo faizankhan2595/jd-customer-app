@@ -17,6 +17,7 @@ import CalendarIcon from "assets/calendar.png"
 import moment from "moment";
 import CardOrder from "./Card/CardOrder";
 import SubMenu from "antd/lib/menu/SubMenu";
+import { hasPermission } from 'utils/permissionUtils';
 
 function Index() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -177,15 +178,16 @@ function Index() {
           <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" >Export</Button> */}
 
         </div>
-        <div className="mb-2 d-flex align-items-center">
-          <Button
-            // onClick={showModal}
-            className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
-          >
-            <Link to={'/app/inquiry-management/new-inquiry'}>
-              + New Inquiry</Link>
-          </Button>
-        </div>
+        {hasPermission('inquiry_management', 'Create New Inquiry') && (
+          <div className="mb-2 d-flex align-items-center">
+            <Button
+              className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
+            >
+              <Link to={'/app/inquiry-management/new-inquiry'}>
+                + New Inquiry</Link>
+            </Button>
+          </div>
+        )}
       </div>
       {
         data.length!==0?

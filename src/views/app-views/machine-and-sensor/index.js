@@ -30,6 +30,7 @@ import { axiosInstance } from "App";
 import moment from "moment";
 import CardMachine from "./Card/CardMachine";
 import SubMenu from "antd/lib/menu/SubMenu";
+import { hasPermission } from 'utils/permissionUtils';
 
 const MachineAndSensor = () => {
   const history = useHistory();
@@ -102,27 +103,31 @@ const MachineAndSensor = () => {
       >
         <EyeOutlined /> View Sensors
       </Menu.Item>
-      <Menu.Item
-        key="edit-machine"
-        onClick={() =>
-          history.push(`/app/machine-and-sensors/edit/${record.id}`)
-        }
-      >
-        <EditOutlined /> Edit Details
-      </Menu.Item>
-      <Popconfirm
-        title={"Are you sure you want to delete this item?"}
-        description={"This action cannot be undone."}
-        okText="Yes"
-        cancelText="No"
-        onConfirm={() => deleteRow(record.id)}
-      >
-        <Menu.Item key="delete">
-          <span style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <DeleteOutlined /> Delete
-          </span>
+      {hasPermission('machines_and_sensors', 'Edit Machines and Sensors') && (
+        <Menu.Item
+          key="edit-machine"
+          onClick={() =>
+            history.push(`/app/machine-and-sensors/edit/${record.id}`)
+          }
+        >
+          <EditOutlined /> Edit Details
         </Menu.Item>
-      </Popconfirm>
+      )}
+      {hasPermission('machines_and_sensors', 'Delete Machines and Sensors') && (
+        <Popconfirm
+          title={"Are you sure you want to delete this item?"}
+          description={"This action cannot be undone."}
+          okText="Yes"
+          cancelText="No"
+          onConfirm={() => deleteRow(record.id)}
+        >
+          <Menu.Item key="delete">
+            <span style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <DeleteOutlined /> Delete
+            </span>
+          </Menu.Item>
+        </Popconfirm>
+      )}
     </Menu>
   );
 
@@ -256,11 +261,13 @@ const MachineAndSensor = () => {
           {/* <Select placeholder="Select Area" style={{ width: 200,margin:"0 10px" }} />
           <Select placeholder="Select Jobsite" style={{ width: 200 }} /> */}
         </div>
-        <div className="mb-2 d-flex align-items-center">
-          <Button className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4">
-            <Link to={"machine-and-sensors/add-new"}>+ Add New Machines</Link>
-          </Button>
-        </div>
+        {hasPermission('machines_and_sensors', 'Create New Machines and Sensors') && (
+          <div className="mb-2 d-flex align-items-center">
+            <Button className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4">
+              <Link to={"machine-and-sensors/add-new"}>+ Add New Machines</Link>
+            </Button>
+          </div>
+        )}
       </div>
       {
         data.length > 0 ? (

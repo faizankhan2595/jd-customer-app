@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, Grid, Dropdown } from "antd";
 import IntlMessage from "../util-components/IntlMessage";
@@ -12,6 +12,7 @@ import { axiosInstance } from "App";
 import { role } from "utils/role";
 import { EditOutlined, LogoutOutlined } from "@ant-design/icons";
 import { useHistory } from "react-router-dom/cjs/react-router-dom";
+import { usePermissions } from "contexts/PermissionsContext";
 
 const { SubMenu } = Menu;
 const { useBreakpoint } = Grid;
@@ -42,47 +43,22 @@ const SideNavContent = (props) => {
     onMobileNavToggle,
   } = props;
   const isMobile = !utils.getBreakPoint(useBreakpoint()).includes("lg");
+  const { isLoading: permissionsLoading } = usePermissions();
+  
   const closeMobileNav = () => {
     if (isMobile) {
       onMobileNavToggle(false);
     }
   };
-  // const [data, setData] = React.useState([]);
-  const getData = async () => {
-    try {
-      const data = await axiosInstance.get("/api/admin/getUserByToken");
-      console.log(data.data.item);
-      // setData(data.data.item);
-      const getLocalStorageItem = (key) => {
-        const value = localStorage.getItem(key);
-        return value === "null" || value === null ? null : value;
-      };
-      const name = getLocalStorageItem("name");
-      const parent_id = getLocalStorageItem("parent_id");
-      const company_name = getLocalStorageItem("company_name");
-      const user_id = getLocalStorageItem("user_id");
-      const role = getLocalStorageItem("role");
-
-
-
-      localStorage.setItem("name", data.data.item.name);
-      localStorage.setItem("parent_id", data.data.item.parent_id);
-      localStorage.setItem("company_name", data.data.item.company_name);
-      localStorage.setItem('user_id', data.data.item.id);
-      localStorage.setItem("role", data.data.item.role_id);
-      if (name != data.data.item.name || parent_id != data.data.item.parent_id || company_name != data.data.item.company_name || company_name != data.data.item.company_name || user_id != data.data.item.id || role != data.data.item.role_id) {
-        window.location.reload();
-      }
-
-    } catch (err) {
-      console.log(err);
-    }
-  };
-  useEffect(() => {
-    getData();
-  }, []);
+  
 
   const history = useHistory();
+  
+  // Don't render menu until permissions are loaded to avoid flash of wrong menu items
+  if (permissionsLoading) {
+    return null;
+  }
+  
   return (
     <Menu
       theme={sideNavTheme === SIDE_NAV_LIGHT ? "light" : "dark"}

@@ -11,6 +11,7 @@ import { axiosInstance } from 'App'
 import moment from 'moment'
 import { useHistory } from 'react-router-dom/cjs/react-router-dom'
 import ConfirmModal from 'components/shared-components/ConfirmModal'
+import { hasPermission } from 'utils/permissionUtils';
 // import { useHistory } from 'react-router-dom/cjs/react-router-dom'
 
 const { Option } = Select;
@@ -210,19 +211,14 @@ const OperationalAreas = () => {
 
   const getMenu = (record) => (
     <Menu>
-     
-      <Menu.Item key="edit" onClick={() => {
-        history.push(`/app/operator-master/operational-areas/edit/${record}`)
-      }}>
-        <EditOutlined /> Edit
-      </Menu.Item>
-      {/* <Popconfirm
-        title={"Are you sure you want to delete this item?"}
-        description={"This action cannot be undone."}
-        okText="Yes"
-        cancelText="No"
-        onConfirm={() => deleteRow(record)}
-      > */}
+      {hasPermission('operational_areas', 'Edit Operational Areas') && (
+        <Menu.Item key="edit" onClick={() => {
+          history.push(`/app/operator-master/operational-areas/edit/${record}`)
+        }}>
+          <EditOutlined /> Edit
+        </Menu.Item>
+      )}
+      {hasPermission('operational_areas', 'Delete Operational Areas') && (
         <Menu.Item key="delete"
           onClick={()=>{
             setModalVisible2(true)
@@ -233,6 +229,7 @@ const OperationalAreas = () => {
             <DeleteOutlined /> Delete
           </span>
         </Menu.Item>
+      )}
       {/* </Popconfirm> */}
       {/* <Menu.Item onClick={() => setModalVisible(true)}>
         <AccountStatusIcon /> Account Status
@@ -297,15 +294,16 @@ const OperationalAreas = () => {
           </Filter>
           {/* <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" >Export</Button> */}
         </div>
-        <div className="mb-2 d-flex align-items-center">
-          <Button
-            // onClick={showModal}
-            className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
-          >
-            <Link to={'operational-areas/add-new'}>
-              + Add New</Link>
-          </Button>
-        </div>
+        {hasPermission('operational_areas', 'Create New Operational Areas') && (
+          <div className="mb-2 d-flex align-items-center">
+            <Button
+              className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
+            >
+              <Link to={'operational-areas/add-new'}>
+                + Add New</Link>
+            </Button>
+          </div>
+        )}
       </div>
       <div>
         <Table

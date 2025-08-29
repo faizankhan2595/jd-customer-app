@@ -238,6 +238,7 @@ const AddNewLifeCycleEvent = () => {
   const [RIEditModal, setRIEditModal] = useState(false);
   const [PIEditModal, setPIEditModal] = useState(false);
   const [modalName, setModalName] = useState("");
+  const [eventName, setEventName] = useState("");
   // console.log("Modal name: " + modalName);
   const [auxileryChecksHeater, setAuxileryChecksHeater] = useState({})
   const [auxileryChecksThermistor, setAuxileryChecksThermistor] = useState({})
@@ -3764,6 +3765,7 @@ const returnClass = (value) => {
           const resp = await axiosInstance.put(url, {
               id: isEdit ? param.id : null,
               machine_id: isEdit ? machineId : param.id,
+              name: eventName,
               process_control: JSON.stringify(data2.processControl),
               parts_renewal: JSON.stringify(data2.partsRenewal),
               job_reference: JSON.stringify(data2.jobReference),
@@ -3795,6 +3797,7 @@ const returnClass = (value) => {
           const resp = await axiosInstance.post(url, {
               id: isEdit ? param.id : null,
               machine_id: isEdit ? machineId : param.id,
+              name: eventName,
               process_control: JSON.stringify(data2.processControl),
               parts_renewal: JSON.stringify(data2.partsRenewal),
               job_reference: JSON.stringify(data2.jobReference),
@@ -3839,6 +3842,7 @@ const returnClass = (value) => {
     let data = response.data.item;
     if(data) {
       setMachineId(data.machine_id)
+      setEventName(data.name || "")
       
       // processControl
       let gen_keys = Object.keys(data.process_control.generalProcess);
@@ -4463,6 +4467,17 @@ const returnClass = (value) => {
           <span style={{color: "#6a6a6a", fontWeight: "300",}}>{" "}/ Life Cycle Management{" "}/</span>
           {isEdit ? " Edit":" Add New"} Life Cycle Event{" "}
       </h4>
+      
+      <div className="mb-4">
+        <label className="form-label">Event Name</label>
+        <Input
+          placeholder="Enter event name"
+          value={eventName}
+          onChange={(e) => setEventName(e.target.value)}
+          style={{ maxWidth: '400px' }}
+        />
+      </div>
+
       <SRUpload SRUploadForm={SRUploadForm} setSRUploadForm={setSRUploadForm} />
       <SIUpload SIUploadForm={SIUploadForm} setSIUploadForm={setSIUploadForm} />
       <RRUpload RRUploadForm={RRUploadForm} setRRUploadForm={setRRUploadForm} />

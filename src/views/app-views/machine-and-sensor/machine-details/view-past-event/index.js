@@ -42,6 +42,12 @@ const ViewPasEvent = () => {
           render: (item) => <div>#{item}</div>
         },
         {
+          title: 'Name',
+          dataIndex: 'name',
+          key: 'name',
+          render: (name) => <div>{name || 'Unnamed Event'}</div>
+        },
+        {
           title: 'Date Received',
           dataIndex: 'created_at',
           key: 'created_at',

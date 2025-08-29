@@ -87,6 +87,10 @@ const SensorAnalysis = () => {
   const [spectrum3AxisData, setSpectrum3AxisData] = useState({ x: [], y: [], z: [] });
   const [spectrum1AxisData, setSpectrum1AxisData] = useState([]);
   const [availableFiles, setAvailableFiles] = useState([]);
+  
+  // Machine data and harmonics
+  const [machineData, setMachineData] = useState(null);
+  const [harmonicFrequencies, setHarmonicFrequencies] = useState([]);
 
   // Metric configuration
   const metricConfig = {
@@ -202,6 +206,31 @@ const SensorAnalysis = () => {
       battery_percentage: latestData.battery_percentage || "N/A",
       rssi: latestData.rssi || "N/A"
     };
+  };
+
+  // Get file availability status for a data point
+  const getFileAvailabilityStatus = (dataIndex) => {
+    if (!rawData || dataIndex >= rawData.length) return 'none';
+    
+    const record = rawData[dataIndex];
+    const hasFile0 = record.file_0 && record.file_0.trim() !== '';
+    const hasFile1 = record.file_1 && record.file_1.trim() !== '';
+    
+    if (hasFile0 && hasFile1) return 'both';
+    if (hasFile0) return 'mid-freq';
+    if (hasFile1) return 'high-freq';
+    return 'none';
+  };
+
+  // Get color for file availability status
+  const getFileAvailabilityColor = (status) => {
+    switch (status) {
+      case 'both': return '#10b981'; // Green - both analyses available
+      case 'mid-freq': return '#3b82f6'; // Blue - mid-frequency analysis only
+      case 'high-freq': return '#f59e0b'; // Orange - high-frequency analysis only
+      case 'none': return '#ef4444'; // Red - no analysis available
+      default: return '#9ca3af'; // Gray - unknown status
+    }
   };
 
   // Enhanced function to fetch multiple spectrum data for a single point
@@ -348,6 +377,47 @@ const SensorAnalysis = () => {
     return spectrumData;
   }, []);
 
+  // Find harmonic frequencies and their amplitudes from spectrum data
+  const getTop4Peaks = (spectrumData, machineRpm) => {
+    if (!machineRpm) {
+      return [];
+    }
+    
+    const baseFreq = parseFloat(machineRpm) / 60; // 1X frequency (RPM/60)
+    const colors = ["#ff0000", "#00ff00", "#0000ff", "#ff8800"];
+    
+    // Define harmonic multipliers we want to find
+    const harmonicMultipliers = [1, 2, 3.3, 4.2];
+    
+    const harmonics = harmonicMultipliers.map((multiplier, index) => {
+      const targetFreq = baseFreq * multiplier;
+      let amplitude = 0;
+      
+      // Find the amplitude at this harmonic frequency from spectrum data
+      if (spectrumData && spectrumData.length > 0) {
+        // Find the closest frequency point in the spectrum data
+        const closestPoint = spectrumData.reduce((closest, point) => {
+          const [freq, amp] = point;
+          const currentDistance = Math.abs(freq - targetFreq);
+          const closestDistance = Math.abs(closest[0] - targetFreq);
+          return currentDistance < closestDistance ? point : closest;
+        });
+        amplitude = closestPoint[1];
+      }
+      
+      return {
+        frequency: targetFreq,
+        amplitude: amplitude,
+        multiplier: multiplier === 1 ? "1X" : 
+                   multiplier === 2 ? "2X" : 
+                   multiplier === 3.3 ? "3.3X" : "4.2X",
+        color: colors[index] || "#666666"
+      };
+    });
+    
+    return harmonics;
+  };
+
   // Create main chart with Highcharts
   const createMainChart = useCallback((data, title, unit, color) => {
     if (!mainChartRef.current || !window.Highcharts) return;
@@ -357,6 +427,19 @@ const SensorAnalysis = () => {
     }
 
     const chartData = convertToHighchartsData(data);
+    
+    // Create file availability pointer series
+    const fileAvailabilityData = data.map((point, index) => {
+      const availabilityStatus = getFileAvailabilityStatus(index);
+      const pointerColor = getFileAvailabilityColor(availabilityStatus);
+      
+      return {
+        x: point.x instanceof Date ? point.x.getTime() : index,
+        y: point.y,
+        color: pointerColor,
+        status: availabilityStatus
+      };
+    });
     
     mainChartRef.current.chart = window.Highcharts.stockChart(mainChartRef.current, {
       chart: {
@@ -393,9 +476,47 @@ const SensorAnalysis = () => {
             }
           }
         }
+      }, {
+        name: 'File Availability',
+        type: 'scatter',
+        data: fileAvailabilityData,
+        marker: {
+          enabled: true,
+          symbol: 'circle',
+          radius: 4,
+          states: {
+            hover: {
+              radius: 6
+            }
+          }
+        },
+        showInLegend: false,
+        enableMouseTracking: true,
+        tooltip: {
+          pointFormatter: function() {
+            const statusLabels = {
+              'both': 'Both Mid & High Frequency',
+              'mid-freq': 'Mid-Frequency Only',
+              'high-freq': 'High-Frequency Only', 
+              'none': 'No Analysis Available'
+            };
+            return `<span style="color:${this.color}">●</span> Analysis: <b>${statusLabels[this.status] || 'Unknown'}</b><br/>`;
+          }
+        },
+        point: {
+          events: {
+            click: function(e) {
+              const pointIndex = this.index;
+              const originalData = data[pointIndex];
+              
+              fetchAllSpectrumData(originalData);
+            }
+          }
+        }
       }],
       tooltip: {
-        xDateFormat: '%Y-%m-%d %H:%M:%S'
+        xDateFormat: '%Y-%m-%d %H:%M:%S',
+        shared: true
       },
       plotOptions: {
         line: {
@@ -403,9 +524,20 @@ const SensorAnalysis = () => {
             enabled: false
           }
         }
+      },
+      legend: {
+        enabled: true,
+        align: 'right',
+        verticalAlign: 'top',
+        layout: 'vertical',
+        x: -10,
+        y: 50,
+        itemStyle: {
+          fontSize: '10px'
+        }
       }
     });
-  }, [convertToHighchartsData, fetchAllSpectrumData]);
+  }, [convertToHighchartsData, fetchAllSpectrumData, getFileAvailabilityStatus, getFileAvailabilityColor, rawData]);
 
   // Create spectrum chart with Highcharts
   const createSpectrumChart = useCallback((spectrumData) => {
@@ -426,6 +558,48 @@ const SensorAnalysis = () => {
     const chartData = convertSpectrumToHighchartsData(spectrumData);
     console.log('Chart data prepared, length:', chartData.length);
     console.log('Sample chart data:', chartData.slice(0, 3));
+    
+    // Get harmonic frequencies for plot lines if machine data is available
+    const harmonics = machineData && machineData.rpm ? getTop4Peaks(spectrumData, machineData.rpm) : [];
+    
+    // Create plot lines for harmonic frequencies
+    const plotLines = harmonics.map((harmonic) => ({
+      color: harmonic.color,
+      width: 2,
+      value: harmonic.frequency,
+      dashStyle: 'solid',
+      label: {
+        text: harmonic.multiplier,
+        style: {
+          color: harmonic.color,
+          fontWeight: 'bold',
+          fontSize: '11px'
+        },
+        align: 'center',
+        verticalAlign: 'bottom',
+        y: -5
+      }
+    }));
+
+    // Create series for harmonic frequency markers (dots)
+    const harmonicSeries = harmonics.map((harmonic) => ({
+      name: `Harmonic ${harmonic.multiplier}`,
+      type: 'scatter',
+      data: [[harmonic.frequency, harmonic.amplitude || 0]],
+      color: harmonic.color,
+      marker: {
+        symbol: 'circle',
+        radius: 5,
+        fillColor: harmonic.color,
+        lineColor: harmonic.color,
+        lineWidth: 2
+      },
+      showInLegend: false,
+      enableMouseTracking: true,
+      tooltip: {
+        pointFormat: '<b>{point.x:.1f} Hz</b><br/>Harmonic: <b>' + harmonic.multiplier + '</b>'
+      }
+    }));
     
     try {
       console.log('Creating Highcharts chart...');
@@ -448,13 +622,15 @@ const SensorAnalysis = () => {
             text: 'Log Amplitude'
           }
         },
-        series: [{
-          name: 'Amplitude Spectrum',
-          data: chartData,
-          color: '#ef4444',
-          lineWidth: 2,
-          type: 'line'
-        }],
+        series: [
+          {
+            name: 'Amplitude Spectrum',
+            data: chartData,
+            color: '#ef4444',
+            lineWidth: 2,
+            type: 'line'
+          }
+        ],
         legend: {
           enabled: false
         },
@@ -468,6 +644,11 @@ const SensorAnalysis = () => {
                 lineWidthPlus: 1
               }
             }
+          },
+          scatter: {
+            marker: {
+              enabled: true
+            }
           }
         },
       });
@@ -475,7 +656,7 @@ const SensorAnalysis = () => {
     } catch (error) {
       console.error('Error creating spectrum chart:', error);
     }
-  }, [convertSpectrumToHighchartsData]);
+  }, [convertSpectrumToHighchartsData, machineData, getTop4Peaks]);
 
   // Create combined 3-axis spectrum chart for _0.bin files
   const create3AxisSpectrumCharts = useCallback((dataX, dataY, dataZ) => {
@@ -485,6 +666,48 @@ const SensorAnalysis = () => {
       console.log('Highcharts not available');
       return;
     }
+
+    // Get harmonic frequencies for plot lines if machine data is available
+    const harmonics = machineData && machineData.rpm ? getTop4Peaks(dataZ, machineData.rpm) : [];
+    
+    // Create plot lines for harmonic frequencies
+    const plotLines = harmonics.map((harmonic) => ({
+      color: harmonic.color,
+      width: 2,
+      value: harmonic.frequency,
+      dashStyle: 'solid',
+      label: {
+        text: harmonic.multiplier,
+        style: {
+          color: harmonic.color,
+          fontWeight: 'bold',
+          fontSize: '11px'
+        },
+        align: 'center',
+        verticalAlign: 'bottom',
+        y: -5
+      }
+    }));
+
+    // Create series for harmonic frequency markers (dots)
+    const harmonicSeries = harmonics.map((harmonic) => ({
+      name: `Harmonic ${harmonic.multiplier}`,
+      type: 'scatter',
+      data: [[harmonic.frequency, harmonic.amplitude || 0]],
+      color: harmonic.color,
+      marker: {
+        symbol: 'circle',
+        radius: 5,
+        fillColor: harmonic.color,
+        lineColor: harmonic.color,
+        lineWidth: 2
+      },
+      showInLegend: false,
+      enableMouseTracking: true,
+      tooltip: {
+        pointFormat: '<b>{point.x:.1f} Hz</b><br/>Harmonic: <b>' + harmonic.multiplier + '</b>'
+      }
+    }));
 
     // Create single combined chart with all 3 axes
     if (spectrumChartRefX.current) {
@@ -498,52 +721,71 @@ const SensorAnalysis = () => {
         subtitle: { text: 'Combined X, Y, Z axes (fs=6664Hz, nperseg=4096)' },
         xAxis: { 
           title: { text: 'Frequency (Hz)' },
-          gridLineWidth: 1
+          gridLineWidth: 1,
+          plotLines: plotLines
         },
         yAxis: { 
           title: { text: 'Log Amplitude (m/s²)²/Hz' },
           gridLineWidth: 1
         },
-        series: [{
-          name: 'X-Axis PSD',
-          data: dataX,
-          color: '#ef4444',
-          lineWidth: 2,
-          type: 'line'
-        }, {
-          name: 'Y-Axis PSD',
-          data: dataY,
-          color: '#3b82f6',
-          lineWidth: 2,
-          type: 'line'
-        }, {
-          name: 'Z-Axis PSD',
-          data: dataZ,
-          color: '#10b981',
-          lineWidth: 2,
-          type: 'line'
-        }],
-        legend: { enabled: true },
-        plotOptions: {
-          line: {
+        series: [
+          {
+            name: 'X-Axis',
+            data: dataX,
+            color: '#ef4444',
+            lineWidth: 2,
+            type: 'line'
+          }, {
+            name: 'Y-Axis',
+            data: dataY,
+            color: '#3b82f6',
+            lineWidth: 2,
+            type: 'line'
+          }, {
+            name: 'Z-Axis',
+            data: dataZ,
+            color: '#10b981',
+            lineWidth: 2,
+            type: 'line'
+          },
+          ...harmonicSeries
+        ],
+        legend: { 
+          enabled: true,
+          align: 'center',
+          verticalAlign: 'top',
+          layout: 'horizontal'
+        },
+        plotOptions: { 
+          line: { 
             marker: { enabled: false },
-            states: { hover: { lineWidthPlus: 1 } }
+            states: {
+              hover: {
+                lineWidthPlus: 1
+              }
+            }
+          },
+          scatter: {
+            marker: {
+              enabled: true
+            }
           }
         },
         tooltip: {
           shared: true,
           crosshairs: true,
           formatter: function() {
-            let tooltip = `<b>Frequency: ${this.x.toFixed(2)} Hz</b><br/>`;
+            let tooltip = '<b>Frequency: ' + this.x.toFixed(2) + ' Hz</b><br/>';
             this.points.forEach(point => {
-              tooltip += `<span style="color:${point.color}">${point.series.name}: ${point.y.toExponential(2)}</span><br/>`;
+              tooltip += '<span style="color:' + point.color + '">' + point.series.name + 
+                        ': ' + point.y.toFixed(4) + '</span><br/>';
             });
             return tooltip;
           }
-        }
+        },
       });
     }
-  }, []);
+  }, [machineData, getTop4Peaks]);
 
   // Create multi-spectrum charts (both 3-axis and 1-axis for same data point)
   const createMultiSpectrumCharts = useCallback((spectrum3Axis, spectrum1Axis) => {
@@ -553,6 +795,86 @@ const SensorAnalysis = () => {
       console.log('Highcharts not available');
       return;
     }
+
+    // Get harmonic frequencies for plot lines if machine data is available
+    const harmonics = machineData && machineData.rpm ? getTop4Peaks(spectrum3Axis.z, machineData.rpm) : [];
+    const harmonics1Axis = machineData && machineData.rpm ? getTop4Peaks(spectrum1Axis, machineData.rpm) : [];
+    
+    // Create plot lines for harmonic frequencies
+    const plotLines = harmonics.map((harmonic) => ({
+      color: harmonic.color,
+      width: 2,
+      value: harmonic.frequency,
+      dashStyle: 'solid',
+      label: {
+        text: harmonic.multiplier,
+        style: {
+          color: harmonic.color,
+          fontWeight: 'bold',
+          fontSize: '11px'
+        },
+        align: 'center',
+        verticalAlign: 'bottom',
+        y: -5
+      }
+    }));
+
+    const plotLines1Axis = harmonics1Axis.map((harmonic) => ({
+      color: harmonic.color,
+      width: 2,
+      value: harmonic.frequency,
+      dashStyle: 'solid',
+      label: {
+        text: harmonic.multiplier,
+        style: {
+          color: harmonic.color,
+          fontWeight: 'bold',
+          fontSize: '11px'
+        },
+        align: 'center',
+        verticalAlign: 'bottom',
+        y: -5
+      }
+    }));
+
+    // Create series for harmonic frequency markers (dots)
+    const harmonicSeries = harmonics.map((harmonic) => ({
+      name: `Harmonic ${harmonic.multiplier}`,
+      type: 'scatter',
+      data: [[harmonic.frequency, harmonic.amplitude || 0]],
+      color: harmonic.color,
+      marker: {
+        symbol: 'circle',
+        radius: 5,
+        fillColor: harmonic.color,
+        lineColor: harmonic.color,
+        lineWidth: 2
+      },
+      showInLegend: false,
+      enableMouseTracking: true,
+      tooltip: {
+        pointFormat: '<b>{point.x:.1f} Hz</b><br/>Harmonic: <b>' + harmonic.multiplier + '</b>'
+      }
+    }));
+
+    const harmonicSeries1Axis = harmonics1Axis.map((harmonic) => ({
+      name: `Harmonic ${harmonic.multiplier}`,
+      type: 'scatter',
+      data: [[harmonic.frequency, harmonic.amplitude || 0]],
+      color: harmonic.color,
+      marker: {
+        symbol: 'circle',
+        radius: 5,
+        fillColor: harmonic.color,
+        lineColor: harmonic.color,
+        lineWidth: 2
+      },
+      showInLegend: false,
+      enableMouseTracking: true,
+      tooltip: {
+        pointFormat: '<b>{point.x:.1f} Hz</b><br/>Harmonic: <b>' + harmonic.multiplier + '</b>'
+      }
+    }));
 
     // Create single combined 3-axis chart
     if (multiSpectrum3AxisRefX.current) {
@@ -566,53 +888,72 @@ const SensorAnalysis = () => {
         subtitle: { text: 'Combined X, Y, Z axes (fs=6664Hz, nperseg=4096)' },
         xAxis: { 
           title: { text: 'Frequency (Hz)' },
-          gridLineWidth: 1
+          gridLineWidth: 1,
+          plotLines: plotLines
         },
         yAxis: { 
           title: { text: 'Log Amplitude (m/s²)²/Hz' },
           gridLineWidth: 1
         },
-        series: [{
-          name: 'X-Axis PSD',
-          data: spectrum3Axis.x,
-          color: '#ef4444',
-          lineWidth: 2,
-          type: 'line'
-        }, {
-          name: 'Y-Axis PSD',
-          data: spectrum3Axis.y,
-          color: '#3b82f6',
-          lineWidth: 2,
-          type: 'line'
-        }, {
-          name: 'Z-Axis PSD',
-          data: spectrum3Axis.z,
-          color: '#10b981',
-          lineWidth: 2,
-          type: 'line'
-        }],
-        legend: { enabled: true },
-        plotOptions: {
-          line: {
+        series: [
+          {
+            name: 'X-Axis',
+            data: spectrum3Axis.x,
+            color: '#ef4444',
+            lineWidth: 2,
+            type: 'line'
+          }, {
+            name: 'Y-Axis',
+            data: spectrum3Axis.y,
+            color: '#3b82f6',
+            lineWidth: 2,
+            type: 'line'
+          }, {
+            name: 'Z-Axis',
+            data: spectrum3Axis.z,
+            color: '#10b981',
+            lineWidth: 2,
+            type: 'line'
+          },
+          ...harmonicSeries
+        ],
+        legend: { 
+          enabled: true,
+          align: 'center',
+          verticalAlign: 'top',
+          layout: 'horizontal'
+        },
+        plotOptions: { 
+          line: { 
             marker: { enabled: false },
-            states: { hover: { lineWidthPlus: 1 } }
+            states: {
+              hover: {
+                lineWidthPlus: 1
+              }
+            }
+          },
+          scatter: {
+            marker: {
+              enabled: true
+            }
           }
         },
         tooltip: {
           shared: true,
           crosshairs: true,
           formatter: function() {
-            let tooltip = `<b>Frequency: ${this.x.toFixed(2)} Hz</b><br/>`;
+            let tooltip = '<b>Frequency: ' + this.x.toFixed(2) + ' Hz</b><br/>';
             this.points.forEach(point => {
-              tooltip += `<span style="color:${point.color}">${point.series.name}: ${point.y.toExponential(2)}</span><br/>`;
+              tooltip += '<span style="color:' + point.color + '">' + point.series.name + 
+                        ': ' + point.y.toFixed(4) + '</span><br/>';
             });
             return tooltip;
           }
-        }
+        },
       });
     }
 
-    // Create single-axis high-frequency chart
+    // 1-axis chart
     if (multiSpectrum1AxisRef.current) {
       if (multiSpectrum1AxisRef.current.chart) {
         multiSpectrum1AxisRef.current.chart.destroy();
@@ -626,36 +967,68 @@ const SensorAnalysis = () => {
           title: { text: 'Frequency (Hz)' }
         },
         yAxis: { title: { text: 'Log Amplitude' } },
-        series: [{
-          name: '1-Axis PSD',
-          data: spectrum1Axis,
-          color: '#f59e0b',
-          lineWidth: 2,
-          type: 'line'
-        }],
-        legend: { enabled: false },
-        plotOptions: {
-          line: {
-            marker: { enabled: false },
-            states: { hover: { lineWidthPlus: 1 } }
+        series: [
+          {
+            name: '1-Axis PSD',
+            data: spectrum1Axis,
+            color: '#f59e0b',
+            lineWidth: 2,
+            type: 'line'
           }
-        },
-        tooltip: {
-          formatter: function() {
-            return `<b>Frequency: ${this.x.toFixed(2)} Hz</b><br/>Amplitude: ${this.y.toExponential(2)}`;
+        ],
+        legend: { enabled: false },
+        plotOptions: { 
+          line: { 
+            marker: { enabled: false },
+            states: {
+              hover: {
+                lineWidthPlus: 1
+              }
+            }
+          },
+          scatter: {
+            marker: {
+              enabled: true
+            }
           }
         }
       });
     }
-  }, []);
+  }, [machineData, getTop4Peaks]);
 
   useEffect(() => {
+    fetchMachineData();
     fetchSensorsData();
     if (sensorId) {
       setSelectedAlarm(sensorId);
       fetchSensorData(sensorId, startDate, endDate);
     }
   }, [machineId, sensorId]);
+
+  // Fetch machine data to get RPM for harmonic calculations
+  const fetchMachineData = async () => {
+    try {
+      const response = await axiosInstance.get(`api/web/machines/${machineId}`);
+      const machine = response.data.item;
+      setMachineData(machine);
+      
+      // Calculate harmonic frequencies based on RPM
+      if (machine && machine.rpm) {
+        const baseFreq = parseFloat(machine.rpm) / 60; // Convert RPM to Hz (1st order frequency)
+        const harmonics = [
+          { multiplier: 1, frequency: baseFreq, label: "1X", color: "#ff0000" },
+          { multiplier: 2, frequency: baseFreq * 2, label: "2X", color: "#00ff00" },
+          { multiplier: 3, frequency: baseFreq * 3, label: "3X", color: "#0000ff" },
+          { multiplier: 3.4, frequency: baseFreq * 3.4, label: "3.4X", color: "#ff8800" },
+          { multiplier: 4, frequency: baseFreq * 4, label: "4X", color: "#8800ff" },
+          { multiplier: 4.2, frequency: baseFreq * 4.2, label: "4.2X", color: "#00ffff" }
+        ];
+        setHarmonicFrequencies(harmonics);
+      }
+    } catch (error) {
+      console.error("Error fetching machine data:", error);
+    }
+  };
 
   const fetchSensorsData = async () => {
     try {
@@ -1110,8 +1483,66 @@ const SensorAnalysis = () => {
               <>
                 <div style={{ marginBottom: '20px' }}>
                   <h3 style={{ color: '#fa8c16', marginBottom: '15px' }}>1-Axis High-Frequency Spectrum Analysis</h3>
-                  <div style={{ width: '100%', height: '470px', overflowX: 'auto' }}>
-                    <div ref={spectrumChartRef} style={{ width: '100%', height: '470px' }}></div>
+                  <div style={{ display: 'flex', gap: '20px' }}>
+                    <div style={{ flex: 1, height: '470px', overflowX: 'auto' }}>
+                      <div ref={spectrumChartRef} style={{ width: '100%', height: '470px' }}></div>
+                    </div>
+                    
+                    {/* Harmonics Table - Right Side - For Single Axis */}
+                    {machineData && (
+                      <div style={{ flexShrink: 0 }}>
+                        <div style={{ 
+                          width: '250px',
+                          border: '3px solid #fa8c16',
+                          borderRadius: '8px',
+                          padding: '12px',
+                          background: '#fff7e6'
+                        }}>
+                          <div style={{ 
+                            background: '#fa8c16', 
+                            color: 'white', 
+                            padding: '6px', 
+                            textAlign: 'center', 
+                            fontWeight: 'bold',
+                            borderRadius: '4px',
+                            marginBottom: '10px'
+                          }}>
+                            Harmonics of Rotational Frequency
+                          </div>
+                          <table style={{ width: '100%', fontSize: '12px' }}>
+                            <tbody>
+                              {getTop4Peaks(spectrumData, machineData.rpm).map((peak, index) => (
+                                <tr key={index}>
+                                  <td style={{ 
+                                    color: peak.color, 
+                                    fontWeight: 'bold',
+                                    paddingRight: '8px'
+                                  }}>
+                                    ●
+                                  </td>
+                                  <td style={{ fontWeight: 'bold' }}>
+                                    {(index + 1)}st Order @
+                                  </td>
+                                  <td style={{ 
+                                    color: peak.color, 
+                                    fontWeight: 'bold',
+                                    textAlign: 'right'
+                                  }}>
+                                    {peak.frequency.toFixed(1)} Hz
+                                  </td>
+                                  <td style={{ 
+                                    textAlign: 'right',
+                                    fontWeight: 'bold'
+                                  }}>
+                                    {peak.multiplier}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </>
@@ -1129,8 +1560,66 @@ const SensorAnalysis = () => {
 
                 <div style={{ marginBottom: '20px' }}>
                   <h3 style={{ color: '#fa8c16', marginBottom: '15px' }}>High-Frequency Analysis</h3>
-                  <div style={{ width: '100%', height: '370px', overflowX: 'auto' }}>
-                    <div ref={multiSpectrum1AxisRef} style={{ width: '100%', height: '370px' }}></div>
+                  <div style={{ display: 'flex', gap: '20px' }}>
+                    <div style={{ flex: 1, height: '370px', overflowX: 'auto' }}>
+                      <div ref={multiSpectrum1AxisRef} style={{ width: '100%', height: '370px' }}></div>
+                    </div>
+                    
+                    {/* Harmonics Table - Right Side - Based on Top 4 Peaks */}
+                    {machineData && (
+                      <div style={{ flexShrink: 0 }}>
+                        <div style={{ 
+                          width: '250px',
+                          border: '3px solid #1890ff',
+                          borderRadius: '8px',
+                          padding: '12px',
+                          background: '#e6f7ff'
+                        }}>
+                          <div style={{ 
+                            background: '#1890ff', 
+                            color: 'white', 
+                            padding: '6px', 
+                            textAlign: 'center', 
+                            fontWeight: 'bold',
+                            borderRadius: '4px',
+                            marginBottom: '10px'
+                          }}>
+                            Harmonics of Rotational Frequency
+                          </div>
+                          <table style={{ width: '100%', fontSize: '12px' }}>
+                            <tbody>
+                              {getTop4Peaks(null, machineData.rpm).map((peak, index) => (
+                                <tr key={index}>
+                                  <td style={{ 
+                                    color: peak.color, 
+                                    fontWeight: 'bold',
+                                    paddingRight: '8px'
+                                  }}>
+                                    ●
+                                  </td>
+                                  <td style={{ fontWeight: 'bold' }}>
+                                    {(index + 1)}st Order @
+                                  </td>
+                                  <td style={{ 
+                                    color: peak.color, 
+                                    fontWeight: 'bold',
+                                    textAlign: 'right'
+                                  }}>
+                                    {peak.frequency.toFixed(1)} Hz
+                                  </td>
+                                  <td style={{ 
+                                    textAlign: 'right',
+                                    fontWeight: 'bold'
+                                  }}>
+                                    {peak.multiplier}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </>
@@ -1192,6 +1681,26 @@ const SensorAnalysis = () => {
                   ))}
                 </div>
               )}
+              
+              {/* Third row: File Availability Legend */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', fontSize: '11px', color: '#666' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981' }}></div>
+                  <span>Both Analyses</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#3b82f6' }}></div>
+                  <span>Mid-Frequency</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f59e0b' }}></div>
+                  <span>High-Frequency</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ef4444' }}></div>
+                  <span>No Analysis</span>
+                </div>
+              </div>
             </div>
           }
           style={{ marginBottom: '20px' }}

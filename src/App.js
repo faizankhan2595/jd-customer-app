@@ -9,6 +9,7 @@ import { THEME_CONFIG } from './configs/AppConfig';
 import axios from "axios";
 import { API_BASE_URL } from 'constants/ApiConstant';
 import { CountryProvider } from 'CountryContext';
+import { PermissionsProvider } from 'contexts/PermissionsContext';
 
 const themes = {
   dark: `${process.env.PUBLIC_URL}/css/dark-theme.css`,
@@ -59,12 +60,13 @@ function App() {
       <Provider store={store}>
         <ThemeSwitcherProvider themeMap={themes} defaultTheme={THEME_CONFIG.currentTheme} insertionPoint="styles-insertion-point">
         <CountryProvider> 
-
+        <PermissionsProvider>
 <Router>
   <Switch>
     <Route path="/" component={Views} />
   </Switch>
 </Router>
+</PermissionsProvider>
 </CountryProvider>
         </ThemeSwitcherProvider>
       </Provider>

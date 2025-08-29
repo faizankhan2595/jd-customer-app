@@ -10,7 +10,8 @@ import { Link } from 'react-router-dom/cjs/react-router-dom.min'
 import { axiosInstance } from 'App'
 import moment from 'moment'
 import { useHistory } from 'react-router-dom/cjs/react-router-dom'
-import { role, Status } from 'utils/role'
+import { role, Status } from 'utils/role';
+import { hasPermission } from 'utils/permissionUtils';
 
 const { Option } = Select;
 
@@ -153,23 +154,26 @@ const StaffManagement = () => {
 
   const getMenu = (record) => (
     <Menu>
-      <Menu.Item key="view" onClick={() => history.push(`/app/user-management/user-accounts/account-details/${record}`)}>
-        <EyeOutlined /> View
-      </Menu.Item>
-      <Menu.Item key="edit" onClick={() =>{
-        history.push(`user-accounts/edit/${record}`)
-      }}>
-        <EditOutlined /> Edit
-      </Menu.Item>
-      <Menu.Item key="delete" onClick={() => {
-        setDeleteConfirmationModal(true)
-        console.log(record.key)
-      }}>
-        <DeleteOutlined /> Delete
-      </Menu.Item>
-      {/* <Menu.Item onClick={() => setModalVisible(true)}>
-        <AccountStatusIcon /> Account Status
-      </Menu.Item> */}
+      {hasPermission('user_management', 'View Users') && (
+        <Menu.Item key="view" onClick={() => history.push(`/app/user-management/user-accounts/account-details/${record}`)}>
+          <EyeOutlined /> View
+        </Menu.Item>
+      )}
+      {hasPermission('user_management', 'Edit Users') && (
+        <Menu.Item key="edit" onClick={() =>{
+          history.push(`user-accounts/edit/${record}`)
+        }}>
+          <EditOutlined /> Edit
+        </Menu.Item>
+      )}
+      {hasPermission('user_management', 'Delete Users') && (
+        <Menu.Item key="delete" onClick={() => {
+          setDeleteConfirmationModal(true)
+          console.log(record.key)
+        }}>
+          <DeleteOutlined /> Delete
+        </Menu.Item>
+      )}
     </Menu>
   );
 
@@ -266,15 +270,16 @@ const StaffManagement = () => {
           </Filter>
           <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" >Export</Button>
         </div>
-        <div className="mb-2 d-flex align-items-center">
-          <Button
-            // onClick={showModal}
-            className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
-          >
-            <Link to={'user-accounts/add-new'}>
-              + Add New</Link>
-          </Button>
-        </div>
+        {hasPermission('user_management', 'Create New Users') && (
+          <div className="mb-2 d-flex align-items-center">
+            <Button
+              className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
+            >
+              <Link to={'user-accounts/add-new'}>
+                + Add New</Link>
+            </Button>
+          </div>
+        )}
       </div>
       <div>
         <Table

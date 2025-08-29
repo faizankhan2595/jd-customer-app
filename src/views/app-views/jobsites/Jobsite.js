@@ -13,6 +13,7 @@ import { useHistory } from 'react-router-dom/cjs/react-router-dom'
 import { JobsitesCsv } from "constants/Headers";
 import Csv from "utils/Csv";
 import ConfirmModal from 'components/shared-components/ConfirmModal'
+import { hasPermission } from 'utils/permissionUtils';
 
 const { Option } = Select;
 
@@ -184,13 +185,13 @@ const Jobsites = () => {
   const getMenu = (record) => (
     <Menu>
      
-      <Menu.Item key="edit" onClick={() => {
-        // history.push(`/app/operator-master/operational-areas/edit/${record}`)
-        // /operator-master/jobsites/edit/:id
-        history.push(`/app/operator-master/jobsites/edit/${record}`)
-      }}>
-        <EditOutlined /> Edit
-      </Menu.Item>
+      {hasPermission('job_sites', 'Edit Jobsites') && (
+        <Menu.Item key="edit" onClick={() => {
+          history.push(`/app/operator-master/jobsites/edit/${record}`)
+        }}>
+          <EditOutlined /> Edit
+        </Menu.Item>
+      )}
       {/* <Popconfirm
         title={"Are you sure you want to delete this item?"}
         description={"This action cannot be undone."}
@@ -367,15 +368,16 @@ const Jobsites = () => {
           <Csv header={JobsitesCsv} data={csvData} filename={"Jobsites List"} />
           {/* <Button icon={<Icon component={CsvIcon} />} className="d-flex align-items-center ml-2" onClick={exportHandler}>Export</Button> */}
         </div>
-        <div className="mb-2 d-flex align-items-center">
-          <Button
-            // onClick={showModal}
-            className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
-          >
-            <Link to={'jobsites/add-new'}>
-              + Add New</Link>
-          </Button>
-        </div>
+        {hasPermission('job_sites', 'Create New Jobsites') && (
+          <div className="mb-2 d-flex align-items-center">
+            <Button
+              className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
+            >
+              <Link to={'jobsites/add-new'}>
+                + Add New</Link>
+            </Button>
+          </div>
+        )}
       </div>
       <div>
         <Table

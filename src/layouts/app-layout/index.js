@@ -24,6 +24,7 @@ import {
 } from 'constants/ThemeConstant';
 import utils from 'utils';
 import { useThemeSwitcher } from "react-css-theme-switcher";
+import { usePermissions } from 'contexts/PermissionsContext';
 
 const { Content } = Layout;
 const { useBreakpoint } = Grid;
@@ -42,8 +43,9 @@ export const AppLayout = ({ navCollapsed, navType, location, direction }) => {
   }
 
   const { status } = useThemeSwitcher();
+  const { isLoading: permissionsLoading } = usePermissions();
 
-  if (status === 'loading') {
+  if (status === 'loading' || permissionsLoading) {
     return <Loading cover="page" />;
   }
 

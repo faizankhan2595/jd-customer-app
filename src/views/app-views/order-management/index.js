@@ -38,6 +38,7 @@ import CalendarIcon from "assets/calendar.png";
 import moment from "moment";
 import CardOrder from "./Card/CardOrder";
 import SubMenu from "antd/lib/menu/SubMenu";
+import { hasPermission } from 'utils/permissionUtils';
 
 function OrderManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -52,9 +53,11 @@ function OrderManagement() {
       <Menu.Item key="edit" onClick={() => handleView(record.id)}>
         <EyeOutlined /> Order Detail
       </Menu.Item>
-      <Menu.Item key="delete" onClick={() => handleDelete(record.id)}>
-        <DeleteOutlined /> Delete
-      </Menu.Item>
+      {hasPermission('order_management', 'Delete Orders') && (
+        <Menu.Item key="delete" onClick={() => handleDelete(record.id)}>
+          <DeleteOutlined /> Delete
+        </Menu.Item>
+      )}
     </Menu>
   );
 
@@ -303,14 +306,15 @@ function OrderManagement() {
             <img src={CalendarIcon} alt="Calendar Icon" />
           </Button>
         </div>
-        <div className="mb-2 d-flex align-items-center">
-          <Button
-            // onClick={showModal}
-            className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
-          >
-            <Link to={"/app/order-management/add-order"}>+ New Order</Link>
-          </Button>
-        </div>
+        {hasPermission('order_management', 'Create New Orders') && (
+          <div className="mb-2 d-flex align-items-center">
+            <Button
+              className="ml-3 bg-primary d-flex align-items-center rounded text-white font-weight-semibold px-4"
+            >
+              <Link to={"/app/order-management/add-order"}>+ New Order</Link>
+            </Button>
+          </div>
+        )}
       </div>
       
         {data.length > 0 ? (
