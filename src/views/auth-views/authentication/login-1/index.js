@@ -294,8 +294,12 @@ const LoginOne = (props) => {
       
       // Close modal and proceed to OTP verification for new user
       setVisible(false);
-      onCaptchVerify();
-      firebaseLogin();
+      
+      // Add slight delay to ensure modal is closed before Firebase verification
+      setTimeout(() => {
+        onCaptchVerify();
+        firebaseLogin();
+      }, 100);
     }
   };
 

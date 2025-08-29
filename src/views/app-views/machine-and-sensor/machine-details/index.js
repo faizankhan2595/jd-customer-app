@@ -1342,7 +1342,7 @@ const MachineDetails = () => {
 
                   {eventsData.map((event, index) => (
                     <Step
-                      title={'Event #' + event.id}
+                      title={event.name || 'Event #' + event.id}
                       icon={<UserOutlined />}
                       description={<div className="d-flex flex-column">
                         <div>{moment(event.created_at).format('DD-MM-YYYY')}</div>
