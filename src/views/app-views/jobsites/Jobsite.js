@@ -228,6 +228,11 @@ const Jobsites = () => {
       }
     } catch (error) {
       console.error("Error deleting row:", error);
+      if (error.response && error.response.data && error.response.data.message) {
+        message.error(error.response.data.message);
+      } else {
+        message.error("Failed to delete jobsite");
+      }
     }
   };
 
