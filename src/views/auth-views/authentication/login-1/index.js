@@ -128,7 +128,7 @@ const LoginOne = (props) => {
         auth,
         "recaptcha-container",
         {
-          size: "invisible",
+          size: "normal",
           callback: (response) => {
             console.log("recaptcha resolved");
           },
@@ -142,6 +142,14 @@ const LoginOne = (props) => {
           }
         }
       );
+
+      // Render the reCAPTCHA
+      window.recaptchaVerifier.render().then((widgetId) => {
+        console.log("reCAPTCHA rendered with widget ID:", widgetId);
+      }).catch((error) => {
+        console.error("Error rendering reCAPTCHA:", error);
+        message.error("Failed to load reCAPTCHA. Please refresh and try again.");
+      });
     } catch (error) {
       console.error("Error creating recaptcha verifier:", error);
       message.error("Unable to initialize verification. Please refresh and try again.");
@@ -158,15 +166,30 @@ const LoginOne = (props) => {
       const appVerifier = window.recaptchaVerifier;
       const formatPh = `${countryCode}${phoneNumber}`;
 
-      console.log("Attempting to send OTP to:", formatPh);
+      console.log("Firebase Auth Details:");
+      console.log("- Phone number:", formatPh);
+      console.log("- Auth instance:", auth);
+      console.log("- reCAPTCHA verifier:", appVerifier);
+      console.log("- Is signup:", signUp);
+
+      message.loading("Sending OTP...", 0);
 
       const confirmationResult = await signInWithPhoneNumber(auth, formatPh, appVerifier);
       window.confirmationResult = confirmationResult;
-      console.log("OTP sent successfully, confirmationResult:", confirmationResult);
-      message.success("OTP sent successfully!");
+
+      console.log("✅ OTP sent successfully!");
+      console.log("- Confirmation result:", confirmationResult);
+      console.log("- Verification ID:", confirmationResult.verificationId);
+
+      message.destroy();
+      message.success("OTP sent successfully to your phone!");
       setStep(2);
     } catch (error) {
-      console.error("Firebase login error:", error);
+      message.destroy();
+      console.error("❌ Firebase authentication failed:");
+      console.error("- Error code:", error.code);
+      console.error("- Error message:", error.message);
+      console.error("- Full error:", error);
 
       // Clear the verifier on error so it can be recreated
       if (window.recaptchaVerifier) {
@@ -278,11 +301,19 @@ const LoginOne = (props) => {
       .then((result) => {
         // User signed in successfully with Firebase OTP
         const user = result.user;
-        console.log("Firebase user authenticated:", user);
+
+        console.log("🎉 Firebase OTP verification successful!");
+        console.log("- User UID:", user.uid);
+        console.log("- Phone number:", user.phoneNumber);
+        console.log("- Is new user:", result.additionalUserInfo?.isNewUser);
+        console.log("- Full user object:", user);
+        console.log("- Signup data exists:", !!window.signupData);
+
         message.success("OTP verified successfully!");
 
         // Check if this is a signup or login
         if (window.signupData) {
+          console.log("📝 Processing new user signup with data:", window.signupData);
           // This is a new user signup - call backend with signup data
           sendUID({
             uid: user.uid,
@@ -292,6 +323,7 @@ const LoginOne = (props) => {
           window.signupData = null;
           setSignUp(false);
         } else {
+          console.log("🔑 Processing existing user login");
           // This is existing user login
           sendUID({
             uid: user.uid,
@@ -366,7 +398,14 @@ const LoginOne = (props) => {
 
   return (
     <div className="h-100" style={backgroundStyle}>
-      <div id="recaptcha-container"></div>
+      <div id="recaptcha-container" style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        zIndex: 9999,
+        display: step === 1 ? 'block' : 'none'
+      }}></div>
       <div style={logoCss}>
         {" "}
         <img src={Logo} alt="..."></img>
