@@ -116,7 +116,14 @@ const LoginOne = (props) => {
       console.error("Error: recaptcha-container element not found!");
       return;
     }
-    if (!window.recaptchaVerifier) {
+
+    // Clear any existing verifier
+    if (window.recaptchaVerifier) {
+      window.recaptchaVerifier.clear();
+      window.recaptchaVerifier = null;
+    }
+
+    try {
       window.recaptchaVerifier = new RecaptchaVerifier(
         auth,
         "recaptcha-container",
@@ -125,31 +132,59 @@ const LoginOne = (props) => {
           callback: (response) => {
             console.log("recaptcha resolved");
           },
+          "expired-callback": () => {
+            console.log("recaptcha expired");
+            window.recaptchaVerifier = null;
+          },
+          "error-callback": (error) => {
+            console.log("recaptcha error:", error);
+            message.error("reCAPTCHA verification failed. Please try again.");
+          }
         }
       );
+    } catch (error) {
+      console.error("Error creating recaptcha verifier:", error);
+      message.error("Unable to initialize verification. Please refresh and try again.");
     }
   }
 
   const firebaseLogin = async () => {
-    const appVerifier = await window.recaptchaVerifier;
-    const formatPh = `${countryCode}${phoneNumber}`;
+    try {
+      if (!window.recaptchaVerifier) {
+        message.error("reCAPTCHA not initialized. Please try again.");
+        return;
+      }
 
-    signInWithPhoneNumber(auth, formatPh, appVerifier)
-      .then((confirmationResult) => {
-        window.confirmationResult = confirmationResult;
-        console.log("confirmationResult", confirmationResult);
-        setStep(2);
-      })
-      .catch((error) => {
-        console.log("error", error);
-        // setOtpToggle(false);
-        // console.log("error", error);
-        if (error) {
-          message.error(
-            "Invalid number entered ! please confirm country code and registered number"
-          );
-        }
-      });
+      const appVerifier = window.recaptchaVerifier;
+      const formatPh = `${countryCode}${phoneNumber}`;
+
+      console.log("Attempting to send OTP to:", formatPh);
+
+      const confirmationResult = await signInWithPhoneNumber(auth, formatPh, appVerifier);
+      window.confirmationResult = confirmationResult;
+      console.log("OTP sent successfully, confirmationResult:", confirmationResult);
+      message.success("OTP sent successfully!");
+      setStep(2);
+    } catch (error) {
+      console.error("Firebase login error:", error);
+
+      // Clear the verifier on error so it can be recreated
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
+      }
+
+      // Handle specific Firebase errors
+      if (error.code === 'auth/invalid-phone-number') {
+        message.error("Invalid phone number format. Please check your number.");
+      } else if (error.code === 'auth/too-many-requests') {
+        message.error("Too many requests. Please try again later.");
+      } else if (error.code === 'auth/captcha-check-failed') {
+        message.error("reCAPTCHA verification failed. Please refresh and try again.");
+      } else {
+        message.error("Failed to send OTP. Please check your number and try again.");
+      }
+    }
   };
   const handlePhoneNumberSubmit = async () => {
     setOtp("");
@@ -231,17 +266,25 @@ const LoginOne = (props) => {
       message.error("Please enter a valid OTP");
       return;
     }
+
+    if (!window.confirmationResult) {
+      message.error("OTP verification failed. Please request a new OTP.");
+      setStep(1);
+      return;
+    }
+
     window.confirmationResult
       .confirm(otp)
       .then((result) => {
         // User signed in successfully with Firebase OTP
         const user = result.user;
         console.log("Firebase user authenticated:", user);
-        
+        message.success("OTP verified successfully!");
+
         // Check if this is a signup or login
         if (window.signupData) {
           // This is a new user signup - call backend with signup data
-          sendUID({ 
+          sendUID({
             uid: user.uid,
             ...window.signupData
           });
@@ -250,16 +293,24 @@ const LoginOne = (props) => {
           setSignUp(false);
         } else {
           // This is existing user login
-          sendUID({ 
+          sendUID({
             uid: user.uid,
-            phoneCode: countryCode, 
-            phoneNo: phoneNumber 
+            phoneCode: countryCode,
+            phoneNo: phoneNumber
           });
         }
       })
       .catch((error) => {
-        message.error("Invalid OTP entered");
         console.log("OTP verification error:", error);
+
+        if (error.code === 'auth/invalid-verification-code') {
+          message.error("Invalid OTP. Please check and try again.");
+        } else if (error.code === 'auth/code-expired') {
+          message.error("OTP has expired. Please request a new one.");
+          setStep(1);
+        } else {
+          message.error("OTP verification failed. Please try again.");
+        }
       });
   };
 
