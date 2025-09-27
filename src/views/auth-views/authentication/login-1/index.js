@@ -58,6 +58,7 @@ const LoginOne = (props) => {
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [signupLoading, setSignupLoading] = useState(false);
 
   const fetchCompanies = async (searchValue) => {
     if (!searchValue) return;
@@ -191,7 +192,7 @@ const LoginOne = (props) => {
 
   const sendUID = async (data) => {
     try {
-      const res = await axiosInstance.post("/api/web/auth/login", {
+      const res = await axiosInstance.post("/api/app/auth/login", {
         // uid: uid,
         ...data,
       });
@@ -267,23 +268,29 @@ const LoginOne = (props) => {
       message.error("Please select a company name");
       return;
     }
+
     console.log(values, searchValue);
-    
+
     if (signUp) {
+      setSignupLoading(true);
+
       try {
         const res = await axiosInstance.post("/api/app/auth/checkByNumber", {
           phoneCode: countryCode,
           phoneNo: phoneNumber,
         });
-      
-        if (res.data.item.success == true) {
+
+        if (res.data.item && res.data.item.success === true) {
+          setSignupLoading(false);
           message.error("Phone number already exists. Please login");
           return;
         }
       } catch (err) {
-        console.log("Phone number not found, proceeding with signup");
+        console.log("Phone number check failed, proceeding with signup:", err);
       }
-      
+
+      setSignupLoading(false);
+
       // Store signup data for after OTP verification
       window.signupData = {
         phoneCode: countryCode,
@@ -291,10 +298,13 @@ const LoginOne = (props) => {
         name: values.name,
         company_name: searchValue,
       };
-      
+
       // Close modal and proceed to OTP verification for new user
       setVisible(false);
-      
+
+      // Show loading message
+      message.loading("Sending OTP...", 2);
+
       // Add slight delay to ensure modal is closed before Firebase verification
       setTimeout(() => {
         onCaptchVerify();
@@ -577,7 +587,7 @@ const LoginOne = (props) => {
         title="Sign Up"
         visible={visibleModal}
         onOk={() => {
-          //   onFinish();
+          if (signupLoading) return; // Prevent multiple submissions
           form.submit();
         }}
         onCancel={() => {
