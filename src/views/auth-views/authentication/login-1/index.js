@@ -257,11 +257,21 @@ const LoginOne = (props) => {
       });
       console.log(res.data);
       if (res.data.item.token?.token) {
-        if (signUp) {
-          message.success("Account created successfully");
-          setVisible(false);
-          setSignUp(false);
+        if (window.signupData) {
+          message.success("Account created and verified successfully");
+          window.signupData = null; // Clear signup data
           setPhoneNumber("");
+          setStep(1); // Reset to initial state
+
+          // Store auth data and redirect
+          localStorage.setItem("company_name", res.data.item.user?.company_name);
+          localStorage.setItem("parent_id", res.data.item.user?.parent_id);
+          localStorage.setItem("token", res.data.item.token?.token);
+          localStorage.setItem("role", res.data.item.user?.role_id);
+          localStorage.setItem("name", res.data.item.user?.name);
+          localStorage.setItem("user_id", res.data.item.user?.id);
+
+          window.location.reload();
           return;
         }
         console.log(res.data.item.user);
@@ -370,12 +380,10 @@ const LoginOne = (props) => {
         const registrationRes = await axiosInstance.post("/api/app/auth/register", registrationData);
 
         if (registrationRes.data.success) {
-          // Registration successful - close modal and proceed to OTP
+          // Registration successful - close modal and proceed directly to OTP screen
           setVisible(false);
           setRegistrationLoading(false);
-
-          // Show OTP sending message
-          message.loading("Sending OTP...", 2);
+          setSignUp(false); // Clear signup flag since user is now registered
 
           // Store minimal data for login after OTP
           window.signupData = {
@@ -384,6 +392,13 @@ const LoginOne = (props) => {
             name: values.name,
             company_name: searchValue,
           };
+
+          // Clear the form
+          form.resetFields();
+          setSearchValue("");
+
+          // Show OTP sending message
+          message.loading("Sending OTP to your phone...", 0);
 
           // Add slight delay to ensure modal is closed before Firebase verification
           setTimeout(() => {

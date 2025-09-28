@@ -165,7 +165,7 @@ function InquiryDetails() {
                 padding: "3px 30px",
               }}
             >
-              Close
+              Closed
             </Tag>
           )}
           <div
