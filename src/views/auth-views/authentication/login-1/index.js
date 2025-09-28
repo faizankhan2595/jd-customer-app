@@ -59,6 +59,7 @@ const LoginOne = (props) => {
   const [loading, setLoading] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [signupLoading, setSignupLoading] = useState(false);
+  const [registrationLoading, setRegistrationLoading] = useState(false);
 
   const fetchCompanies = async (searchValue) => {
     if (!searchValue) return;
@@ -355,44 +356,54 @@ const LoginOne = (props) => {
     console.log(values, searchValue);
 
     if (signUp) {
-      setSignupLoading(true);
+      setRegistrationLoading(true);
 
       try {
-        const res = await axiosInstance.post("/api/app/auth/checkByNumber", {
+        // First register the user in both Firebase and our system
+        const registrationData = {
           phoneCode: countryCode,
           phoneNo: phoneNumber,
-        });
+          name: values.name,
+          company_name: searchValue,
+        };
 
-        if (res.data.item && res.data.item.success === true) {
-          setSignupLoading(false);
-          message.error("Phone number already exists. Please login");
-          return;
+        const registrationRes = await axiosInstance.post("/api/app/auth/register", registrationData);
+
+        if (registrationRes.data.success) {
+          // Registration successful - close modal and proceed to OTP
+          setVisible(false);
+          setRegistrationLoading(false);
+
+          // Show OTP sending message
+          message.loading("Sending OTP...", 2);
+
+          // Store minimal data for login after OTP
+          window.signupData = {
+            phoneCode: countryCode,
+            phoneNo: phoneNumber,
+            name: values.name,
+            company_name: searchValue,
+          };
+
+          // Add slight delay to ensure modal is closed before Firebase verification
+          setTimeout(() => {
+            onCaptchVerify();
+            firebaseLogin();
+          }, 100);
+        } else {
+          setRegistrationLoading(false);
+          message.error(registrationRes.data.message || "Registration failed. Please try again.");
         }
       } catch (err) {
-        console.log("Phone number check failed, proceeding with signup:", err);
+        setRegistrationLoading(false);
+        console.log("Registration error:", err);
+
+        if (err.response?.data?.message) {
+          message.error(err.response.data.message);
+        } else {
+          message.error("Registration failed. Please try again.");
+        }
       }
-
-      setSignupLoading(false);
-
-      // Store signup data for after OTP verification
-      window.signupData = {
-        phoneCode: countryCode,
-        phoneNo: phoneNumber,
-        name: values.name,
-        company_name: searchValue,
-      };
-
-      // Close modal and proceed to OTP verification for new user
-      setVisible(false);
-
-      // Show loading message
-      message.loading("Sending OTP...", 2);
-
-      // Add slight delay to ensure modal is closed before Firebase verification
-      setTimeout(() => {
-        onCaptchVerify();
-        firebaseLogin();
-      }, 100);
     }
   };
 
@@ -677,9 +688,11 @@ const LoginOne = (props) => {
         title="Sign Up"
         visible={visibleModal}
         onOk={() => {
-          if (signupLoading) return; // Prevent multiple submissions
+          if (registrationLoading) return; // Prevent multiple submissions
           form.submit();
         }}
+        confirmLoading={registrationLoading}
+        okText={registrationLoading ? "Registering..." : "Sign Up"}
         onCancel={() => {
           setVisible(false);
         }}
