@@ -27,7 +27,7 @@ export const AppViews = () => {
         <Route exact path={`${APP_PREFIX_PATH}/order-management`} component={lazy(() => import(`./order-management/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/order-management/add-order`} component={lazy(() => import(`./order-management/AddOrder/AddOrder`))} />
         <Route exact path={`${APP_PREFIX_PATH}/order-management/order-detail/:id`} component={lazy(() => import(`./order-management/order-detail/index`))} />
-        <Route exact path={`${APP_PREFIX_PATH}/order-management/view-quotation`} component={lazy(() => import(`./order-management/view-quotation/index`))} />
+        <Route exact path={`${APP_PREFIX_PATH}/order-management/view-quotation/:id`} component={lazy(() => import(`./order-management/view-quotation/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/order-management/orders`} component={lazy(() => import(`./order-management/schedule-order/index`))} />
         <Route exact path={`${APP_PREFIX_PATH}/inquiry-management`} component={lazy(() => import(`./inquiry-management/InquiryManagement`))} />
         <Route exact path={`${APP_PREFIX_PATH}/inquiry-management/new-inquiry`} component={lazy(() => import(`./inquiry-management/AddInquiry/AddInquiry`))} />

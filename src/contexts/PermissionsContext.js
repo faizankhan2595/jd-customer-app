@@ -44,6 +44,41 @@ export const PermissionsProvider = ({ children }) => {
     loadPermissions();
   }, []);
 
+  // Watch for token changes and refresh permissions automatically
+  useEffect(() => {
+    const handleTokenChange = () => {
+      const currentToken = localStorage.getItem('token');
+      if (currentToken) {
+        refreshPermissions();
+      }
+    };
+
+    // Listen for storage events (cross-tab changes)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'token' && e.newValue !== e.oldValue) {
+        handleTokenChange();
+      }
+    });
+
+    // For same-tab changes, we'll use a polling approach as a fallback
+    // This is minimal and will catch token changes made by the current tab
+    let lastToken = localStorage.getItem('token');
+    const checkTokenChange = () => {
+      const currentToken = localStorage.getItem('token');
+      if (currentToken !== lastToken && currentToken) {
+        lastToken = currentToken;
+        refreshPermissions();
+      }
+    };
+
+    const tokenCheckInterval = setInterval(checkTokenChange, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleTokenChange);
+      clearInterval(tokenCheckInterval);
+    };
+  }, []);
+
   return (
     <PermissionsContext.Provider value={{ 
       isLoading, 

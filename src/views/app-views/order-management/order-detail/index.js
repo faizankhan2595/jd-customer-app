@@ -41,12 +41,12 @@ function Index() {
     "technician": ""
 });
 const getMachineImage = async (id) => {
-  const res = await axiosInstance.get(`api/admin/machines/${id}`);
+  const res = await axiosInstance.get(`api/web/machines/${id}`);
   setFileData(res.data.item.pictures);
 }
   const getData = async () => {
     try{
-      const data = await axiosInstance.get(`/api/admin/orders/${id}`);
+      const data = await axiosInstance.get(`/api/web/orders/${id}`);
       // orders/${id}
       const order = data.data.item;
       getMachineImage(order.machine_id);
@@ -94,9 +94,11 @@ const getMachineImage = async (id) => {
         <Button onClick={()=>{
           history.goBack()
         }}>Back</Button>
-        {/* <Button onClick={()=>{
-          history.push("/app/order-management/view-quotation")
-        }} type="primary">View Quotation</Button> */}
+        {order.is_quotation_generated === 1 && (
+          <Button onClick={()=>{
+            history.push(`/app/order-management/view-quotation/${id}`)
+          }} type="primary">View Quotation</Button>
+        )}
         <div>
         {
                 (order.status === 1) ? (

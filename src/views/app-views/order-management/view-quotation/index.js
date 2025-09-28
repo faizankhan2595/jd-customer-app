@@ -1,51 +1,28 @@
 import { SettingOutlined } from '@ant-design/icons'
-import { Button, Checkbox, Modal, Space, Table } from 'antd';
+import { Button, Space, Table } from 'antd';
 import { LogoWhiteTransparent } from 'assets/svg/icon'
-import Sign from "assets/OrderDetail/signature.png"
-import React from 'react'
-import SignatureCanvas from 'react-signature-canvas'
+import React, { useState, useEffect } from 'react'
+import { useParams, useHistory } from 'react-router-dom/cjs/react-router-dom.min';
+import { axiosInstance } from "App";
+import { Flex, Spin } from "antd";
+import moment from "moment";
 
 const ViewQuotation = () => {
-  const [visible, setVisible] = React.useState(false)
-  const sigCanvas = React.useRef({});
-  const dataSource = [
-    {
-      id: 1,
-      machines: 'Machine 1',
-      faults: 'Fault 1',
-      services: 'Service 1',
-      price: 100,
-      total: 150,
-    },
-    {
-      id: 2,
-      machines: 'Machine 2',
-      faults: 'Fault 2',
-      services: 'Service 2',
-      price: 120,
-      total: 180,
-    },
-  ];
+  const {id} = useParams();
+  const history = useHistory();
+  const [data, setData] = useState({});
+  const [quotationData, setQuotationData] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
   const columns = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-    },
-    {
-      title: 'Machines',
-      dataIndex: 'machines',
-      key: 'machines',
+      title: 'Sr No',
+      dataIndex: 'sNo',
+      key: 'sNo',
     },
     {
       title: 'Faults',
-      dataIndex: 'faults',
-      key: 'faults',
-    },
-    {
-      title: 'Services',
-      dataIndex: 'services',
-      key: 'services',
+      dataIndex: 'fault',
+      key: 'fault',
     },
     {
       title: 'Price',
@@ -58,6 +35,70 @@ const ViewQuotation = () => {
       key: 'total',
     },
   ];
+
+  const getSubtotal = () => {
+    let items = quotationData.quotation_line_items;
+    let amount = 0;
+    if(items) {
+      for(let item of items) {
+        amount = amount + (+item.total);
+      }
+    }
+    return amount? amount.toFixed(2) : 0.00;
+  }
+
+  const getOrderDetails = async () => {
+    setIsLoading(true);
+    try {
+      const res1 = await axiosInstance.get(`/api/web/orders/${id}`);
+      let data = res1.data.item;
+      setData(data);
+      console.log(data);
+      if(data.quotation_line_items) {
+        let line_items = data.quotation_line_items
+        setQuotationData({
+          quotation_line_items: line_items,
+          discount: data.discount,
+          tax_amount: data.tax_amount,
+          total_amount: data.total_amount
+        })
+      }
+      else {
+        let faults = data.machine_faults
+        if (faults) {
+          faults = faults.map((e) => {
+            return {
+              ...e,
+              price: null,
+              total: null
+            }
+          })
+          setQuotationData({
+              quotation_line_items: faults,
+              discount: null,
+              tax_amount: null,
+              total_amount: null
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching order details:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getOrderDetails()
+  }, [])
+  if (isLoading) {
+    return (
+      <div className="d-flex justify-content-center">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className='d-flex justify-content-between'>
@@ -76,60 +117,48 @@ const ViewQuotation = () => {
         </div>
         <div className='p-3 bg-grey rounded mt-3 d-flex justify-content-between'>
           <div style={{ maxWidth: '300px' }}>
-            <h4>JD123446-QTN</h4>
+            <h4>Quotation</h4>
             <h5>JDWORKS PTE LTD</h5>
             <p style={{ lineHeight: '18px' }} className='mb-2'>info@jdworks.sg</p>
             <p style={{ lineHeight: '18px' }} className='mb-2'>No. 1, Sunview Road,
               #05-27, Eco Tech @Sunview, Singapore 627615</p>
             <p style={{ lineHeight: '18px' }} className='mb-2'>Phone: 8149 2657</p>
           </div>
+
           <div style={{ maxWidth: '300px' }}>
             <h4 className='text-right'>Customer Details</h4>
-            <h5 className='text-right'> #123-Acme co pte ltd</h5>
-            <p style={{ lineHeight: '18px' }} className='mb-2 text-right'>acme@gmail.com</p>
-            <p style={{ lineHeight: '18px' }} className='mb-2 text-right'>1111 ABC Road, XYZ Tower,
-              EST 113 Singapore, 120023</p>
-            <p style={{ lineHeight: '18px' }} className='mb-2 text-right'>Phone: 52654533</p>
+            <p style={{ lineHeight: '18px' }} className='mb-2 text-right'>{data.company_name}</p>
           </div>
         </div>
-        <div className='transparent mt-4 mb-4'>
-          <Table dataSource={dataSource} columns={columns} pagination={false} />
+        <div className='transparent mt-4'>
+          <Table dataSource={quotationData.quotation_line_items} columns={columns} />
         </div>
-        <div className='d-flex justify-content-between'>
-          <Space>
-            <div>
-              <img src={Sign} alt="signature" />
-              <div>John Doe</div>
-              <div>08/11/2022, 10:025 Am</div>
-              <Button onClick={() => {
-                setVisible(true)
-              }} className='bg-primary text-white'>Sign</Button>
-            </div>
-          </Space>
+        <div className='d-flex justify-content-end'>
           <div style={{ minWidth: '250px', marginRight: '5px' }}>
             <div className='d-flex justify-content-between'>
               <p>
                 Subtotal
               </p>
-              <h5>S$100.00</h5>
+              <h5>S${getSubtotal()}</h5>
             </div>
-            <div className='d-flex justify-content-between'>
+
+            <div  className='d-flex justify-content-between'>
               <p>
-                Gst <span className='bg-primary text-white' style={{ fontSize: "10px", padding: '2px' }}>8%</span>
+                Discount
               </p>
-              <h5>S$08.00</h5>
+              <h5>S${quotationData.discount?.toFixed(2)}</h5>
             </div>
             <div style={{ borderBottom: '1px solid #e7e7e7' }} className='d-flex justify-content-between'>
               <p>
-                Discount <span className='bg-primary text-white' style={{ fontSize: "10px", padding: '2px' }}>10%</span>
+                Tax Amount
               </p>
-              <h5>S$10.00</h5>
+              <h5>S${quotationData.tax_amount?.toFixed(2)}</h5>
             </div>
             <div className='d-flex justify-content-between mt-2'>
               <h5>
                 Net Total:
               </h5>
-              <h5>S$98.00</h5>
+              <h5>S${quotationData.total_amount?.toFixed(2)}</h5>
             </div>
           </div>
         </div>
@@ -137,56 +166,15 @@ const ViewQuotation = () => {
       </div>
       <div style={{ gap: '8px' }} className="d-flex justify-content-end mt-3">
 
-        <Space>
-          <Button>
-            Cancel
-          </Button>
-          <Button className='bg-primary text-white'>
-            Download PF
-          </Button>
-          {/* <Button className='bg-primary text-white'>
-              Send
-            </Button> */}
-        </Space>
-
-      </div>
-      <Modal title="Signature" visible={visible} onOk={() => { }} onCancel={() => {
-        setVisible(false)
-      }}>
-        <div style={{
-          outlineStyle: "dashed",
-          outlineColor: "#E6EBF1",
-          borderRadius: "12px",
-        }}>
-          <SignatureCanvas
-            canvasProps={{ width: 500, height: 200, className: 'sigCanvas' }}
-            ref={sigCanvas}
-          />
-        </div>
-        <div style={{
-          display: "flex",
-          justifyContent: "end",
-          color: "#FF6A00",
-          width: "100%",
-          marginTop: "10px",
-
-        }}>
-          <div style={{
-            borderBottom: "1px solid #FF6A00",
-            cursor: "pointer"
-          }}
-            onClick={() => {
-              sigCanvas.current.clear()
-            }}
-          >Clear</div>
+          <Space>
+            <Button onClick={()=> {
+              history.goBack()
+            }}>
+              Back
+            </Button>
+          </Space>
 
         </div>
-        <div>
-          <Checkbox style={{
-            fontWeight: "bold",
-          }}>By signing, I hereby acknowledged and agree to the terms & conditions of JD Works. </Checkbox>
-        </div>
-      </Modal>
     </div>
   )
 }
