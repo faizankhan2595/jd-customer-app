@@ -21,6 +21,19 @@ const AddNewMachine = () => {
   const [jobSiteData, setJobSiteData] = useState([]);
   const { id } = useParams();
   const [machineType, setMachineType] = useState([]);
+  const [statusRangesIso, setStatusRangesIso] = useState([
+    {"min": null, "max": null, "type": "Critical"},
+    {"min": null, "max": null, "type": "Warning"},
+    {"min": null, "max": null, "type": "Satisfactory"},
+    {"min": null, "max": null, "type": "Good"},
+  ]);
+
+  const [statusRangesUserDefined, setStatusRangesUserDefined] = useState([
+    {"min": null, "max": null, "type": "Critical"},
+    {"min": null, "max": null, "type": "Warning"},
+    {"min": null, "max": null, "type": "Satisfactory"},
+    {"min": null, "max": null, "type": "Good"},
+  ]);
   const handleFileSelect = (event) => {
     const fileList = event.target.files;
     const newSelectedFiles = [];
@@ -70,7 +83,9 @@ const AddNewMachine = () => {
         pictures:file,
         machine_status:machineStatus,
         year: values.year ? moment(values.year).format('YYYY') : null,
-        user_id:localStorage.getItem("parent_id")==="null"?localStorage.getItem("user_id"):localStorage.getItem("parent_id")
+        user_id:localStorage.getItem("parent_id")==="null"?localStorage.getItem("user_id"):localStorage.getItem("parent_id"),
+        status_ranges_iso: statusRangesIso,
+        status_ranges_user_defined: statusRangesUserDefined
     };
 
     if(!id){
@@ -83,17 +98,22 @@ const AddNewMachine = () => {
         }
       } catch (error) {
         console.error('Error adding machine:', error);
+        message.error(error.response?.data?.message || "Error adding machine. Please try again.");
         setLoading(false);
-        // Handle error, e.g., show notification
       }
     }else{
-      const response = await axiosInstance.put("/api/web/machines/"+id,postData);
-      message.success("Machine Updated Successfully");
-      if (response.status === 200 || response.status === 201) {
-        history.push(`/app/machine-and-sensors`);
+      try {
+        const response = await axiosInstance.put("/api/web/machines/"+id,postData);
+        message.success("Machine Updated Successfully");
+        if (response.status === 200 || response.status === 201) {
+          history.push(`/app/machine-and-sensors`);
+        }
+      } catch (error) {
+        console.error('Error updating machine:', error);
+        message.error(error.response?.data?.message || "Error updating machine. Please try again.");
+        setLoading(false);
       }
     }
-    setLoading(false);
   };
 
     const getData = async () => {
@@ -152,22 +172,39 @@ const AddNewMachine = () => {
   };
 
   const fetchData = async () => {
-    const response = await axiosInstance.get(`api/web/machines/${id}`);
-    const data = response.data.item
-    setMachineStatus(data.machine_status == 1 ? true : false)
-    form.setFieldsValue({
-      ...data,
-      date: data.date ? moment(data.date) : null,
-      year: data.year ? moment(data.year) : null,
-    })
-    setSelectedFiles(data?.pictures.map((item,index) => {
-      return {
-          url: item?.file_url,
-          name: `Picture ${index+1}`
-      }
-  }))
-    // setMachineStatus(data.machine_status == 1 ? true : false)
-
+    try {
+      const response = await axiosInstance.get(`api/web/machines/${id}`);
+      const data = response.data.item
+      setMachineStatus(data.machine_status == 1 ? true : false)
+      form.setFieldsValue({
+        ...data,
+        date: data.date ? moment(data.date) : null,
+        year: data.year ? moment(data.year) : null,
+      })
+      setSelectedFiles(data?.pictures.map((item,index) => {
+        return {
+            url: item?.file_url,
+            name: `Picture ${index+1}`
+        }
+      }))
+      setStatusRangesIso(data.status_ranges_iso || [
+        {"min": null, "max": null, "type": "Critical"},
+        {"min": null, "max": null, "type": "Warning"},
+        {"min": null, "max": null, "type": "Satisfactory"},
+        {"min": null, "max": null, "type": "Good"},
+      ]);
+      setStatusRangesUserDefined(data.status_ranges_user_defined || [
+        {"min": null, "max": null, "type": "Critical"},
+        {"min": null, "max": null, "type": "Warning"},
+        {"min": null, "max": null, "type": "Satisfactory"},
+        {"min": null, "max": null, "type": "Good"},
+      ]);
+      // setMachineStatus(data.machine_status == 1 ? true : false)
+    } catch (error) {
+      console.error('Error fetching machine data:', error);
+      message.error(error.response?.data?.message || "Error loading machine data. Please try again.");
+      history.push('/app/machine-and-sensors');
+    }
   }
 
   // const getCustomerData = async () => {
@@ -205,7 +242,7 @@ const AddNewMachine = () => {
     <div>
       <h4>
         <ToolOutlined />
-        <span style={{ color: '#6a6a6a', fontWeight: '300' }}> Machine</span> / Add New Machine
+        <span style={{ color: '#6a6a6a', fontWeight: '300' }}> Machine</span> / {id ? 'Edit Machine' : 'Add New Machine'}
       </h4>
       <Form
         labelCol={{ span: 24 }}
@@ -216,7 +253,7 @@ const AddNewMachine = () => {
       >
         <div className="border rounded p-3 bg-white">
           <h4 className="d-flex align-items-center" style={{ color: '#3CA6C1', gap: '4px' }}>
-            <MachineIcon /> Add New Machine
+            <MachineIcon /> {id ? 'Edit Machine' : 'Add New Machine'}
           </h4>
          
           <Row gutter={16}>
@@ -504,6 +541,96 @@ const AddNewMachine = () => {
               </Form.Item>
             </Col>
           </Row>
+
+          <Row gutter={16}>
+          <Col span={24}>
+            <h5 className="mt-3">ISO Standard Status Ranges</h5>
+            <div className="border rounded p-3 mb-3 bg-light">
+              <Row gutter={16}>
+                {statusRangesIso.map((range, index) => (
+                  <Col span={6} key={`iso-${index}`}>
+                    <div className="border rounded p-2 mb-2">
+                      <h6>{range.type}</h6>
+                      <Row gutter={8}>
+                        <Col span={12}>
+                          <Form.Item label="Min" className="mb-1">
+                            <Input
+                              type="number"
+                              value={range.min}
+                              onChange={(e) => {
+                                const newRanges = [...statusRangesIso];
+                                newRanges[index].min = parseInt(e.target.value);
+                                setStatusRangesIso(newRanges);
+                              }}
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                          <Form.Item label="Max" className="mb-1">
+                            <Input
+                              type="number"
+                              value={range.max}
+                              onChange={(e) => {
+                                const newRanges = [...statusRangesIso];
+                                newRanges[index].max = parseInt(e.target.value);
+                                setStatusRangesIso(newRanges);
+                              }}
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                    </div>
+                  </Col>
+                ))}
+              </Row>
+            </div>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col span={24}>
+            <h5 className="mt-1">User Defined Status Ranges</h5>
+            <div className="border rounded p-3 mb-3 bg-light">
+              <Row gutter={16}>
+                {statusRangesUserDefined.map((range, index) => (
+                  <Col span={6} key={`user-${index}`}>
+                    <div className="border rounded p-2 mb-2">
+                      <h6>{range.type}</h6>
+                      <Row gutter={8}>
+                        <Col span={12}>
+                          <Form.Item label="Min" className="mb-1">
+                            <Input
+                              type="number"
+                              value={range.min}
+                              onChange={(e) => {
+                                const newRanges = [...statusRangesUserDefined];
+                                newRanges[index].min = parseInt(e.target.value);
+                                setStatusRangesUserDefined(newRanges);
+                              }}
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                          <Form.Item label="Max" className="mb-1">
+                            <Input
+                              type="number"
+                              value={range.max}
+                              onChange={(e) => {
+                                const newRanges = [...statusRangesUserDefined];
+                                newRanges[index].max = parseInt(e.target.value);
+                                setStatusRangesUserDefined(newRanges);
+                              }}
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                    </div>
+                  </Col>
+                ))}
+              </Row>
+            </div>
+          </Col>
+        </Row>
 
           <Row gutter={16}>
           <Col span={12}>

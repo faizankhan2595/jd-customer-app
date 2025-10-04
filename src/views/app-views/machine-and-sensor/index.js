@@ -13,6 +13,7 @@ import {
   Card,
   Empty,
   Checkbox,
+  Tag,
 } from "antd";
 import {
   DeleteOutlined,
@@ -28,16 +29,16 @@ import { Link } from "react-router-dom/cjs/react-router-dom.min";
 import { useHistory } from "react-router-dom/cjs/react-router-dom";
 import { axiosInstance } from "App";
 import moment from "moment";
-import CardMachine from "./Card/CardMachine";
 import SubMenu from "antd/lib/menu/SubMenu";
 import { hasPermission } from 'utils/permissionUtils';
 
 const MachineAndSensor = () => {
   const history = useHistory();
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-   
+
 
     fetchData();
   }, []);
@@ -52,20 +53,23 @@ const MachineAndSensor = () => {
       params.push(`machine_status=${overall}`);
     }
 
-   
+
     let url = params.length ? `&${params.join("&")}` : "";
     try {
+      setLoading(true);
       const response = await axiosInstance.get(`api/web/machines?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}${url}`);
       if (response.status === 200) {
         const responseData = response.data.items;
         if (Array.isArray(responseData)) {
           setData(responseData);
+          setLoading(false);
         } else {
           console.error("Unexpected response format:", responseData);
         }
         // console.log(JSON.stringify(responseData));
       }
     } catch (error) {
+      setLoading(false);
       console.error("Error fetching data:", error);
     }
   };
@@ -74,7 +78,7 @@ const MachineAndSensor = () => {
     console.log(id);
     try {
       const response = await axiosInstance.delete(
-        `api/admin/machines/${id}`
+        `api/web/machines/${id}`
       );
       if (response.status === 200) {
         message.success("Machine deleted successfully");
@@ -82,6 +86,7 @@ const MachineAndSensor = () => {
       }
     } catch (error) {
       console.error("Error deleting row:", error);
+      message.error(error.response?.data?.message || "Error deleting machine. Please try again.");
     }
   };
 
@@ -130,6 +135,85 @@ const MachineAndSensor = () => {
       )}
     </Menu>
   );
+
+  const columns = [
+    {
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
+    },
+    {
+      title: "Customer",
+      dataIndex: "user",
+      key: "name",
+      render: (text, record) => (
+        text?.name || "N/A"
+      )
+    },
+    {
+      title: "Jobsite",
+      dataIndex: "job_site",
+      key: "Jobsite",
+      render: (text, record) => (
+        text?.jobsite_name || "N/A"
+      )
+    },
+    {
+      title: "Machines",
+      dataIndex: "name",
+      key: "machine_detail",
+    },
+    {
+      title: "Active Since",
+      dataIndex: "created_at",
+      key: "created_at",
+      render: (row) => {
+        return <>{moment(row).format("DD-MM-YYYY, h:mm a")}</>;
+      },
+    },
+    {
+      title: "Machine Status",
+      dataIndex: "machine_status",
+      key: "machine_status",
+      render: (text) => (
+        text ?
+          <Tag color="green">Active</Tag> :
+          <Tag color="red">Inactive</Tag>
+      )
+    },
+    {
+      title: "Overall Status",
+      dataIndex: "health",
+      key: "health",
+      render: (text) => {
+        if (text <= 10 && text >= 8) {
+          return <Tag color="green">Good</Tag>
+        } else if (text <= 7 && text >= 6) {
+          return <Tag color="yellow">Satisfactory</Tag>
+        } else if (text <= 5 && text >= 3) {
+          return <Tag color="orange">Warning</Tag>
+        } else {
+          return <Tag color="red">Critical</Tag>
+
+        }
+      }
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (text, record) => (
+        <Space size="middle">
+          <Dropdown
+            overlay={getMenu(record)}
+            placement="bottomRight"
+            trigger={["hover"]}
+          >
+            <MoreOutlined />
+          </Dropdown>
+        </Space>
+      ),
+    },
+  ];
 
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [overallStatus, setOverallStatus] = useState("all");
@@ -269,26 +353,7 @@ const MachineAndSensor = () => {
           </div>
         )}
       </div>
-      {
-        data.length > 0 ? (
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "20px",
-            }}
-          >
-            {data.map((item) => (
-              <CardMachine key={item.id} data={item} />
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <Empty />
-          </Card>
-        )
-      }
-
+      <Table loading={loading} dataSource={data} columns={columns} />
     </div>
   );
 };

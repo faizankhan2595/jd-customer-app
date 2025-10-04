@@ -79,11 +79,19 @@ function AddOrder() {
     ];
     // return;
     try {
+      // Find selected machine and validate
+      const selectedMachine = machineData.find((item) => item.id === values.machine_id);
+      if (!selectedMachine) {
+        message.error("Selected machine not found. Please select a valid machine.");
+        setLoading(false);
+        return;
+      }
+
       const response = await axiosInstance.post("api/web/orders", {
         ...values,
         machine_faults: machineFault,
         files: file,
-        model: machineData.find((item) => item.id === values.machine_id).model,
+        model: selectedMachine.model,
         status: 1,
         //    0 -> Order Created
       });
@@ -93,8 +101,23 @@ function AddOrder() {
         history.push("/app/order-management");
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error creating order:", error);
       setLoading(false);
+
+      // Display specific error message from API if available
+      if (error.response?.data?.message) {
+        message.error(error.response.data.message);
+      } else if (error.response?.data?.error) {
+        // Handle array of errors or single error string
+        const errorMsg = Array.isArray(error.response.data.error)
+          ? error.response.data.error[0]
+          : error.response.data.error;
+        message.error(errorMsg);
+      } else if (error.message) {
+        message.error(`Failed to create order: ${error.message}`);
+      } else {
+        message.error("Failed to create order. Please try again.");
+      }
     }
   };
 
@@ -153,8 +176,16 @@ function AddOrder() {
       );
       setData(resp.data.items);
     } catch (err) {
-      console.log(err);
-      message.error("Something went wrong");
+      console.error("Error loading job sites:", err);
+
+      // Display specific error message if available
+      if (err.response?.data?.message) {
+        message.error(`Failed to load job sites: ${err.response.data.message}`);
+      } else if (err.response?.data?.error) {
+        message.error(`Failed to load job sites: ${err.response.data.error}`);
+      } else {
+        message.error("Failed to load job sites. Please refresh the page.");
+      }
     }
   };
 

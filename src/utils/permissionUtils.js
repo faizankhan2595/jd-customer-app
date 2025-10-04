@@ -1,4 +1,6 @@
 import { axiosInstance } from "App";
+import axios from "axios";
+import { API_BASE_URL } from "constants/ApiConstant";
 
 /**
  * Permission utility functions for managing user permissions and local storage
@@ -107,15 +109,56 @@ export const setParentPermissions = (permissions) => {
  */
 export const fetchAndStoreUserPermissions = async () => {
   try {
+
+    const axiosInstance = axios.create({
+      baseURL: API_BASE_URL,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
+      // other configurations
+    })
+
+
+    axiosInstance.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem("token");
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    axiosInstance.interceptors.response.use(
+      (response) => {
+        return response;
+      },
+      (error) => {
+        // console.log(error.response);
+        if (error.response.status===401 || error.response.data.message === "Unauthorized") {
+          localStorage.removeItem("token");
+          window.location.href = "/auth/login";
+        }
+
+        return Promise.reject(error);
+      }
+    );
+
     const response = await axiosInstance.get("/api/admin/getUserByToken");
+
     const userData = response.data.item;
-    
+
     // Update user info in localStorage
     localStorage.setItem("name", userData.name);
     localStorage.setItem("parent_id", userData.parent_id);
     localStorage.setItem("company_name", userData.company_name);
     localStorage.setItem('user_id', userData.id);
     localStorage.setItem("role", userData.role_id);
+    localStorage.setItem("profile_pic", userData.profile_pic);
     
     // Parse and store user permissions
     let userPermissions = defaultPermissions;
@@ -143,7 +186,6 @@ export const fetchAndStoreUserPermissions = async () => {
         setParentPermissions({});
       }
     } else {
-      // Clear parent permissions for main customers/free users
       setParentPermissions({});
     }
     

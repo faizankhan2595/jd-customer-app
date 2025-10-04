@@ -68,6 +68,13 @@ const Jobsites = () => {
   const [data, setData] = useState([]);
 
   const getData = async (search="",status = '', workshop = '') => {
+    // Check if token exists
+    const token = localStorage.getItem("token");
+    if (!token) {
+      message.error('Authentication required. Please login again.');
+      return;
+    }
+
     // ?search=${search}&status=${status!='all'?status:''}&area=${workshop!='all'?workshop:''}
     // let url = `?search=${search}`
     let url = `?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}&search=${search}`
@@ -82,6 +89,9 @@ const Jobsites = () => {
 
     try {
       setLoading(true)
+      console.log('Fetching jobsites with URL:', `/api/web/jobsites${url}`);
+      console.log('Token:', token ? 'Present' : 'Missing');
+
       const resp = await axiosInstance.get(`/api/web/jobsites${url}`);
       setData(resp.data.items);
 
@@ -97,8 +107,26 @@ const Jobsites = () => {
       }))
       setLoading(false)
     } catch (err) {
-      console.log(err)
-      message.error('Something went wrong')
+      setLoading(false)
+      console.error('Jobsites API Error:', err);
+      console.error('Error Response:', err.response);
+      console.error('Error Status:', err.response?.status);
+      console.error('Error Data:', err.response?.data);
+
+      // Display specific error messages
+      if (err.response?.status === 401) {
+        message.error('Authentication failed. Please login again.');
+        localStorage.removeItem('token');
+        window.location.href = '/auth/login';
+      } else if (err.response?.status === 403) {
+        message.error('You do not have permission to view jobsites.');
+      } else if (err.response?.data?.message) {
+        message.error(err.response.data.message);
+      } else if (err.message === 'Network Error') {
+        message.error('Network error. Please check your connection.');
+      } else {
+        message.error('Failed to load jobsites. Please try again.');
+      }
     }
   }
 

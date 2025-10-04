@@ -44,13 +44,49 @@ const SideNavContent = (props) => {
   } = props;
   const isMobile = !utils.getBreakPoint(useBreakpoint()).includes("lg");
   const { isLoading: permissionsLoading } = usePermissions();
-  
+  const [imageUrl, setImageUrl] = useState(null);
+
   const closeMobileNav = () => {
     if (isMobile) {
       onMobileNavToggle(false);
     }
   };
-  
+
+  const getData = async () => {
+    try {
+      const data = await axiosInstance.get("/api/admin/getUserByToken");
+      console.log(data.data.item);
+      setImageUrl(data.data.item.profile_pic);
+
+      const getLocalStorageItem = (key) => {
+        const value = localStorage.getItem(key);
+        return value === "null" || value === null ? null : value;
+      };
+
+      const name = getLocalStorageItem("name");
+      const user_id = getLocalStorageItem("user_id");
+      const role = getLocalStorageItem("role");
+      const profile_pic = getLocalStorageItem("profile_pic");
+
+      localStorage.setItem("name", data.data.item.name);
+      localStorage.setItem("parent_id", data.data.item.parent_id);
+      localStorage.setItem("company_name", data.data.item.company_name);
+      localStorage.setItem('user_id', data.data.item.id);
+      localStorage.setItem("role", data.data.item.role_id);
+      localStorage.setItem("profile_pic", data.data.item.profile_pic);
+
+      if(name != data.data.item.name || user_id != data.data.item.id || role != data.data.item.role_id || profile_pic != data.data.item.profile_pic){
+        window.location.reload();
+      }
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
 
   const history = useHistory();
   
@@ -102,7 +138,7 @@ const SideNavContent = (props) => {
 
           <img
             className="sideNavUserImage"
-            src={`https://api.dicebear.com/9.x/initials/svg?seed=${localStorage.getItem("name")}`}
+            src={imageUrl || `https://api.dicebear.com/9.x/initials/svg?seed=${localStorage.getItem("name")}`}
             alt="..."
           />
         </Dropdown>

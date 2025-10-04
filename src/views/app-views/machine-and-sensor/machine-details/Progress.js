@@ -2,29 +2,47 @@ import React, { useState, useEffect } from 'react';
 
 const ProgressBar = ({ progress }) => {
     const [color, setColor] = useState('');
-  
+    const [containerWidth, setContainerWidth] = useState(window.innerWidth);
+
     useEffect(() => {
       if (progress <= 10) {
         setColor('#00A843');
-      } 
+      }
       if (progress <= 7) {
         setColor('#FFCB21');
-      } 
+      }
        if (progress <= 5) {
         setColor('#FB8920');
-      } 
+      }
        if (progress <= 2) {
         setColor('#F93737');
       }
     }, [progress]);
+
+    // Listen for window resize
+    useEffect(() => {
+      const handleResize = () => {
+        setContainerWidth(window.innerWidth);
+      };
+
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }, []);
   
     const calculateArrowPosition = () => {
       const percentage = (progress / 10) * 100;
       return `${percentage > 100 ? 100 : percentage}%`;
     };
-  
+
+    // Calculate responsive width - max 380px but 100% of container on smaller screens
+    const getBarWidth = () => {
+      if (containerWidth < 768) return '100%';
+      if (containerWidth < 1024) return 'min(100%, 300px)';
+      return 'min(100%, 380px)';
+    };
+
     return (
-      <div className='d-flex' style={{ position: 'relative', width: '380px', height: '15px', border: 'none' }}>
+      <div className='d-flex' style={{ position: 'relative', width: getBarWidth(), maxWidth: '380px', height: '15px', border: 'none' }}>
         <div style={{ width: '20%', height: '100%', backgroundColor: '#F93737' }}></div>
         <div style={{ width: '30%', height: '100%', backgroundColor: '#FB8920' }}></div>
         <div style={{ width: '20%', height: '100%', backgroundColor: '#FFCB21' }}></div>

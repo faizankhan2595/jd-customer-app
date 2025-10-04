@@ -32,7 +32,7 @@ function AddInquiry() {
 
   const history = useHistory();
   const { Option } = Select;
-  const [countryCode, setCountryCode] = useState("+91");
+  const [countryCode, setCountryCode] = useState("+65");
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [data, setData] = useState([]);
   const [machineData, setMachineData] = useState([]);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom/cjs/react-router-dom';
 import { message } from 'antd';
 
@@ -6,12 +6,33 @@ function MachineSensorComponent({ data,id,machine_name }) {
     // Check if current user is a free user (role id 5)
     const userRole = parseInt(localStorage.getItem("role"));
     const isFreeUser = userRole === 5;
-    
+
     const totalSlots = Math.max(5, data.length);
     const emptySlots = totalSlots - data.length;
     const allSlots = [...data, ...Array(emptySlots).fill(null)];
     const emptySlotsCount = [...Array(1).fill(null)];
     const history = useHistory();
+
+    // Window width state for responsive card sizing
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+    // Listen for window resize
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowWidth(window.innerWidth);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Calculate responsive card width
+    const getCardWidth = () => {
+        if (windowWidth < 768) return '100%';        // 1 card per row on mobile
+        if (windowWidth < 1024) return 'calc(50% - 10px)';  // 2 cards per row on tablet
+        if (windowWidth < 1440) return 'calc(33.33% - 10px)'; // 3 cards per row on small desktop
+        return '19%';                                 // 5 cards per row on large screens
+    };
 
     return (
         <div
@@ -35,7 +56,8 @@ function MachineSensorComponent({ data,id,machine_name }) {
                     <div
                         key={index}
                         style={{
-                            width: '19%',
+                            width: getCardWidth(),
+                            minWidth: windowWidth < 768 ? '100%' : '200px',
                             border: `10px solid ${bgColor}`,
                             borderRadius: '8px',
                             cursor: 'pointer'
@@ -53,10 +75,10 @@ function MachineSensorComponent({ data,id,machine_name }) {
                             <h4>
                                 {isData ? item.sensor_name : 'No Data Available'}
                             </h4>
-                            <p>Vibration Intensity: {isData ? item.vibration : ''}</p>
-                            <p>Battery Life: {isData ? item.battery : ''}</p>
-                            <p>Temperature: {isData ? item.temperature : ''}</p>
-                            <p>Updated Time: {isData ? item.updatedAt : ''}</p>
+                            <p>Vibration Intensity: {isData ? `X: ${item.latest_vibration_x || 'N/A'}, Y: ${item.latest_vibration_y || 'N/A'}, Z: ${item.latest_vibration_z || 'N/A'}` : ''}</p>
+                            <p>Battery Life: {isData ? `${item.latest_battery_percentage || 'N/A'}%` : ''}</p>
+                            <p>Temperature: {isData ? `${item.latest_temperature || 'N/A'}°C` : ''}</p>
+                            <p>Updated Time: {isData ? (item.latest_updated_at ? new Date(item.latest_updated_at).toLocaleString() : 'N/A') : ''}</p>
 
                         </div>
                         <div
@@ -142,7 +164,8 @@ function MachineSensorComponent({ data,id,machine_name }) {
                     <div
 
                         style={{
-                            width: '19%',
+                            width: getCardWidth(),
+                            minWidth: windowWidth < 768 ? '100%' : '200px',
                             border: `10px solid #666`,
                             borderRadius: '8px',
                             cursor: 'pointer'
@@ -160,10 +183,10 @@ function MachineSensorComponent({ data,id,machine_name }) {
                             <h4>
                                 {'No Data Available'}
                             </h4>
-                            <p>Vibration Intensity:</p>
-                            <p>Battery Life: </p>
-                            <p>Temperature: </p>
-                            <p>Updated Time: </p>
+                            <p>Vibration Intensity: N/A</p>
+                            <p>Battery Life: N/A</p>
+                            <p>Temperature: N/A</p>
+                            <p>Updated Time: N/A</p>
                         </div>
                          <div
                             style={{

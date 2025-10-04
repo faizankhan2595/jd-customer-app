@@ -13,8 +13,8 @@ export const AppViews = () => {
     } else {
       history.push('/auth/login')
     }
-
   });
+  
   return (
     <Suspense fallback={<Loading cover="content" />}>
       <Switch>

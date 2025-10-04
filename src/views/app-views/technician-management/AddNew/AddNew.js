@@ -33,7 +33,7 @@ export default function AddNewTechnician() {
     const [successModal, setSuccessModal] = useState(false);
     const [loading, setLoading] = useState(false);
     const location = useLocation();
-    const [countryCode, setCountryCode] = useState('+91')
+    const [countryCode, setCountryCode] = useState('+65')
     const queryParams = new URLSearchParams(location.search);
     const [fileList, setFileList] = useState([]);
     const [imageUrl, setImageUrl] = useState();

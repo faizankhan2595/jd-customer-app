@@ -30,6 +30,7 @@ import { axiosInstance } from "App";
 import { auth } from "auth/FirebaseOtp";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import PhoneCode from "utils/PhoneCode";
+import { fetchAndStoreUserPermissions } from "utils/permissionUtils";
 const backgroundStyle = {
   backgroundImage: "url(/img/others/wave.svg)",
   backgroundRepeat: "no-repeat",
@@ -270,6 +271,8 @@ const LoginOne = (props) => {
           localStorage.setItem("role", res.data.item.user?.role_id);
           localStorage.setItem("name", res.data.item.user?.name);
           localStorage.setItem("user_id", res.data.item.user?.id);
+
+          await fetchAndStoreUserPermissions();
 
           window.location.reload();
           return;

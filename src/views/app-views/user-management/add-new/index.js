@@ -31,6 +31,7 @@ import {
   Switch,
   Divider,
 } from "antd";
+import { canEditPermissions } from "utils/role";
 
 const { Title, Text } = Typography;
 export default function AddNewAdminAccount() {
@@ -45,7 +46,7 @@ export default function AddNewAdminAccount() {
     const [deactiveModalOpen, setIsDeactiveModalOpen] = useState(false);
     const [successModal, setSuccessModal] = useState(false);
     const location = useLocation();
-    const [countryCode, setCountryCode] = useState('+91')
+    const [countryCode, setCountryCode] = useState('+65')
     const queryParams = new URLSearchParams(location.search);
     const [loading, setLoading] = useState(false);
     const [fileList, setFileList] = useState([]);
@@ -114,6 +115,9 @@ export default function AddNewAdminAccount() {
         { title: "Inquiries", key: "inquiries", check: false },
         { title: "Orders", key: "orders", check: false }
     ]);
+
+    // Track if current user can edit Access tab for the target user
+    const [canEditAccessTab, setCanEditAccessTab] = useState(true);
 
     let styles = {
         files: {
@@ -202,7 +206,12 @@ export default function AddNewAdminAccount() {
                 // Stay on current tab if validation fails
             })
         } else if (active === "3") {
-            setActiveTab("4");
+            // Check if user can edit Access tab, if not, save directly
+            if (canEditAccessTab) {
+                setActiveTab("4");
+            } else {
+                onFinish();
+            }
         } else {
             onFinish();
         }
@@ -639,6 +648,10 @@ export default function AddNewAdminAccount() {
                     setDataMobileAppPer(can_access.mobile_app);
                 }
             }
+
+            // Check if current user can edit Access tab for this role
+            const currentUserRole = parseInt(localStorage.getItem("role"));
+            setCanEditAccessTab(canEditPermissions(currentUserRole, data.role_id));
         } catch (error) {
             // console.error(error);
             message.error(error.response.data.message);
@@ -834,7 +847,10 @@ export default function AddNewAdminAccount() {
                                             { required: true, message: "Please select role." },
                                         ]}
                                     >
-                                        <Radio.Group>
+                                        <Radio.Group onChange={(e) => {
+                                            const currentUserRole = parseInt(localStorage.getItem("role"));
+                                            setCanEditAccessTab(canEditPermissions(currentUserRole, e.target.value));
+                                        }}>
                                             <Radio value={7}>Admin</Radio>
                                             <Radio value={8}>Manager</Radio>
                                             <Radio value={9}>User</Radio>
@@ -1038,6 +1054,7 @@ export default function AddNewAdminAccount() {
                         </div>
                     </div>
                 </TabPane>
+                {canEditAccessTab && (
                 <TabPane
                     disabled={activeTab < "4"}
                     tab={
@@ -1341,6 +1358,7 @@ export default function AddNewAdminAccount() {
                         </Tabs>
                     </div>
                 </TabPane>
+                )}
             </Tabs>
             <Form.Item>
                 <div
@@ -1365,7 +1383,7 @@ export default function AddNewAdminAccount() {
                             handleNext(activeTab)
                         }}
                     >
-                        {activeTab === "4" ? "Save" : "Next"}
+                        {(activeTab === "4" && canEditAccessTab) || (activeTab === "3" && !canEditAccessTab) ? "Save" : "Next"}
                     </Button>
                 </div>
             </Form.Item>

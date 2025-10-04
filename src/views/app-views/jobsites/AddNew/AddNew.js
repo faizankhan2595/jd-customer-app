@@ -18,7 +18,7 @@ function AddNew() {
     const [form] = Form.useForm();
     const [status, setStatus] = useState(true);
     const [data, setData] = useState([]);
-    const [countryCode, setCountryCode] = useState("+91");
+    const [countryCode, setCountryCode] = useState("+65");
     const [loading, setLoading] = useState(false);
     const history = useHistory();
     const { id } = useParams();

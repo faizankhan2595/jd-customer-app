@@ -47,7 +47,26 @@ export const Status = (val)=>{
         return{
             status:"Rejected",
             color:"danger"
-        }   
-    } 
-   
+        }
+    }
+
+}
+
+/**
+ * Check if an editor role can edit permissions for a target role
+ * @param {number} editorRoleId - The role_id of the user attempting to edit
+ * @param {number} targetRoleId - The role_id of the user being edited
+ * @returns {boolean} true if editor can modify target's permissions, false otherwise
+ */
+export const canEditPermissions = (editorRoleId, targetRoleId) => {
+    const editableRoles = {
+        1: [2, 7],     // Super Admin can edit: Admin, Customer Admin
+        2: [7],        // Admin can edit: Customer Admin
+        7: [8, 9],     // Customer Admin can edit: Customer Manager, Customer User
+        8: [9],        // Customer Manager can edit: Customer User
+        9: [],         // Customer User cannot edit anyone
+        5: []          // Free User cannot edit anyone
+    };
+
+    return editableRoles[editorRoleId]?.includes(targetRoleId) || false;
 }

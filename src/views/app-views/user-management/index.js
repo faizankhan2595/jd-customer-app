@@ -21,19 +21,44 @@ const StaffManagement = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false)
   const [alertModal, setAlertModal] = useState(false)
+  const [userToDelete, setUserToDelete] = useState(null)
   // const [data, setData] = useState([]);
   const handleCancel = () => {
     setModalVisible(false);
   };
   const handleCancelConfirmation = () => {
     setDeleteConfirmationModal(false)
+    setUserToDelete(null)
   }
-  const handleYesConfirmation = () => {
+  const handleYesConfirmation = async () => {
+    if (!userToDelete) return;
+
     setDeleteConfirmationModal(false)
-    handleOpenAlert()
-    setTimeout(() => {
-      handleCloseAlert()
-    }, 1500);
+
+    try {
+      console.log(`Attempting to delete user ${userToDelete.id}`);
+      const response = await axiosInstance.delete(`/api/admin/customer-users/${userToDelete.id}/delete`);
+
+      if (response.data) {
+        console.log('User deleted successfully:', response.data);
+        message.success(response.data.message || 'User deleted successfully');
+
+        // Refresh the data
+        getData(searchText, selectedStatus === 'all' ? '' : selectedStatus === 'pending-approval' ? 0 : selectedStatus === 'approved' ? 1 : 2);
+
+        // Show success modal
+        handleOpenAlert()
+        setTimeout(() => {
+          handleCloseAlert()
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      message.error(error.response?.data?.message || 'Failed to delete user. Please try again.');
+    }
+
+    // Clear the user to delete
+    setUserToDelete(null);
   }
   const handleOpenAlert = () => {
     setAlertModal(true)
@@ -168,8 +193,9 @@ const StaffManagement = () => {
       )}
       {hasPermission('user_management', 'Delete Users') && (
         <Menu.Item key="delete" onClick={() => {
+          setUserToDelete(record)
           setDeleteConfirmationModal(true)
-          console.log(record.key)
+          console.log('Setting user to delete:', record)
         }}>
           <DeleteOutlined /> Delete
         </Menu.Item>
@@ -301,7 +327,7 @@ const StaffManagement = () => {
         <div className='d-flex flex-column justify-content-center align-items-center'>
           <img style={{ width: '60px' }} src={Alert} alt={'...'} />
           <h4 style={{ fontWeight: '300', width: '250px' }} className='text-center'>Are you sure you want to delete
-            user records?</h4>
+            {userToDelete ? ` ${userToDelete.name}'s` : ' this user'} record?</h4>
         </div>
         <div className='d-flex justify-content-center mt-3'>
           <Button className='' onClick={() => handleCancelConfirmation()}>
@@ -320,7 +346,7 @@ const StaffManagement = () => {
       >
         <div className='d-flex flex-column justify-content-center align-items-center'>
           <SuccessTickIcon />
-          <h4 style={{ fontWeight: '300', width: '250px' }} className='text-center'>Admin account deleted successfully!</h4>
+          <h4 style={{ fontWeight: '300', width: '250px' }} className='text-center'>User account deleted successfully!</h4>
         </div>
         <div className='d-flex justify-content-center mt-3'>
           <Button className='bg-primary text-white ml-2' onClick={handleCloseAlert}>

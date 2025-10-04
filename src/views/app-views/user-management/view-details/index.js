@@ -83,7 +83,7 @@ export default function AddNewAdminAccount() {
   const [deactiveModalOpen, setIsDeactiveModalOpen] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const location = useLocation();
-  const [countryCode, setCountryCode] = useState("+91");
+  const [countryCode, setCountryCode] = useState("+65");
   const queryParams = new URLSearchParams(location.search);
   const [fileList, setFileList] = useState([]);
   const [jobsite, setJobSite] = useState(null);
