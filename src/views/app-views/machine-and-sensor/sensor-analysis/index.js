@@ -1476,7 +1476,7 @@ const SensorAnalysis = () => {
             {selectedPoint && (
               <div style={{ marginBottom: '15px', padding: '10px', background: '#f0f2f5', borderRadius: '6px' }}>
                 <div><strong>Time:</strong> {moment(selectedPoint.x).format('DD-MM-YYYY HH:mm:ss')}</div>
-                <div><strong>Value:</strong> {selectedPoint.y}</div>
+                <div><strong>Value:</strong> {typeof selectedPoint.y === 'number' ? selectedPoint.y.toFixed(2) : selectedPoint.y} {metricConfig[selectedMetricType]?.unit || ''}</div>
               </div>
             )}
 

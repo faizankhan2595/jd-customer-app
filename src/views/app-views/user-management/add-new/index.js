@@ -119,6 +119,9 @@ export default function AddNewAdminAccount() {
     // Track if current user can edit Access tab for the target user
     const [canEditAccessTab, setCanEditAccessTab] = useState(true);
 
+    // Track if free user is editing their own profile
+    const [isFreeUserEditingOwnProfile, setIsFreeUserEditingOwnProfile] = useState(false);
+
     let styles = {
         files: {
             listStyle: "none",
@@ -652,6 +655,12 @@ export default function AddNewAdminAccount() {
             // Check if current user can edit Access tab for this role
             const currentUserRole = parseInt(localStorage.getItem("role"));
             setCanEditAccessTab(canEditPermissions(currentUserRole, data.role_id));
+
+            // Check if free user is editing their own profile
+            const currentUserId = localStorage.getItem("user_id");
+            const isFreeUser = currentUserRole === 5;
+            const isEditingOwnProfile = currentUserId && currentUserId === id?.toString();
+            setIsFreeUserEditingOwnProfile(isFreeUser && isEditingOwnProfile);
         } catch (error) {
             // console.error(error);
             message.error(error.response.data.message);
@@ -681,7 +690,7 @@ export default function AddNewAdminAccount() {
                 color: '#6a6a6a',
                 fontWeight: '300'
             }}> User Management / User Accounts</span> / {
-                    id ? "Edit Admin Account" : "Add New Admin Account"
+                    id ? "Edit User Account" : "Add New User Account"
             }</h4>
 
             <Tabs activeKey={activeTab} onTabClick={handleTabClick} >
@@ -800,6 +809,7 @@ export default function AddNewAdminAccount() {
                                 </div>
                             </div>
                             <div style={{ gap: "60px" }} className="d-flex ">
+                                {!isFreeUserEditingOwnProfile && (
                                 <div style={{ width: "45%" }}>
                                     <Form.Item
                                         name="nric_fin_number"
@@ -811,7 +821,8 @@ export default function AddNewAdminAccount() {
                                         <Input style={{ width: "100%" }} placeholder="NRIC/FIN" />
                                     </Form.Item>
                                 </div>
-                                <div style={{ width: "45%" }}>
+                                )}
+                                <div style={{ width: isFreeUserEditingOwnProfile ? "90%" : "45%" }}>
                                     <Form.Item
                                         name="dob"
                                         label="Date of Birth"
@@ -825,7 +836,7 @@ export default function AddNewAdminAccount() {
                                 </div>
                             </div>
                             <div style={{ gap: "60px" }} className="d-flex ">
-                                <div style={{ width: "45%" }}>
+                                <div style={{ width: isFreeUserEditingOwnProfile ? "90%" : "45%" }}>
                                     <Form.Item
                                         name="gender"
                                         label="Gender"
@@ -839,6 +850,7 @@ export default function AddNewAdminAccount() {
                                         </Radio.Group>
                                     </Form.Item>
                                 </div>
+                                {!isFreeUserEditingOwnProfile && (
                                 <div style={{ width: "45%" }}>
                                     <Form.Item
                                         name="role_id"
@@ -857,6 +869,7 @@ export default function AddNewAdminAccount() {
                                         </Radio.Group>
                                     </Form.Item>
                                 </div>
+                                )}
                             </div>
 
                         </div>
