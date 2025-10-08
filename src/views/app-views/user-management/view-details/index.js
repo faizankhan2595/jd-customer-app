@@ -1163,7 +1163,7 @@ export default function AddNewAdminAccount() {
                     name="block_number"
                     rules={[{ required: true, message: 'Please enter the block number!' }]}
                   >
-                    <InputNumber disabled placeholder="Block Number" style={{ width: '100%' }} />
+                    <Input disabled placeholder="Block Number" style={{ width: '100%' }} />
                   </Form.Item>
                 </div>
               </div>

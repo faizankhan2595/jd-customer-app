@@ -12,6 +12,8 @@ const SensorAnalysis = () => {
   // Check if current user is a free user (role id 5)
   const userRole = parseInt(localStorage.getItem("role"));
   const isFreeUser = userRole === 5;
+  const history = useHistory();
+  const { machineId, sensorId } = useParams();
 
   // Highcharts chart refs
   const mainChartRef = useRef(null);
@@ -27,8 +29,6 @@ const SensorAnalysis = () => {
   const multiSpectrum3AxisRefY = useRef(null);
   const multiSpectrum3AxisRefZ = useRef(null);
   const multiSpectrum1AxisRef = useRef(null);
-  const history = useHistory();
-  const { machineId, sensorId } = useParams();
   const [selectedMetricType, setSelectedMetricType] = useState("mid_freq_acceleration_p2p");
   const [selectedAxis, setSelectedAxis] = useState("x");
   const [selectedAlarm, setSelectedAlarm] = useState(sensorId);
@@ -1352,6 +1352,19 @@ const SensorAnalysis = () => {
       }, 100);
     }
   }, [spectrum3AxisData, spectrum1AxisData, createMultiSpectrumCharts, showSpectrum, hasMultipleSpectrums]);
+
+  // Route guard: Redirect free users immediately
+  useEffect(() => {
+    if (isFreeUser) {
+      message.error("Access Denied: Sensor analysis is only available for premium users. Please upgrade your plan.");
+      history.push(`/app/machine-and-sensors/machine-details/${machineId}`);
+    }
+  }, [isFreeUser, history, machineId]);
+
+  // If free user, don't render the component
+  if (isFreeUser) {
+    return null;
+  }
 
   return (
     <div style={{ padding: '20px' }}>

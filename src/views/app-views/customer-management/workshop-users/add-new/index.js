@@ -467,7 +467,7 @@ export default function AddNewWorkshopUser() {
                       },
                     ]}
                   >
-                    <InputNumber
+                    <Input
                       placeholder="Block Number"
                       style={{ width: "100%" }}
                     />

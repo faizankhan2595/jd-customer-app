@@ -114,25 +114,28 @@ function MachineSensorComponent({ data,id,machine_name }) {
                                     <button
                                         onClick={()=>{
                                             if (isFreeUser) {
-                                                message.info("Advanced sensor analysis is available for premium users. You can still access basic analysis through the chart data points.");
+                                                message.warning("Sensor analysis is only available for premium users. Please upgrade your plan to access this feature.");
+                                                return;
                                             }
                                             history.push(`/app/machine-and-sensors/sensor-analysis/${id}/${item.sensor_id}`);
                                         }}
+                                        disabled={isFreeUser}
                                         style={{
-                                            backgroundColor: isFreeUser ? '#f0f0f0' : bgColor,
-                                            color: isFreeUser ? '#999' : textColor,
+                                            backgroundColor: isFreeUser ? '#d9d9d9' : bgColor,
+                                            color: isFreeUser ? '#8c8c8c' : textColor,
                                             border: 'none',
                                             borderRadius: '4px',
                                             padding: '4px 2px',
-                                            cursor: 'pointer',
+                                            cursor: isFreeUser ? 'not-allowed' : 'pointer',
                                             marginTop: '10px',
                                             width: '45%',
                                             fontSize: '11px',
-                                            position: 'relative'
+                                            position: 'relative',
+                                            opacity: isFreeUser ? 0.6 : 1
                                         }}
-                                        title={isFreeUser ? "Limited features for free users" : "Access full sensor analysis"}
+                                        title={isFreeUser ? "Premium feature - upgrade to access sensor analysis" : "Access full sensor analysis"}
                                     >
-                                        Analysis {isFreeUser && '⚠️'}
+                                        Analysis {isFreeUser && '🔒'}
                                     </button>
                                     <button
                                         onClick={()=>{

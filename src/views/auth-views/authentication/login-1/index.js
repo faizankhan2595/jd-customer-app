@@ -274,7 +274,10 @@ const LoginOne = (props) => {
 
           await fetchAndStoreUserPermissions();
 
-          window.location.reload();
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000);
+
           return;
         }
         console.log(res.data.item.user);
@@ -286,9 +289,11 @@ const LoginOne = (props) => {
         localStorage.setItem("user_id", res.data.item.user?.id);
 
         message.success("Logged in successfully");
-        window.location.reload();
+        await fetchAndStoreUserPermissions();
 
-
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
       } else {
         message.error(res.data.message);
       }
@@ -427,14 +432,6 @@ const LoginOne = (props) => {
 
   return (
     <div className="h-100" style={backgroundStyle}>
-      <div id="recaptcha-container" style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 9999,
-        display: step === 1 ? 'block' : 'none'
-      }}></div>
       <div style={logoCss}>
         {" "}
         <img src={Logo} alt="..."></img>
@@ -467,6 +464,12 @@ const LoginOne = (props) => {
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   value={phoneNumber}
                 />
+                <div id="recaptcha-container" style={{
+                  marginTop: '1.5rem',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  justifyContent: 'center'
+                }}></div>
                 <Button
                   style={{
                     backgroundColor: "#3CA6C1",

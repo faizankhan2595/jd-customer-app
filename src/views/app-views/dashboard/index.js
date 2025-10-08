@@ -290,17 +290,16 @@ const Dashboard = () => {
 
 			<Card style={{
 				marginTop: "20px",
-				overflow: "auto",
+				overflow: "visible",
 			}}>
 				<div style={{
-					display: "flex",
-					flexDirection: isMobile ? "column" : "row",
-					justifyContent: "space-between",
+					display: "grid",
+					gridTemplateColumns: width < 480 ? "1fr" : width < 768 ? "repeat(2, 1fr)" : width < 1200 ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
+					gap: "20px"
 				}}>
 					<div style={{
-						width: isMobile ? "100%" : "25%",
-						borderRight: isMobile ? "none" : "1px solid #F0F0F0",
-						borderBottom: isMobile ? "1px solid #F0F0F0" : "none",
+						borderRight: (width >= 480 && width < 768) || (width >= 1200) ? "1px solid #F0F0F0" : "none",
+						borderBottom: width < 1200 ? "1px solid #F0F0F0" : "none",
 						padding: "15px"
 					}}>
 						<PieChartWidget
@@ -325,9 +324,8 @@ const Dashboard = () => {
 
 
 					<div style={{
-						width: isMobile ? "100%" : "25%",
-						borderRight: isMobile ? "none" : "1px solid #F0F0F0",
-						borderBottom: isMobile ? "1px solid #F0F0F0" : "none",
+						borderRight: width >= 1200 ? "1px solid #F0F0F0" : "none",
+						borderBottom: width < 1200 ? "1px solid #F0F0F0" : "none",
 						padding: "15px"
 					}}>
 						<PieChartWidget title="Alert Status" label={["Healthy", "With Alert"]}
@@ -348,9 +346,8 @@ const Dashboard = () => {
 					</div>
 
 					<div style={{
-						width: isMobile ? "100%" : "25%",
-						borderRight: isMobile ? "none" : "1px solid #F0F0F0",
-						borderBottom: isMobile ? "1px solid #F0F0F0" : "none",
+						borderRight: (width >= 480 && width < 768) || (width >= 1200) ? "1px solid #F0F0F0" : "none",
+						borderBottom: width < 480 ? "1px solid #F0F0F0" : "none",
 						padding: "15px"
 					}}>
 						<PieChartWidget title={"Vibration Status"} label={["Green", "Yellow", "Orange", "Red"]}
@@ -377,7 +374,8 @@ const Dashboard = () => {
 					</div>
 
 					<div style={{
-						width: isMobile ? "100%" : "25%",
+						borderRight: "none",
+						borderBottom: "none",
 						padding: "15px"
 					}}>
 						<PieChartWidget title="Battery Status" label={["Good", "Need to change within 3 months"]}

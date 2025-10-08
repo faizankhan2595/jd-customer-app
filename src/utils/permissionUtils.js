@@ -180,12 +180,18 @@ export const fetchAndStoreUserPermissions = async () => {
         const parentResponse = await axiosInstance.get(`/api/admin/customer-users/parent-permissions/${userData.parent_id}`);
         if (parentResponse.data?.item?.can_access) {
           setParentPermissions(parentResponse.data.item.can_access);
+        } else {
+          // Parent customer not found or has no permissions - set empty permissions
+          console.log('Parent customer not found or has no permissions, using user-level permissions only');
+          setParentPermissions({});
         }
       } catch (error) {
         console.error('Error fetching parent permissions:', error);
+        // On error, set empty permissions (fallback to user-only permissions)
         setParentPermissions({});
       }
     } else {
+      // No parent_id, user is a free user - set empty parent permissions
       setParentPermissions({});
     }
     
@@ -203,16 +209,16 @@ export const hasPermission = (section, permission) => {
   const userPermissions = getUserPermissions();
   const parentPermissions = getParentPermissions();
   const parentId = localStorage.getItem("parent_id");
-  
-  // For free users (no parent), check only user permissions
-  if (!parentId || parentId === "null") {
+
+  // For free users (no parent) or if parent permissions not found, check only user permissions
+  if (!parentId || parentId === "null" || !hasValidParentPermissions(parentPermissions)) {
     return checkUserPermission(userPermissions, section, permission);
   }
-  
-  // For customer child users, check both user and parent permissions
+
+  // For customer child users with valid parent, check both user and parent permissions
   const hasUserPermission = checkUserPermission(userPermissions, section, permission);
   const hasParentPermission = checkUserPermission(parentPermissions, section, permission);
-  
+
   // Both user and parent must have the permission
   return hasUserPermission && hasParentPermission;
 };
@@ -242,30 +248,30 @@ export const hasSectionAccess = (section) => {
   const userPermissions = getUserPermissions();
   const parentPermissions = getParentPermissions();
   const parentId = localStorage.getItem("parent_id");
-  
+
   console.log(`Checking section access for: ${section}`);
   console.log(`Parent ID: ${parentId}`);
   console.log(`User permissions for ${section}:`, userPermissions?.web_app?.[section]);
   console.log(`Parent permissions for ${section}:`, parentPermissions?.web_app?.[section]);
-  
-  // For free users (no parent), check only user permissions
-  if (!parentId || parentId === "null") {
+
+  // For free users (no parent) or if parent permissions not found, check only user permissions
+  if (!parentId || parentId === "null" || !hasValidParentPermissions(parentPermissions)) {
     const result = checkSectionAccess(userPermissions, section);
-    console.log(`Free user access result for ${section}: ${result}`);
+    console.log(`User-only access result for ${section}: ${result}`);
     return result;
   }
-  
-  // For customer child users, check both user and parent permissions
+
+  // For customer child users with valid parent, check both user and parent permissions
   const hasUserAccess = checkSectionAccess(userPermissions, section);
   const hasParentAccess = checkSectionAccess(parentPermissions, section);
-  
+
   console.log(`User access for ${section}: ${hasUserAccess}`);
   console.log(`Parent access for ${section}: ${hasParentAccess}`);
-  
+
   // Both user and parent must have at least one permission in the section
   const finalResult = hasUserAccess && hasParentAccess;
   console.log(`Final access result for ${section}: ${finalResult}`);
-  
+
   return finalResult;
 };
 
@@ -294,16 +300,16 @@ export const hasMobilePermission = (key) => {
     const userPermissions = getUserPermissions();
     const parentPermissions = getParentPermissions();
     const parentId = localStorage.getItem("parent_id");
-    
-    // For free users (no parent), check only user permissions
-    if (!parentId || parentId === "null") {
+
+    // For free users (no parent) or if parent permissions not found, check only user permissions
+    if (!parentId || parentId === "null" || !hasValidParentPermissions(parentPermissions)) {
       return checkMobilePermission(userPermissions, key);
     }
-    
-    // For customer child users, check both user and parent permissions
+
+    // For customer child users with valid parent, check both user and parent permissions
     const hasUserPermission = checkMobilePermission(userPermissions, key);
     const hasParentPermission = checkMobilePermission(parentPermissions, key);
-    
+
     return hasUserPermission && hasParentPermission;
   } catch (error) {
     console.error('Error checking mobile permission:', error);
@@ -325,6 +331,20 @@ const checkMobilePermission = (permissions, key) => {
     return permissionObj ? permissionObj.check : false;
   } catch (error) {
     console.error('Error checking mobile permission:', error);
+    return false;
+  }
+};
+
+/**
+ * Helper function to check if parent permissions were successfully loaded
+ * Returns true if parent permissions have valid structure (web_app or mobile_app)
+ */
+const hasValidParentPermissions = (parentPermissions) => {
+  try {
+    // Parent permissions are valid if they have web_app or mobile_app structure
+    return !!(parentPermissions?.web_app || parentPermissions?.mobile_app);
+  } catch (error) {
+    console.error('Error checking parent permissions validity:', error);
     return false;
   }
 };
