@@ -2014,7 +2014,7 @@ const MachineDetails = () => {
                 <h5 className="mb-1">Machine Status (AI)</h5>
                 <ProgressBar progress={10} />
               </div> */}
-              <div className="mt-4 d-flex justify-content-between pr-5">
+              <div className="mt-4 d-flex flex-wrap pr-5" style={{ gap: "16px" }}>
                 <div className="d-flex align-items-center">
                   <span
                     className="d-flex align-items-center justify-content-center mr-2"
@@ -2026,7 +2026,7 @@ const MachineDetails = () => {
                       height: "20px",
                     }}
                   >
-                
+
                   </span>{" "}
                   Good
                 </div>
@@ -2041,7 +2041,7 @@ const MachineDetails = () => {
                       height: "20px",
                     }}
                   >
-                 
+
                   </span>{" "}
                   Satisfactory
                 </div>
@@ -2056,7 +2056,7 @@ const MachineDetails = () => {
                       height: "20px",
                     }}
                   >
-                 
+
                   </span>{" "}
                   Warning
                 </div>
@@ -2071,7 +2071,7 @@ const MachineDetails = () => {
                       height: "20px",
                     }}
                   >
-                 
+
                   </span>{" "}
                   Critical
                 </div>

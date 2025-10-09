@@ -725,7 +725,7 @@ const SensorAnalysis = () => {
           plotLines: plotLines
         },
         yAxis: { 
-          title: { text: 'Log Amplitude (m/s²)²/Hz' },
+          title: { text: 'Log Amplitude (mm/s²)²/Hz' },
           gridLineWidth: 1
         },
         series: [
@@ -892,7 +892,7 @@ const SensorAnalysis = () => {
           plotLines: plotLines
         },
         yAxis: { 
-          title: { text: 'Log Amplitude (m/s²)²/Hz' },
+          title: { text: 'Log Amplitude (mm/s²)²/Hz' },
           gridLineWidth: 1
         },
         series: [

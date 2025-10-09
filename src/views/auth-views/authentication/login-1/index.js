@@ -387,32 +387,23 @@ const LoginOne = (props) => {
 
         const registrationRes = await axiosInstance.post("/api/app/auth/register", registrationData);
 
-        if (registrationRes.data.success) {
-          // Registration successful - close modal and proceed directly to OTP screen
+        if (registrationRes.data.status) {
+          // Registration successful - close modal and show success message
           setVisible(false);
           setRegistrationLoading(false);
           setSignUp(false); // Clear signup flag since user is now registered
 
-          // Store minimal data for login after OTP
-          window.signupData = {
-            phoneCode: countryCode,
-            phoneNo: phoneNumber,
-            name: values.name,
-            company_name: searchValue,
-          };
+          // Clear signup data since we're not auto-logging in
+          window.signupData = null;
 
           // Clear the form
           form.resetFields();
           setSearchValue("");
 
-          // Show OTP sending message
-          message.loading("Sending OTP to your phone...", 0);
+          // Show success message
+          message.success("Registration successful! Please log in using the same phone number.");
 
-          // Add slight delay to ensure modal is closed before Firebase verification
-          setTimeout(() => {
-            onCaptchVerify();
-            firebaseLogin();
-          }, 100);
+          // Keep user on step 1 (login screen) - they can manually click Continue to proceed
         } else {
           setRegistrationLoading(false);
           message.error(registrationRes.data.message || "Registration failed. Please try again.");
