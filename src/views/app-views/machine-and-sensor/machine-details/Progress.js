@@ -47,19 +47,21 @@ const ProgressBar = ({ progress }) => {
         <div style={{ width: '30%', height: '100%', backgroundColor: '#FB8920' }}></div>
         <div style={{ width: '20%', height: '100%', backgroundColor: '#FFCB21' }}></div>
         <div style={{ width: '30%', height: '100%', backgroundColor: '#00A843' }}></div>
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '-5px',
-            left: calculateArrowPosition(),
-            marginLeft: '-5px',
-            width: '0',
-            height: '0',
-            borderLeft: '5px solid transparent',
-            borderRight: '5px solid transparent',
-            borderBottom: `5px solid ${color}`,
-          }}
-        ></div>
+        {progress !== 0 && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-5px',
+              left: calculateArrowPosition(),
+              marginLeft: '-5px',
+              width: '0',
+              height: '0',
+              borderLeft: '5px solid transparent',
+              borderRight: '5px solid transparent',
+              borderBottom: `5px solid ${color}`,
+            }}
+          ></div>
+        )}
       </div>
     );
   };

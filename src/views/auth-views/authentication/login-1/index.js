@@ -271,6 +271,7 @@ const LoginOne = (props) => {
           localStorage.setItem("role", res.data.item.user?.role_id);
           localStorage.setItem("name", res.data.item.user?.name);
           localStorage.setItem("user_id", res.data.item.user?.id);
+          localStorage.setItem("profile_pic", res.data.item.user?.profile_pic || "");
 
           await fetchAndStoreUserPermissions();
 
@@ -287,6 +288,7 @@ const LoginOne = (props) => {
         localStorage.setItem("role", res.data.item.user?.role_id);
         localStorage.setItem("name", res.data.item.user?.name);
         localStorage.setItem("user_id", res.data.item.user?.id);
+        localStorage.setItem("profile_pic", res.data.item.user?.profile_pic || "");
 
         message.success("Logged in successfully");
         await fetchAndStoreUserPermissions();

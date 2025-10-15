@@ -369,7 +369,7 @@ function AddOrder() {
               }}
               label="Technician"
               name={"technician_id"}
-              rules={[{ required: true, message: "Please select Technician!" }]}
+              rules={[{ required: false, message: "Please select Technician!" }]}
             >
               <Select>
                 {technician.map((item) => {

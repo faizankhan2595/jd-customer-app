@@ -132,8 +132,8 @@ const StaffManagement = () => {
       dataIndex: 'phone_no',
       key: 'phone_no',
       render:(phone_no, record)=>(
-        <span>{record.phone_code +-+ phone_no}</span>
-      ) 
+        <span>{record.phone_code + "-" + phone_no}</span>
+      )
     },
     {
       title: 'Email ID',
@@ -160,7 +160,7 @@ const StaffManagement = () => {
       key: 'action',
       render: (text, record) => (
         <Space size="middle">
-          <Dropdown overlay={getMenu(record.id)} placement="bottomRight" trigger={['hover']}>
+          <Dropdown overlay={getMenu(record)} placement="bottomRight" trigger={['hover']}>
             <MoreOutlined />
           </Dropdown>
         </Space>
@@ -180,13 +180,13 @@ const StaffManagement = () => {
   const getMenu = (record) => (
     <Menu>
       {hasPermission('user_management', 'View Users') && (
-        <Menu.Item key="view" onClick={() => history.push(`/app/user-management/user-accounts/account-details/${record}`)}>
+        <Menu.Item key="view" onClick={() => history.push(`/app/user-management/user-accounts/account-details/${record.id}`)}>
           <EyeOutlined /> View
         </Menu.Item>
       )}
       {hasPermission('user_management', 'Edit Users') && (
         <Menu.Item key="edit" onClick={() =>{
-          history.push(`user-accounts/edit/${record}`)
+          history.push(`user-accounts/edit/${record.id}`)
         }}>
           <EditOutlined /> Edit
         </Menu.Item>

@@ -451,7 +451,31 @@ export default function AddNewAdminAccount() {
                 }
                 else{
                     message.success("Admin Account Updated Successfully");
-                    history.goBack();
+
+                    // Update localStorage if user is editing their own profile
+                    const currentUserId = localStorage.getItem("user_id");
+                    if (currentUserId && currentUserId === id?.toString()) {
+                        // Update profile picture if it was changed
+                        if (profile_pic) {
+                            localStorage.setItem("profile_pic", profile_pic);
+                        }
+                        // Update name if it was changed
+                        const updatedName = form1.getFieldValue('name');
+                        if (updatedName) {
+                            localStorage.setItem("name", updatedName);
+                        }
+                        // Trigger custom event to notify NavProfile component
+                        window.dispatchEvent(new Event('profileUpdated'));
+
+                        // For free users editing their own profile, reload the data instead of going back
+                        if (isFreeUserEditingOwnProfile) {
+                            getData(); // Reload the profile data to show updated information
+                        } else {
+                            history.goBack();
+                        }
+                    } else {
+                        history.goBack();
+                    }
                 }
             } catch (error) {
                 setLoading(false);

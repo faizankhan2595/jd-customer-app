@@ -1,12 +1,12 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Menu, Dropdown, Avatar } from "antd";
 import { connect } from 'react-redux'
-import { 
-  EditOutlined, 
-  SettingOutlined, 
-  ShopOutlined, 
-  QuestionCircleOutlined, 
-  LogoutOutlined 
+import {
+  EditOutlined,
+  SettingOutlined,
+  ShopOutlined,
+  QuestionCircleOutlined,
+  LogoutOutlined
 } from '@ant-design/icons';
 import Icon from 'components/util-components/Icon';
 import { signOut } from 'redux/actions/Auth';
@@ -17,7 +17,7 @@ const menuItem = [
 		icon: EditOutlined ,
 		path: "/"
     },
-    
+
     {
 		title: "Account Setting",
 		icon: SettingOutlined,
@@ -36,15 +36,46 @@ const menuItem = [
 ]
 
 export const NavProfile = ({signOut}) => {
-  const profileImg = "/img/avatars/thumb-1.jpg";
+  const [profileImg, setProfileImg] = useState(localStorage.getItem("profile_pic") || "/img/avatars/thumb-1.jpg");
+  const [userName, setUserName] = useState(localStorage.getItem("name") || "User");
+  const [userRole, setUserRole] = useState("");
+
+  // Get user role display name
+  useEffect(() => {
+    const roleId = localStorage.getItem("role");
+    const roleMap = {
+      "3": "Customer",
+      "5": "Free User",
+      "7": "Admin",
+      "8": "Manager",
+      "9": "User"
+    };
+    setUserRole(roleMap[roleId] || "User");
+  }, []);
+
+  // Listen for localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setProfileImg(localStorage.getItem("profile_pic") || "/img/avatars/thumb-1.jpg");
+      setUserName(localStorage.getItem("name") || "User");
+    };
+
+    // Listen to custom event for profile updates
+    window.addEventListener('profileUpdated', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('profileUpdated', handleStorageChange);
+    };
+  }, []);
+
   const profileMenu = (
     <div className="nav-profile nav-dropdown">
       <div className="nav-profile-header">
         <div className="d-flex">
           <Avatar size={45} src={profileImg} />
           <div className="pl-3">
-            <h4 className="mb-0">Charlie Howard</h4>
-            <span className="text-muted">Frontend Developer</span>
+            <h4 className="mb-0">{userName}</h4>
+            <span className="text-muted">{userRole}</span>
           </div>
         </div>
       </div>

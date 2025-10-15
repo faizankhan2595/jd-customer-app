@@ -65,7 +65,7 @@ const AddNewMachine = () => {
     };
 
     try {
-      const response = await axiosInstance.put(`api/admin/machine/${id}`, postData);
+      const response = await axiosInstance.put(`api/web/machines/${id}`, postData);
     //   console.log('Machine added successfully:', response.data);
       if (response.status) {
           message.success(response.data.message);
@@ -111,7 +111,7 @@ const AddNewMachine = () => {
     },
   };
   const fetchData = async () => {
-    const response = await axiosInstance.get(`api/admin/machine/${id}/show`);
+    const response = await axiosInstance.get(`api/web/machines/${id}`);
     const data = response.data.item.results
     setMachineStatus(data.machine_status==1?true:false)
     form.setFieldsValue({

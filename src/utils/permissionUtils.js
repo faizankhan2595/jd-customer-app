@@ -26,7 +26,9 @@ export const defaultPermissions = {
     ],
     machines_and_sensors: [
       { label: 'View Machines and Sensors', check: false },
-      { label: 'Create New Machines and Sensors', check: false }
+      { label: 'Create New Machines and Sensors', check: false },
+      { label: 'Edit Machines and Sensors', check: false },
+      { label: 'Delete Machines and Sensors', check: false }
     ],
     operational_areas: [
       { label: 'View Operational Areas', check: false },
