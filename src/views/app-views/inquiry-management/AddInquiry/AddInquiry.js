@@ -73,7 +73,7 @@ function AddInquiry() {
 
   const getMachineData = async () => {
     try {
-      const response = await axiosInstance.get("api/web/machines");
+      const response = await axiosInstance.get(`api/web/machines?customer_id=${localStorage.getItem("parent_id")!="null"? localStorage.getItem("parent_id"):localStorage.getItem("user_id")}`);
       if (response.status === 200) {
         setMachineData(response.data.items);
       }
