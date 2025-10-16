@@ -11,6 +11,21 @@ import { get } from 'lodash';
 
 const { Option } = Select;
 
+// Default status ranges based on ISO 10816 standards for vibration velocity (mm/s)
+const DEFAULT_STATUS_RANGES_ISO = [
+  {"min": 0, "max": 2.8, "type": "Critical"},
+  {"min": 2.8, "max": 4.5, "type": "Warning"},
+  {"min": 4.5, "max": 7.1, "type": "Satisfactory"},
+  {"min": 7.1, "max": 10, "type": "Good"},
+];
+
+const DEFAULT_STATUS_RANGES_USER_DEFINED = [
+  {"min": 0, "max": 2.8, "type": "Critical"},
+  {"min": 2.8, "max": 4.5, "type": "Warning"},
+  {"min": 4.5, "max": 7.1, "type": "Satisfactory"},
+  {"min": 7.1, "max": 10, "type": "Good"},
+];
+
 const AddNewMachine = () => {
   const history = useHistory();
   const [form] = Form.useForm();
@@ -21,19 +36,9 @@ const AddNewMachine = () => {
   const [jobSiteData, setJobSiteData] = useState([]);
   const { id } = useParams();
   const [machineType, setMachineType] = useState([]);
-  const [statusRangesIso, setStatusRangesIso] = useState([
-    {"min": null, "max": null, "type": "Critical"},
-    {"min": null, "max": null, "type": "Warning"},
-    {"min": null, "max": null, "type": "Satisfactory"},
-    {"min": null, "max": null, "type": "Good"},
-  ]);
+  const [statusRangesIso, setStatusRangesIso] = useState(DEFAULT_STATUS_RANGES_ISO);
 
-  const [statusRangesUserDefined, setStatusRangesUserDefined] = useState([
-    {"min": null, "max": null, "type": "Critical"},
-    {"min": null, "max": null, "type": "Warning"},
-    {"min": null, "max": null, "type": "Satisfactory"},
-    {"min": null, "max": null, "type": "Good"},
-  ]);
+  const [statusRangesUserDefined, setStatusRangesUserDefined] = useState(DEFAULT_STATUS_RANGES_USER_DEFINED);
   const handleFileSelect = (event) => {
     const fileList = event.target.files;
     const newSelectedFiles = [];
@@ -187,18 +192,18 @@ const AddNewMachine = () => {
             name: `Picture ${index+1}`
         }
       }))
-      setStatusRangesIso(data.status_ranges_iso || [
-        {"min": null, "max": null, "type": "Critical"},
-        {"min": null, "max": null, "type": "Warning"},
-        {"min": null, "max": null, "type": "Satisfactory"},
-        {"min": null, "max": null, "type": "Good"},
-      ]);
-      setStatusRangesUserDefined(data.status_ranges_user_defined || [
-        {"min": null, "max": null, "type": "Critical"},
-        {"min": null, "max": null, "type": "Warning"},
-        {"min": null, "max": null, "type": "Satisfactory"},
-        {"min": null, "max": null, "type": "Good"},
-      ]);
+
+      // Use default values if status ranges are empty or not provided
+      setStatusRangesIso(
+        data.status_ranges_iso && data.status_ranges_iso.length > 0
+          ? data.status_ranges_iso
+          : DEFAULT_STATUS_RANGES_ISO
+      );
+      setStatusRangesUserDefined(
+        data.status_ranges_user_defined && data.status_ranges_user_defined.length > 0
+          ? data.status_ranges_user_defined
+          : DEFAULT_STATUS_RANGES_USER_DEFINED
+      );
       // setMachineStatus(data.machine_status == 1 ? true : false)
     } catch (error) {
       console.error('Error fetching machine data:', error);

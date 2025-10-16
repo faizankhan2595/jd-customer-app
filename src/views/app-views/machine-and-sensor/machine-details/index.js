@@ -71,6 +71,21 @@ const options = [
   { label: "Option 3", value: "option3" },
 ];
 
+// Default status ranges based on ISO 10816 standards for vibration velocity (mm/s)
+const DEFAULT_STATUS_RANGES_ISO = [
+  {"min": 0, "max": 2.8, "type": "Critical"},
+  {"min": 2.8, "max": 4.5, "type": "Warning"},
+  {"min": 4.5, "max": 7.1, "type": "Satisfactory"},
+  {"min": 7.1, "max": 10, "type": "Good"},
+];
+
+const DEFAULT_STATUS_RANGES_USER_DEFINED = [
+  {"min": 0, "max": 2.8, "type": "Critical"},
+  {"min": 2.8, "max": 4.5, "type": "Warning"},
+  {"min": 4.5, "max": 7.1, "type": "Satisfactory"},
+  {"min": 7.1, "max": 10, "type": "Good"},
+];
+
 const { Step } = Steps;
 const customDot = (dot, { status, index }) => (
   <Popover
@@ -272,6 +287,15 @@ const MachineDetails = () => {
     // fetchSensorData(res2.data.items[0]?.sensor_id, moment().subtract(1, 'days').format("YYYY-MM-DD hh:mm:ss"), moment().format("YYYY-MM-DD hh:mm:ss"));
     const data = response.data.item;
     console.log(data);
+
+    // Apply default status ranges if not present or empty
+    if (!data.status_ranges_iso || data.status_ranges_iso.length === 0) {
+      data.status_ranges_iso = DEFAULT_STATUS_RANGES_ISO;
+    }
+    if (!data.status_ranges_user_defined || data.status_ranges_user_defined.length === 0) {
+      data.status_ranges_user_defined = DEFAULT_STATUS_RANGES_USER_DEFINED;
+    }
+
     setData(data);
     setMachineId(data.id);
     setMachineName(data.name);
