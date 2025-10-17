@@ -194,13 +194,26 @@ const AddNewMachine = () => {
       }))
 
       // Use default values if status ranges are empty or not provided
+      // Helper function to validate if ranges have valid numeric values
+      const hasValidRanges = (ranges) => {
+        return ranges &&
+               Array.isArray(ranges) &&
+               ranges.length > 0 &&
+               ranges.some(range =>
+                 range &&
+                 typeof range.min !== 'undefined' &&
+                 range.min !== null &&
+                 !isNaN(range.min)
+               );
+      };
+
       setStatusRangesIso(
-        data.status_ranges_iso && data.status_ranges_iso.length > 0
+        hasValidRanges(data.status_ranges_iso)
           ? data.status_ranges_iso
           : DEFAULT_STATUS_RANGES_ISO
       );
       setStatusRangesUserDefined(
-        data.status_ranges_user_defined && data.status_ranges_user_defined.length > 0
+        hasValidRanges(data.status_ranges_user_defined)
           ? data.status_ranges_user_defined
           : DEFAULT_STATUS_RANGES_USER_DEFINED
       );
@@ -564,7 +577,8 @@ const AddNewMachine = () => {
                               value={range.min}
                               onChange={(e) => {
                                 const newRanges = [...statusRangesIso];
-                                newRanges[index].min = parseInt(e.target.value);
+                                const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                                newRanges[index].min = isNaN(value) ? 0 : value;
                                 setStatusRangesIso(newRanges);
                               }}
                             />
@@ -577,7 +591,8 @@ const AddNewMachine = () => {
                               value={range.max}
                               onChange={(e) => {
                                 const newRanges = [...statusRangesIso];
-                                newRanges[index].max = parseInt(e.target.value);
+                                const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                                newRanges[index].max = isNaN(value) ? 0 : value;
                                 setStatusRangesIso(newRanges);
                               }}
                             />
@@ -609,7 +624,8 @@ const AddNewMachine = () => {
                               value={range.min}
                               onChange={(e) => {
                                 const newRanges = [...statusRangesUserDefined];
-                                newRanges[index].min = parseInt(e.target.value);
+                                const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                                newRanges[index].min = isNaN(value) ? 0 : value;
                                 setStatusRangesUserDefined(newRanges);
                               }}
                             />
@@ -622,7 +638,8 @@ const AddNewMachine = () => {
                               value={range.max}
                               onChange={(e) => {
                                 const newRanges = [...statusRangesUserDefined];
-                                newRanges[index].max = parseInt(e.target.value);
+                                const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                                newRanges[index].max = isNaN(value) ? 0 : value;
                                 setStatusRangesUserDefined(newRanges);
                               }}
                             />
