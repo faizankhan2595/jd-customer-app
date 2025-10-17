@@ -437,7 +437,7 @@ export default function AddNewAdminAccount() {
                 const resp = await axiosInstance.post(`/api/admin/customer-users/${id}/update`, {
                     ...form1.getFieldsValue(),
                     ...form2.getFieldsValue(),
-                    dob: form1.getFieldValue('dob').format('YYYY-MM-DD'),
+                    dob: form1.getFieldValue('dob') ? form1.getFieldValue('dob').format('YYYY-MM-DD') : null,
                     parent_id:localStorage.getItem("parent_id"),
                     phone_code: countryCode,
                     profile_pic,

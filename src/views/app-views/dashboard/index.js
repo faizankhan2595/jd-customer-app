@@ -162,7 +162,7 @@ const Dashboard = () => {
 						color: "#F05179",
 						image: Image2,
 						backgroundImage: bg1,
-						value: result.totalOrders,
+						value: result.totalJobSites,
 						heading: "Total Jobsites"
 					},
 					{

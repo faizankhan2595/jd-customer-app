@@ -70,8 +70,7 @@ else{
     breadcrumb: false,
     submenu: []
   },
-  ...(localStorage.getItem("parent_id") === "null" ? [] : 
-      hasSectionAccess('user_management') ? [
+  ...(localStorage.getItem("role") !== "5" && hasSectionAccess('user_management') ? [
     {
       key: "user-management",
       path: `${APP_PREFIX_PATH}/user-management`,
@@ -114,7 +113,7 @@ else{
     breadcrumb: false,
     submenu: []
   }] : []),
-  ...(hasSectionAccess('technician_management') ? [{
+  ...(localStorage.getItem("role") !== "5" && hasSectionAccess('technician_management') ? [{
     key: 'technician-management',
     path: `${APP_PREFIX_PATH}/technician-management`,
     title: 'Technician Management',
