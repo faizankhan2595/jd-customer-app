@@ -65,21 +65,19 @@ const ProgressBar = ({ progress, statusRanges, maxValue = 10 }) => {
           }}
         ></div>
       ))}
-      {progress !== 0 && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '-5px',
-            left: calculateArrowPosition(),
-            marginLeft: '-5px',
-            width: '0',
-            height: '0',
-            borderLeft: '5px solid transparent',
-            borderRight: '5px solid transparent',
-            borderBottom: `5px solid ${color}`,
-          }}
-        ></div>
-      )}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '-5px',
+          left: calculateArrowPosition(),
+          marginLeft: '-5px',
+          width: '0',
+          height: '0',
+          borderLeft: '5px solid transparent',
+          borderRight: '5px solid transparent',
+          borderBottom: `5px solid ${color}`,
+        }}
+      ></div>
     </div>
   );
 };

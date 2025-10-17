@@ -234,6 +234,19 @@ export default function AddNewAdminAccount() {
         }
     };
 
+    // Helper function to get valid parent_id (null for free users, number for sub-users)
+    const getValidParentId = () => {
+        const parentId = localStorage.getItem("parent_id");
+
+        // If parent_id is "null" string or doesn't exist (free user), return null
+        if (parentId === "null" || !parentId) {
+            return null;
+        }
+
+        // Otherwise, convert parent_id to number
+        return parseInt(parentId, 10);
+    };
+
     // Fetch parent customer permissions for inheritance validation
     const fetchParentPermissions = async () => {
         try {
@@ -438,7 +451,7 @@ export default function AddNewAdminAccount() {
                     ...form1.getFieldsValue(),
                     ...form2.getFieldsValue(),
                     dob: form1.getFieldValue('dob') ? form1.getFieldValue('dob').format('YYYY-MM-DD') : null,
-                    parent_id:localStorage.getItem("parent_id"),
+                    parent_id: getValidParentId(),
                     phone_code: countryCode,
                     profile_pic,
                     documents: file,
@@ -499,7 +512,7 @@ export default function AddNewAdminAccount() {
                     ...form1.getFieldsValue(),
                     ...form2.getFieldsValue(),
                     phone_code: countryCode,
-                    parent_id:localStorage.getItem("parent_id"),
+                    parent_id: getValidParentId(),
                     profile_pic,
                     dob: form1.getFieldValue('dob') ? form1.getFieldValue('dob').format('YYYY-MM-DD') : null,
                     documents: file,

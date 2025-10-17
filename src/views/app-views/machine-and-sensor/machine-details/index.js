@@ -2026,80 +2026,88 @@ const MachineDetails = () => {
             </div>
             <Divider style={{ height: "150px" }} type="vertical" />
             <div className="ml-4" style={{ width: "30%" }}>
-              <div className="mt-2">
-                <h5 className="mb-1">Machine Status (ISO)</h5>
-                <ProgressBar progress={data.health_iso} statusRanges={data.status_ranges_iso}/>
-              </div>
-              <div className="mt-2">
-                <h5 className="mb-1">Machine Status (User Defined)</h5>
-                <ProgressBar progress={data.health} statusRanges={data.status_ranges_user_defined} />
-              </div>
-              {/* <div className="mt-2">
-                <h5 className="mb-1">Machine Status (AI)</h5>
-                <ProgressBar progress={10} />
-              </div> */}
-              <div className="mt-4 d-flex flex-wrap pr-5" style={{ gap: "16px" }}>
-                <div className="d-flex align-items-center">
-                  <span
-                    className="d-flex align-items-center justify-content-center mr-2"
-                    style={{
-                      backgroundColor: "#00A843",
-                      color: "white",
-                      borderRadius: "50%",
-                      width: "20px",
-                      height: "20px",
-                    }}
-                  >
-
-                  </span>{" "}
-                  Good
+              {(data.health_iso === 0 && data.health === 0) ? (
+                <div className="d-flex align-items-center justify-content-center" style={{ height: "100%" }}>
+                  <h5 className="text-muted">No data available</h5>
                 </div>
-                <div className="d-flex align-items-center">
-                  <span
-                    className="d-flex align-items-center justify-content-center mr-2"
-                    style={{
-                      backgroundColor: "#FFCB21",
-                      color: "white",
-                      borderRadius: "50%",
-                      width: "20px",
-                      height: "20px",
-                    }}
-                  >
+              ) : (
+                <>
+                  <div className="mt-2">
+                    <h5 className="mb-1">Machine Status (ISO)</h5>
+                    <ProgressBar progress={data.health_iso} statusRanges={data.status_ranges_iso}/>
+                  </div>
+                  <div className="mt-2">
+                    <h5 className="mb-1">Machine Status (User Defined)</h5>
+                    <ProgressBar progress={data.health} statusRanges={data.status_ranges_user_defined} />
+                  </div>
+                  {/* <div className="mt-2">
+                    <h5 className="mb-1">Machine Status (AI)</h5>
+                    <ProgressBar progress={10} />
+                  </div> */}
+                  <div className="mt-4 d-flex flex-wrap pr-5" style={{ gap: "16px" }}>
+                    <div className="d-flex align-items-center">
+                      <span
+                        className="d-flex align-items-center justify-content-center mr-2"
+                        style={{
+                          backgroundColor: "#00A843",
+                          color: "white",
+                          borderRadius: "50%",
+                          width: "20px",
+                          height: "20px",
+                        }}
+                      >
 
-                  </span>{" "}
-                  Satisfactory
-                </div>
-                <div className="d-flex align-items-center">
-                  <span
-                    className="d-flex align-items-center justify-content-center mr-2"
-                    style={{
-                      backgroundColor: "#FB8920",
-                      color: "white",
-                      borderRadius: "50%",
-                      width: "20px",
-                      height: "20px",
-                    }}
-                  >
+                      </span>{" "}
+                      Good
+                    </div>
+                    <div className="d-flex align-items-center">
+                      <span
+                        className="d-flex align-items-center justify-content-center mr-2"
+                        style={{
+                          backgroundColor: "#FFCB21",
+                          color: "white",
+                          borderRadius: "50%",
+                          width: "20px",
+                          height: "20px",
+                        }}
+                      >
 
-                  </span>{" "}
-                  Warning
-                </div>
-                <div className="d-flex align-items-center">
-                  <span
-                    className="d-flex align-items-center justify-content-center mr-2"
-                    style={{
-                      backgroundColor: "#F93737",
-                      color: "white",
-                      borderRadius: "50%",
-                      width: "20px",
-                      height: "20px",
-                    }}
-                  >
+                      </span>{" "}
+                      Satisfactory
+                    </div>
+                    <div className="d-flex align-items-center">
+                      <span
+                        className="d-flex align-items-center justify-content-center mr-2"
+                        style={{
+                          backgroundColor: "#FB8920",
+                          color: "white",
+                          borderRadius: "50%",
+                          width: "20px",
+                          height: "20px",
+                        }}
+                      >
 
-                  </span>{" "}
-                  Critical
-                </div>
-              </div>
+                      </span>{" "}
+                      Warning
+                    </div>
+                    <div className="d-flex align-items-center">
+                      <span
+                        className="d-flex align-items-center justify-content-center mr-2"
+                        style={{
+                          backgroundColor: "#F93737",
+                          color: "white",
+                          borderRadius: "50%",
+                          width: "20px",
+                          height: "20px",
+                        }}
+                      >
+
+                      </span>{" "}
+                      Critical
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
             <div style={{ width: "40%" }}>
               <div style={{ height: "50%" }} className="p-2">

@@ -185,7 +185,12 @@ const MachineAndSensor = () => {
       title: "Overall Status",
       dataIndex: "health",
       key: "health",
-      render: (text) => {
+      render: (text, record) => {
+        // Check if both health and health_iso are exactly 0
+        if (record.health === 0 && record.health_iso === 0) {
+          return <Tag color="default">Data not available</Tag>
+        }
+
         if (text <= 10 && text >= 8) {
           return <Tag color="green">Good</Tag>
         } else if (text <= 7 && text >= 6) {
