@@ -82,6 +82,8 @@ export default function AddNewAdminAccount() {
     const [machinesAndSensorsCheck, setMachinesAndSensorsCheck] = useState([
         { label: 'View Machines and Sensors', check: false },
         { label: 'Create New Machines and Sensors', check: false },
+        { label: 'Edit Machines and Sensors', check: false },
+        { label: 'Delete Machines and Sensors', check: false }
     ]);
 
     const [operationalAreasCheck, setOperationalAreasCheck] = useState([

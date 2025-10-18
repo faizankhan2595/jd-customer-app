@@ -333,6 +333,12 @@ export default function AddNewAdminAccount() {
 
   // Parent permissions for inheritance validation
   const [parentPermissions, setParentPermissions] = useState({})
+
+  // Track user's role to conditionally display permissions
+  const [userRole, setUserRole] = useState(null)
+
+  // Track if user is editing their own profile (to prevent privilege escalation)
+  const [isEditingOwnProfile, setIsEditingOwnProfile] = useState(false)
   const [webAppPermissions, setWebAppPermissions] = useState([
     "Create New Orders",
     "Edit Orders",
@@ -424,10 +430,11 @@ export default function AddNewAdminAccount() {
     }
     
     return (
-      <Checkbox 
+      <Checkbox
         key={index}
-        style={{ margin: '0' }} 
-        checked={element.check} 
+        style={{ margin: '0' }}
+        checked={element.check}
+        disabled={isEditingOwnProfile}
         onChange={(val) => setStateFunction((previos) => {
           return previos.map((elm, i) => {
             if (i === index) {
@@ -613,7 +620,7 @@ export default function AddNewAdminAccount() {
     let profile_pic = imageUrl
 
     // console.log(fileList);
-  if(profile_pic.includes('base64')){
+  if(profile_pic?.includes('base64')){
      profile_pic = await UploadImage(fileList);
  }
 
@@ -806,6 +813,15 @@ export default function AddNewAdminAccount() {
         }
       }))
       setCountryCode(data.phone_code)
+
+      // Store user's role for conditional permission display
+      setUserRole(data.role_id)
+
+      // Check if user is editing their own profile (to prevent privilege escalation)
+      const currentUserId = localStorage.getItem("user_id");
+      const editingOwnProfile = currentUserId && currentUserId === id?.toString();
+      setIsEditingOwnProfile(editingOwnProfile);
+
       const can_access = data.can_access 
       if (Object.keys(can_access).length !== 0) {
         if (can_access?.web_app?.order_management) {
@@ -1326,6 +1342,24 @@ export default function AddNewAdminAccount() {
           key="4"
         >
           <div className="border bg-white rounded p-3">
+            {/* Warning message when user is editing their own profile */}
+            {isEditingOwnProfile && (
+              <div style={{
+                backgroundColor: '#fffbe6',
+                border: '1px solid #ffe58f',
+                padding: '12px 16px',
+                borderRadius: '4px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span style={{ fontSize: '16px' }}>ℹ️</span>
+                <Text>
+                  You are viewing your own permissions. To prevent privilege escalation, you cannot modify your own permissions. Please contact an administrator to update your permissions.
+                </Text>
+              </div>
+            )}
             {/* Tabs for Web App and Mobile App */}
             <Tabs defaultActiveKey="1">
               {/* Web App Tab */}
@@ -1337,15 +1371,54 @@ export default function AddNewAdminAccount() {
                 }
                 key="1"
               >
-                {/* Global Web App Select All Controls */}
-                <Row justify="end" style={{ marginBottom: '16px' }}>
-                  <Col>
-                    <Button.Group size="small">
-                      <Button onClick={() => handleWebAppGlobalSelectAll(true)}>Select All</Button>
-                      <Button onClick={() => handleWebAppGlobalSelectAll(false)}>Deselect All</Button>
-                    </Button.Group>
-                  </Col>
-                </Row>
+                {/* Show admin message if role is Admin (7) */}
+                {userRole === 7 ? (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    minHeight: '400px',
+                    padding: '40px'
+                  }}>
+                    <Card style={{
+                      maxWidth: '600px',
+                      textAlign: 'center',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                    }}>
+                      <div style={{ padding: '20px' }}>
+                        <svg
+                          width="80"
+                          height="80"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          style={{ marginBottom: '20px' }}
+                        >
+                          <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                            fill="#52c41a"
+                          />
+                        </svg>
+                        <Title level={3} style={{ marginBottom: '16px' }}>Admin Role</Title>
+                        <Text style={{ fontSize: '16px', color: '#595959' }}>
+                          Admins have full access to all features and permissions across the Web App.
+                          <br /><br />
+                          No permission restrictions apply to this role.
+                        </Text>
+                      </div>
+                    </Card>
+                  </div>
+                ) : (
+                  <>
+                    {/* Global Web App Select All Controls */}
+                    <Row justify="end" style={{ marginBottom: '16px' }}>
+                      <Col>
+                        <Button.Group size="small">
+                          <Button disabled={isEditingOwnProfile} onClick={() => handleWebAppGlobalSelectAll(true)}>Select All</Button>
+                          <Button disabled={isEditingOwnProfile} onClick={() => handleWebAppGlobalSelectAll(false)}>Deselect All</Button>
+                        </Button.Group>
+                      </Col>
+                    </Row>
                 <Row gutter={[16, 24]}>
                   {/* Order Management */}
                   <Col span={6}>
@@ -1363,8 +1436,8 @@ export default function AddNewAdminAccount() {
                       <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
                         <Col>
                           <Button.Group size="small">
-                            <Button onClick={() => handleOrderManagementSelectAll(true)}>All</Button>
-                            <Button onClick={() => handleOrderManagementSelectAll(false)}>None</Button>
+                            <Button disabled={isEditingOwnProfile} onClick={() => handleOrderManagementSelectAll(true)}>All</Button>
+                            <Button disabled={isEditingOwnProfile} onClick={() => handleOrderManagementSelectAll(false)}>None</Button>
                           </Button.Group>
                         </Col>
                       </Row>
@@ -1420,8 +1493,8 @@ export default function AddNewAdminAccount() {
                       <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
                         <Col>
                           <Button.Group size="small">
-                            <Button onClick={() => handleInquiryManagementSelectAll(true)}>All</Button>
-                            <Button onClick={() => handleInquiryManagementSelectAll(false)}>None</Button>
+                            <Button disabled={isEditingOwnProfile} onClick={() => handleInquiryManagementSelectAll(true)}>All</Button>
+                            <Button disabled={isEditingOwnProfile} onClick={() => handleInquiryManagementSelectAll(false)}>None</Button>
                           </Button.Group>
                         </Col>
                       </Row>
@@ -1450,8 +1523,8 @@ export default function AddNewAdminAccount() {
                       <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
                         <Col>
                           <Button.Group size="small">
-                            <Button onClick={() => handleJobSitesSelectAll(true)}>All</Button>
-                            <Button onClick={() => handleJobSitesSelectAll(false)}>None</Button>
+                            <Button disabled={isEditingOwnProfile} onClick={() => handleJobSitesSelectAll(true)}>All</Button>
+                            <Button disabled={isEditingOwnProfile} onClick={() => handleJobSitesSelectAll(false)}>None</Button>
                           </Button.Group>
                         </Col>
                       </Row>
@@ -1480,8 +1553,8 @@ export default function AddNewAdminAccount() {
                       <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
                         <Col>
                           <Button.Group size="small">
-                            <Button onClick={() => handleMachinesAndSensorsSelectAll(true)}>All</Button>
-                            <Button onClick={() => handleMachinesAndSensorsSelectAll(false)}>None</Button>
+                            <Button disabled={isEditingOwnProfile} onClick={() => handleMachinesAndSensorsSelectAll(true)}>All</Button>
+                            <Button disabled={isEditingOwnProfile} onClick={() => handleMachinesAndSensorsSelectAll(false)}>None</Button>
                           </Button.Group>
                         </Col>
                       </Row>
@@ -1510,8 +1583,8 @@ export default function AddNewAdminAccount() {
                           <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
                               <Col>
                                   <Button.Group size="small">
-                                      <Button onClick={() => handleOperationalAreasSelectAll(true)}>All</Button>
-                                      <Button onClick={() => handleOperationalAreasSelectAll(false)}>None</Button>
+                                      <Button disabled={isEditingOwnProfile} onClick={() => handleOperationalAreasSelectAll(true)}>All</Button>
+                                      <Button disabled={isEditingOwnProfile} onClick={() => handleOperationalAreasSelectAll(false)}>None</Button>
                                   </Button.Group>
                               </Col>
                           </Row>
@@ -1540,8 +1613,8 @@ export default function AddNewAdminAccount() {
                           <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
                               <Col>
                                   <Button.Group size="small">
-                                      <Button onClick={() => handleUserManagementSelectAll(true)}>All</Button>
-                                      <Button onClick={() => handleUserManagementSelectAll(false)}>None</Button>
+                                      <Button disabled={isEditingOwnProfile} onClick={() => handleUserManagementSelectAll(true)}>All</Button>
+                                      <Button disabled={isEditingOwnProfile} onClick={() => handleUserManagementSelectAll(false)}>None</Button>
                                   </Button.Group>
                               </Col>
                           </Row>
@@ -1570,8 +1643,8 @@ export default function AddNewAdminAccount() {
                           <Row justify="space-between" align="middle" style={{ marginBottom: '8px' }}>
                               <Col>
                                   <Button.Group size="small">
-                                      <Button onClick={() => handleTechnicianManagementSelectAll(true)}>All</Button>
-                                      <Button onClick={() => handleTechnicianManagementSelectAll(false)}>None</Button>
+                                      <Button disabled={isEditingOwnProfile} onClick={() => handleTechnicianManagementSelectAll(true)}>All</Button>
+                                      <Button disabled={isEditingOwnProfile} onClick={() => handleTechnicianManagementSelectAll(false)}>None</Button>
                                   </Button.Group>
                               </Col>
                           </Row>
@@ -1584,6 +1657,8 @@ export default function AddNewAdminAccount() {
                       </div>
                   </Col>
               </Row>
+              </>
+                )}
               </TabPane>
 
               {/* Mobile App Tab */}
@@ -1595,15 +1670,54 @@ export default function AddNewAdminAccount() {
                 }
                 key="2"
               >
-                {/* Global Mobile App Select All Controls */}
-                <Row justify="end" style={{ marginBottom: '16px' }}>
-                  <Col>
-                    <Button.Group size="small">
-                      <Button onClick={() => handleMobileAppSelectAll(true)}>Select All</Button>
-                      <Button onClick={() => handleMobileAppSelectAll(false)}>Deselect All</Button>
-                    </Button.Group>
-                  </Col>
-                </Row>
+                {/* Show admin message if role is Admin (7) */}
+                {userRole === 7 ? (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    minHeight: '400px',
+                    padding: '40px'
+                  }}>
+                    <Card style={{
+                      maxWidth: '600px',
+                      textAlign: 'center',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                    }}>
+                      <div style={{ padding: '20px' }}>
+                        <svg
+                          width="80"
+                          height="80"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          style={{ marginBottom: '20px' }}
+                        >
+                          <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                            fill="#52c41a"
+                          />
+                        </svg>
+                        <Title level={3} style={{ marginBottom: '16px' }}>Admin Role</Title>
+                        <Text style={{ fontSize: '16px', color: '#595959' }}>
+                          Admins have full access to all features and permissions across the Mobile App.
+                          <br /><br />
+                          No permission restrictions apply to this role.
+                        </Text>
+                      </div>
+                    </Card>
+                  </div>
+                ) : (
+                  <>
+                    {/* Global Mobile App Select All Controls */}
+                    <Row justify="end" style={{ marginBottom: '16px' }}>
+                      <Col>
+                        <Button.Group size="small">
+                          <Button disabled={isEditingOwnProfile} onClick={() => handleMobileAppSelectAll(true)}>Select All</Button>
+                          <Button disabled={isEditingOwnProfile} onClick={() => handleMobileAppSelectAll(false)}>Deselect All</Button>
+                        </Button.Group>
+                      </Col>
+                    </Row>
                 <Row gutter={[24, 24]} style={{ padding: '20px' }}>
                   {dataMobileAppPer.map((item) => (
                     <Col xs={24} sm={12} key={item.key}>
@@ -1621,6 +1735,7 @@ export default function AddNewAdminAccount() {
                         <div>
                           <Switch
                              checked={item.check}
+                             disabled={isEditingOwnProfile}
                              onChange={(checked) => {
                                console.log(checked);
                                setDataMobileAppPer((prev)=>{
@@ -1635,7 +1750,7 @@ export default function AddNewAdminAccount() {
                                    }
                                  })
                                })
-     
+
                              }}
                           />
                         </div>
@@ -1644,6 +1759,8 @@ export default function AddNewAdminAccount() {
                     </Col>
                   ))}
                 </Row>
+                </>
+                )}
               </TabPane>
             </Tabs>
           </div>
@@ -1705,7 +1822,7 @@ export default function AddNewAdminAccount() {
           </Button> */}
          
           {
-            activeTab=="4" &&
+            activeTab=="4" && !isEditingOwnProfile &&
             <Button
             className="px-4 bg-primary font-weight-semibold text-white bg-info"
             htmlType="submit"
