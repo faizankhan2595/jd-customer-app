@@ -847,7 +847,7 @@ export default function AddNewAdminAccount() {
                                 </div>
                             </div>
                             <div style={{ gap: "60px" }} className="d-flex ">
-                                <div style={{ width: "45%" }}>
+                                <div style={{ width: "45%", display: isEditingOwnProfile ? 'none' : 'block' }}>
                                     <Form.Item
                                         name="nric_fin_number"
                                         label="NRIC/FIN"
@@ -858,7 +858,7 @@ export default function AddNewAdminAccount() {
                                         <Input style={{ width: "100%" }} placeholder="NRIC/FIN" />
                                     </Form.Item>
                                 </div>
-                                <div style={{ width: "45%" }}>
+                                <div style={{ width: isEditingOwnProfile ? "90%" : "45%" }}>
                                     <Form.Item
                                         name="dob"
                                         label="Date of Birth"
@@ -872,7 +872,7 @@ export default function AddNewAdminAccount() {
                                 </div>
                             </div>
                             <div style={{ gap: "60px" }} className="d-flex ">
-                                <div style={{ width: "45%" }}>
+                                <div style={{ width: isEditingOwnProfile ? "90%" : "45%" }}>
                                     <Form.Item
                                         name="gender"
                                         label="Gender"
@@ -886,16 +886,15 @@ export default function AddNewAdminAccount() {
                                         </Radio.Group>
                                     </Form.Item>
                                 </div>
-                                <div style={{ width: "45%" }}>
+                                <div style={{ width: "45%", display: isEditingOwnProfile ? 'none' : 'block' }}>
                                     <Form.Item
                                         name="role_id"
                                         label="Role"
                                         rules={[
-                                            { required: true, message: "Please select role." },
+                                            { required: !isEditingOwnProfile, message: "Please select role." },
                                         ]}
                                     >
                                         <Radio.Group
-                                            disabled={isEditingOwnProfile}
                                             onChange={(e) => {
                                                 const currentUserRole = parseInt(localStorage.getItem("role"));
                                                 setCanEditAccessTab(canEditPermissions(currentUserRole, e.target.value));
