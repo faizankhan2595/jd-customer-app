@@ -62,7 +62,7 @@ export const canEditPermissions = (editorRoleId, targetRoleId) => {
     const editableRoles = {
         1: [2, 7],     // Super Admin can edit: Admin, Customer Admin
         2: [7],        // Admin can edit: Customer Admin
-        7: [8, 9],     // Customer Admin can edit: Customer Manager, Customer User
+        7: [7, 8, 9],  // Customer Admin can edit: Customer Admin, Customer Manager, Customer User
         8: [9],        // Customer Manager can edit: Customer User
         9: [],         // Customer User cannot edit anyone
         5: []          // Free User cannot edit anyone
