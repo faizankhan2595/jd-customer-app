@@ -45,6 +45,7 @@ const SideNavContent = (props) => {
   const isMobile = !utils.getBreakPoint(useBreakpoint()).includes("lg");
   const { isLoading: permissionsLoading } = usePermissions();
   const [imageUrl, setImageUrl] = useState(null);
+  const [userName, setUserName] = useState(localStorage.getItem("name"));
 
   const closeMobileNav = () => {
     if (isMobile) {
@@ -57,6 +58,7 @@ const SideNavContent = (props) => {
       const data = await axiosInstance.get("/api/admin/getUserByToken");
       console.log(data.data.item);
       setImageUrl(data.data.item.profile_pic);
+      setUserName(data.data.item.name);
 
       const getLocalStorageItem = (key) => {
         const value = localStorage.getItem(key);
@@ -86,6 +88,24 @@ const SideNavContent = (props) => {
 
   useEffect(() => {
     getData();
+  }, []);
+
+  // Listen for profile updates
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      // Update image and name from localStorage
+      const updatedProfilePic = localStorage.getItem("profile_pic");
+      const updatedName = localStorage.getItem("name");
+      setImageUrl(updatedProfilePic);
+      setUserName(updatedName);
+    };
+
+    // Listen to custom event for profile updates
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
   }, []);
 
   const history = useHistory();
@@ -138,13 +158,11 @@ const SideNavContent = (props) => {
 
           <img
             className="sideNavUserImage"
-            src={imageUrl || `https://api.dicebear.com/9.x/initials/svg?seed=${localStorage.getItem("name")}`}
+            src={imageUrl || `https://api.dicebear.com/9.x/initials/svg?seed=${userName}`}
             alt="..."
           />
         </Dropdown>
-        <h4 className="text-center mt-3 mb-1 text-white">{
-          localStorage.getItem("name")
-        }</h4>
+        <h4 className="text-center mt-3 mb-1 text-white">{userName}</h4>
         <p
           style={{ fontSize: "12px", color: "#65b0f8" }}
           className="text-center mt-0"
