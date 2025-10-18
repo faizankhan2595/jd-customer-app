@@ -236,7 +236,7 @@ export default function AddNewAdminAccount() {
         }
     };
 
-    // Helper function to get valid parent_id (null for free users, number for sub-users)
+    // Helper function to get valid parent_id (null for free users, string for sub-users)
     const getValidParentId = () => {
         const parentId = localStorage.getItem("parent_id");
 
@@ -245,8 +245,8 @@ export default function AddNewAdminAccount() {
             return null;
         }
 
-        // Otherwise, convert parent_id to number
-        return parseInt(parentId, 10);
+        // Return parent_id as a string (API expects string type)
+        return parentId;
     };
 
     // Fetch parent customer permissions for inheritance validation
