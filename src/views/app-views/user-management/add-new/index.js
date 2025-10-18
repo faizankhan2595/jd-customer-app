@@ -119,8 +119,8 @@ export default function AddNewAdminAccount() {
     // Track if current user can edit Access tab for the target user
     const [canEditAccessTab, setCanEditAccessTab] = useState(true);
 
-    // Track if free user is editing their own profile
-    const [isFreeUserEditingOwnProfile, setIsFreeUserEditingOwnProfile] = useState(false);
+    // Track if user is editing their own profile
+    const [isEditingOwnProfile, setIsEditingOwnProfile] = useState(false);
 
     let styles = {
         files: {
@@ -480,8 +480,10 @@ export default function AddNewAdminAccount() {
                         // Trigger custom event to notify NavProfile component
                         window.dispatchEvent(new Event('profileUpdated'));
 
-                        // For free users editing their own profile, reload the data instead of going back
-                        if (isFreeUserEditingOwnProfile) {
+                        // For users editing their own profile, reload the data instead of going back
+                        const currentUserRole = parseInt(localStorage.getItem("role"));
+                        const isFreeUser = currentUserRole === 5;
+                        if (isFreeUser && isEditingOwnProfile) {
                             getData(); // Reload the profile data to show updated information
                         } else {
                             history.goBack();
@@ -693,11 +695,10 @@ export default function AddNewAdminAccount() {
             const currentUserRole = parseInt(localStorage.getItem("role"));
             setCanEditAccessTab(canEditPermissions(currentUserRole, data.role_id));
 
-            // Check if free user is editing their own profile
+            // Check if user is editing their own profile
             const currentUserId = localStorage.getItem("user_id");
-            const isFreeUser = currentUserRole === 5;
-            const isEditingOwnProfile = currentUserId && currentUserId === id?.toString();
-            setIsFreeUserEditingOwnProfile(isFreeUser && isEditingOwnProfile);
+            const editingOwnProfile = currentUserId && currentUserId === id?.toString();
+            setIsEditingOwnProfile(editingOwnProfile);
         } catch (error) {
             // console.error(error);
             message.error(error.response.data.message);
@@ -846,7 +847,6 @@ export default function AddNewAdminAccount() {
                                 </div>
                             </div>
                             <div style={{ gap: "60px" }} className="d-flex ">
-                                {!isFreeUserEditingOwnProfile && (
                                 <div style={{ width: "45%" }}>
                                     <Form.Item
                                         name="nric_fin_number"
@@ -858,8 +858,7 @@ export default function AddNewAdminAccount() {
                                         <Input style={{ width: "100%" }} placeholder="NRIC/FIN" />
                                     </Form.Item>
                                 </div>
-                                )}
-                                <div style={{ width: isFreeUserEditingOwnProfile ? "90%" : "45%" }}>
+                                <div style={{ width: "45%" }}>
                                     <Form.Item
                                         name="dob"
                                         label="Date of Birth"
@@ -873,7 +872,7 @@ export default function AddNewAdminAccount() {
                                 </div>
                             </div>
                             <div style={{ gap: "60px" }} className="d-flex ">
-                                <div style={{ width: isFreeUserEditingOwnProfile ? "90%" : "45%" }}>
+                                <div style={{ width: "45%" }}>
                                     <Form.Item
                                         name="gender"
                                         label="Gender"
@@ -887,7 +886,6 @@ export default function AddNewAdminAccount() {
                                         </Radio.Group>
                                     </Form.Item>
                                 </div>
-                                {!isFreeUserEditingOwnProfile && (
                                 <div style={{ width: "45%" }}>
                                     <Form.Item
                                         name="role_id"
@@ -896,17 +894,19 @@ export default function AddNewAdminAccount() {
                                             { required: true, message: "Please select role." },
                                         ]}
                                     >
-                                        <Radio.Group onChange={(e) => {
-                                            const currentUserRole = parseInt(localStorage.getItem("role"));
-                                            setCanEditAccessTab(canEditPermissions(currentUserRole, e.target.value));
-                                        }}>
+                                        <Radio.Group
+                                            disabled={isEditingOwnProfile}
+                                            onChange={(e) => {
+                                                const currentUserRole = parseInt(localStorage.getItem("role"));
+                                                setCanEditAccessTab(canEditPermissions(currentUserRole, e.target.value));
+                                            }}
+                                        >
                                             <Radio value={7}>Admin</Radio>
                                             <Radio value={8}>Manager</Radio>
                                             <Radio value={9}>User</Radio>
                                         </Radio.Group>
                                     </Form.Item>
                                 </div>
-                                )}
                             </div>
 
                         </div>
